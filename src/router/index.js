@@ -1,14 +1,16 @@
-import { createRouter, createWebHistory } from 'vue-router';
-import Login from '../views/Login.vue';
-import Dashboard from '../views/Dashboard.vue';
+import { createRouter, createWebHistory } from 'vue-router'
+import Login from '../views/Login.vue'
+import Dashboard from '../views/Dashboard.vue'
 
 import PaisIndex from '@/views/paises/IndexView.vue'
 import PaisForm from '@/views/paises/FormView.vue'
 
+import crmRoutes from '@/modules/crm/rutes.js'
+
 const routes = [
   {
     path: '/',
-    redirect: '/dashboard'
+    redirect: '/dashboard',
   },
   {
     path: '/dashboard',
@@ -22,24 +24,24 @@ const routes = [
     component: Login,
   },
   {
-      path: "/paises",
-      component: PaisIndex
+    path: '/paises',
+    component: PaisIndex,
   },
   {
-      path: "/paises/create",
-      component: PaisForm
+    path: '/paises/create',
+    component: PaisForm,
   },
   {
-      path: "/paises/:id/edit",
-      component: PaisForm,
-      props: true
-  }
-];
+    path: '/paises/:id/edit',
+    component: PaisForm,
+    props: true,
+  },
+]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes,
-});
+  routes: [...crmRoutes, ...routes],
+})
 
 // Middleware de protección
 // router.beforeEach((to, from, next) => {
@@ -52,4 +54,4 @@ const router = createRouter({
 //   }
 // });
 
-export default router;
+export default router

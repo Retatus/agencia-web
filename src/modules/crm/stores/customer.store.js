@@ -11,7 +11,7 @@ export const useCustomerStore = defineStore('customer', {
   }),
 
   actions: {
-    async getCustomers(filters = {}) {
+    async fetchCustomers(filters = {}) {
       this.loading = true
       try {
         const res = await CustomerService.getAll(filters)
@@ -23,7 +23,7 @@ export const useCustomerStore = defineStore('customer', {
       }
     },
 
-    async getCustomer(uuid) {
+    async fetchCustomer(uuid) {
       const res = await CustomerService.get(uuid)
       this.item = res.data.data
     },

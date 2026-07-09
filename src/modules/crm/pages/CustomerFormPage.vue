@@ -1,85 +1,3 @@
-<script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import CustomerService from '../services/customer.service'
-import { useDocumentTypeStore } from '@/modules/catalog/stores/documentType.store'
-
-const router = useRouter()
-const route = useRoute()
-
-const loading = ref(false)
-const saving = ref(false)
-const errors = ref({})
-
-const documentTypeStore = useDocumentTypeStore()
-
-const isEdit = computed(() => !!route.params.uuid)
-
-function initialState() {
-  return {
-    document_type_id: '',
-    document_number: '',
-    first_name: '',
-    last_name: '',
-    birth_date: '',
-    gender: '',
-    nationality: '',
-    email: '',
-    phone: '',
-    address: '',
-    city: '',
-    country: '',
-    notes: '',
-    active: true
-  }
-}
-
-const form = reactive(initialState())
-
-async function loadCustomer() {
-  loading.value = true
-  try {
-    const response = await CustomerService.get(route.params.uuid)
-    Object.assign(form, response.data.data)
-
-  } finally {
-    loading.value = false
-  }
-}
-
-async function loadDocumentTypes() {
-  await documentTypeStore.getDocumentTypes()
-}
-
-async function save() {
-  saving.value = true
-  errors.value = {}
-
-  try {
-    if (isEdit.value) {
-      await CustomerService.update(route.params.uuid, form)
-    } else {
-      await CustomerService.create(form)
-    }
-    router.push('/crm/customers')
-  } catch (error) {
-    if (error.response?.status === 422) {
-      errors.value = error.response.data.errors
-    }
-
-  } finally {
-    saving.value = false
-  }
-}
-
-onMounted(async () => {
-  await loadDocumentTypes()
-  if (isEdit.value) {
-    await loadCustomer()
-  }
-})
-</script>
-
 <template>
 
   <div>
@@ -239,3 +157,85 @@ onMounted(async () => {
   </div>
 
 </template>
+
+<script setup>
+import { computed, onMounted, reactive, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import CustomerService from '../services/customer.service'
+import { useDocumentTypeStore } from '@/modules/catalog/stores/documentType.store'
+
+const router = useRouter()
+const route = useRoute()
+
+const loading = ref(false)
+const saving = ref(false)
+const errors = ref({})
+
+const documentTypeStore = useDocumentTypeStore()
+
+const isEdit = computed(() => !!route.params.uuid)
+
+function initialState() {
+  return {
+    document_type_id: '',
+    document_number: '',
+    first_name: '',
+    last_name: '',
+    birth_date: '',
+    gender: '',
+    nationality: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    country: '',
+    notes: '',
+    active: true
+  }
+}
+
+const form = reactive(initialState())
+
+async function loadCustomer() {
+  loading.value = true
+  try {
+    const response = await CustomerService.get(route.params.uuid)
+    Object.assign(form, response.data.data)
+
+  } finally {
+    loading.value = false
+  }
+}
+
+async function loadDocumentTypes() {
+  await documentTypeStore.getDocumentTypes()
+}
+
+async function save() {
+  saving.value = true
+  errors.value = {}
+
+  try {
+    if (isEdit.value) {
+      await CustomerService.update(route.params.uuid, form)
+    } else {
+      await CustomerService.create(form)
+    }
+    router.push('/crm/customers')
+  } catch (error) {
+    if (error.response?.status === 422) {
+      errors.value = error.response.data.errors
+    }
+
+  } finally {
+    saving.value = false
+  }
+}
+
+onMounted(async () => {
+  await loadDocumentTypes()
+  if (isEdit.value) {
+    await loadCustomer()
+  }
+})
+</script>

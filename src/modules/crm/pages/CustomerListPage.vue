@@ -42,7 +42,7 @@ import { useCustomerStore } from '../stores/customer.store'
 const store = useCustomerStore()
 const router = useRouter()
 
-const load = () => store.getCustomers()
+const load = () => store.fetchCustomers()
 
 const add = () => router.push('/crm/customers/create')
 
@@ -53,7 +53,7 @@ const edit = (id) => {
 const remove = async (id) => {
   if (confirm('¿Seguro que deseas eliminar este cliente?')) {
     await store.deleteCustomer(id)
-    await store.getCustomers() // recargar lista
+    await store.fetchCustomers()
   }
 }
 

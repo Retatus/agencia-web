@@ -5,7 +5,8 @@ import Dashboard from '../views/Dashboard.vue'
 import PaisIndex from '@/views/paises/IndexView.vue'
 import PaisForm from '@/views/paises/FormView.vue'
 
-import crmRoutes from '@/modules/crm/rutes.js'
+import customerRoutes from '@/modules/crm/customer.routes.js'
+import providerRoutes from '@/modules/catalog/providers/router/provider.routes.js'
 
 const routes = [
   {
@@ -40,7 +41,7 @@ const routes = [
 
 const router = createRouter({
   history: createWebHistory(),
-  routes: [...crmRoutes, ...routes],
+  routes: [...customerRoutes, ...providerRoutes, ...routes],
 })
 
 // Middleware de protección

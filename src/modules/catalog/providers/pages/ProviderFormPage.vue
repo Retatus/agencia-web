@@ -144,7 +144,6 @@ import { useDocumentTypeStore } from '@/modules/catalog/stores/documentType.stor
 const providerStore = useProviderStore();
 
 const route = useRoute();
-
 const router = useRouter();
 
 const documentTypeStore = useDocumentTypeStore();
@@ -152,41 +151,25 @@ const documentTypeStore = useDocumentTypeStore();
 const isEdit = computed(() => !!route.params.uuid);
 
 const form = reactive({
-
   code: '',
   business_name: '',
   commercial_name: '',
-
   document_type_id: '',
-
   document_number: '',
-
   tax_name: '',
-
   email: '',
-
   phone: '',
-
   website: '',
-
   notes: '',
-
   active: true,
-
 });
 
 onMounted(async () => {
-
   await loadDocumentTypes();
-
   if (isEdit.value) {
-
     const provider = await providerStore.fetchProvider(route.params.uuid);
-
     Object.assign(form, provider);
-
   }
-
 });
 
 async function loadDocumentTypes() {
@@ -194,7 +177,6 @@ async function loadDocumentTypes() {
 }
 
 async function save() {
-
   try {
     if (isEdit.value) {
       await providerStore.updateProvider(

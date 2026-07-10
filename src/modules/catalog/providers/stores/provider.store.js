@@ -83,5 +83,11 @@ export const useProviderStore = defineStore('provider', {
     clearProvider() {
       this.provider = null
     },
+
+    async selectProviders() {
+      const response = await ProviderService.select()
+
+      return response.data
+    },
   },
 })

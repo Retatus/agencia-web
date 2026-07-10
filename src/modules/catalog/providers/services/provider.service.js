@@ -39,4 +39,8 @@ export default {
   destroy(uuid) {
     return api.delete(`${BASE_URL}/${uuid}`)
   },
+
+  select() {
+    return api.get(`${BASE_URL}/select`)
+  },
 }

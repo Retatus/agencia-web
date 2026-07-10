@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import DocumentTypeService from '../services/documentType.service'
+import DocumentTypeService from '../service/documentType.service'
 
 export const useDocumentTypeStore = defineStore('documentType', {
   state: () => ({

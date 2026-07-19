@@ -8,6 +8,7 @@ import PaisForm from '@/views/paises/FormView.vue'
 import customerRoutes from '@/modules/crm/customer.routes.js'
 import providerRoutes from '@/modules/catalog/providers/router/provider.routes.js'
 import serviceRoutes from '@/modules/catalog/services/router/service.routes.js'
+import quotationRoutes from '@/modules/quotation/router/quotation.routes.js'
 
 const routes = [
   {
@@ -42,7 +43,7 @@ const routes = [
 
 const router = createRouter({
   history: createWebHistory(),
-  routes: [...customerRoutes, ...providerRoutes, ...serviceRoutes, ...routes],
+  routes: [...customerRoutes, ...providerRoutes, ...serviceRoutes, ...quotationRoutes, ...routes],
 })
 
 // Middleware de protección

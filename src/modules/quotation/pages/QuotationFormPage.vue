@@ -58,6 +58,16 @@
       <QuotationTotals :quotation="store.quotation" />
 
       <!-- =========================== -->
+      <!-- Pasajeros                   -->
+      <!-- =========================== -->
+
+      <QuotationPassengerManager
+        :passengers="store.quotation.passengers"
+        :passengerTypes="passengerTypesAux"
+        @add-passenger="openPassengerModal"
+      />
+
+      <!-- =========================== -->
       <!-- Acciones                    -->
       <!-- =========================== -->
 
@@ -106,9 +116,15 @@ import ServiceSelectorModal from '../components/ServiceSelectorModal.vue'
 
 import CustomItemModal from '../components/CustomItemModal.vue'
 
+import QuotationPassengerManager from '../components/QuotationPassengerManager.vue'
+
 const showServiceSelector = ref(false)
 
 const showCustomItem = ref(false)
+
+const showPassengerModal = ref(false)
+
+const editingPassenger = ref(null)
 
 const route = useRoute()
 
@@ -190,5 +206,19 @@ function serviceSelected(item) {
   store.addService(item)
 
   closeServiceSelector()
+}
+
+/**
+ * passenger
+ */
+
+function openPassengerModal() {
+  editingPassenger.value = null
+
+  showPassengerModal.value = true
+}
+
+function closePassengerModal() {
+  showPassengerModal.value = false
 }
 </script>

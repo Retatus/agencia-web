@@ -111,6 +111,7 @@
 
             <td>
               <button
+                type="button"
                 class="btn btn-outline-primary btn-sm me-1"
                 @click="$emit('edit-item', item)"
               >
@@ -118,6 +119,7 @@
               </button>
 
               <button
+                type="button"
                 class="btn btn-outline-danger btn-sm"
                 @click="remove(item)"
               >

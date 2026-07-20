@@ -10,7 +10,6 @@
         <div>
           <h6 class="mb-1">
             Día {{ itinerary.day_number }}
-
             <span
               v-if="itinerary.title"
               class="text-muted"
@@ -18,6 +17,23 @@
               - {{ itinerary.title }}
             </span>
           </h6>
+          <div>
+            <input
+              type="text"
+              v-model="itinerary.title"
+            />
+            <textarea
+              v-model="itinerary.description"
+              rows="1"
+            >
+            </textarea>
+          </div>
+          <div>
+            <input
+              type="date"
+              v-model="itinerary.travel_date"
+            />
+          </div>
 
           <small class="text-muted">
             {{ formatDate(itinerary.travel_date) }}

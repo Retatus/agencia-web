@@ -22,12 +22,11 @@
           >
             {{ formatDate(itinerary.travel_date) }}
           </small>
-
+          &nbsp;
           <small class="d-block">
             {{ itinerary.items?.length || 0 }}
-
-            servicios
           </small>
+          servicios
         </button>
       </li>
 

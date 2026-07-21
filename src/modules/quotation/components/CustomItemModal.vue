@@ -8,7 +8,9 @@
         <!-- Header -->
 
         <div class="modal-header">
-          <h5 class="modal-title"> Agregar Ítem Libre </h5>
+          <h5 class="modal-title">
+            {{ isEdit ? 'Editar Servicio Personalizado' : 'Agregar Servicio Personalizado' }}
+          </h5>
 
           <button
             type="button"
@@ -134,10 +136,10 @@
           <button
             type="button"
             class="btn btn-primary"
-            :disabled="!form.name"
+            :disabled="!canSave"
             @click="save"
           >
-            Agregar Ítem
+            {{ isEdit ? 'Actualizar' : 'Agregar' }}
           </button>
         </div>
       </div>
@@ -150,53 +152,57 @@
 <script setup>
 import { computed, reactive } from 'vue'
 
-const emit = defineEmits(['save', 'close'])
+const props = defineProps({
+  item: {
+    type: Object,
+    default: null,
+  },
+})
+
+const emit = defineEmits(['close', 'save'])
+
+const isEdit = computed(() => !!props.item)
 
 const form = reactive({
-  name: '',
+  service_id: props.item?.service_id ?? null,
+  service_variant_id: props.item?.service_variant_id ?? null,
 
-  description: '',
+  item_type: props.item?.item_type ?? 'CUSTOM',
 
-  duration: '',
+  name: props.item?.name ?? '',
+  variant_name: props.item?.variant_name ?? '',
+  description: props.item?.description ?? '',
 
-  quantity: 1,
+  duration: props.item?.duration ?? 1,
+  quantity: props.item?.quantity ?? 1,
 
-  unit_cost: 0,
+  price_id: props.item?.price_id ?? null,
 
-  unit_price: 0,
+  unit_cost: props.item?.unit_cost ?? 0,
+  unit_price: props.item?.unit_price ?? 0,
 
-  notes: '',
+  subtotal: props.item?.subtotal ?? 0,
 
-  active: true,
+  sort_order: props.item?.sort_order ?? 1,
+
+  notes: props.item?.notes ?? '',
+
+  active: props.item?.active ?? true,
 })
 
 const subtotal = computed(() => {
   return Number(form.quantity || 0) * Number(form.unit_price || 0)
 })
 
+const canSave = computed(() => {
+  return form.name.trim() !== '' && Number(form.quantity) > 0
+})
+
 function save() {
+  if (!canSave.value) return
+
   emit('save', {
-    item_type: 'CUSTOM',
-
-    name: form.name,
-
-    variant_name: null,
-
-    description: form.description,
-
-    duration: form.duration,
-
-    quantity: Number(form.quantity),
-
-    unit_cost: Number(form.unit_cost),
-
-    unit_price: Number(form.unit_price),
-
-    subtotal: subtotal.value,
-
-    notes: form.notes,
-
-    active: form.active,
+    ...form,
   })
 
   reset()
@@ -211,18 +217,26 @@ function cancel() {
 }
 
 function reset() {
-  form.name = ''
+  form.service_id = null
+  form.service_variant_id = null
 
+  form.item_type = 'CUSTOM'
+
+  form.name = ''
+  form.variant_name = ''
   form.description = ''
 
+  form.duration = 1
   form.quantity = 1
 
+  form.price_id = null
   form.unit_cost = 0
-
   form.unit_price = 0
 
-  form.notes = ''
+  form.subtotal = 0
+  form.sort_order = 1
 
+  form.notes = ''
   form.active = true
 }
 

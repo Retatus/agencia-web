@@ -88,6 +88,7 @@
 
       <CustomItemModal
         v-if="showCustomItem"
+        :item="editingCustomItem"
         @close="closeCustomItem"
         @save="customItemCreated"
       />
@@ -121,6 +122,8 @@ import QuotationPassengerManager from '../components/QuotationPassengerManager.v
 const showServiceSelector = ref(false)
 
 const showCustomItem = ref(false)
+
+const editingCustomItem = ref(null)
 
 const showPassengerModal = ref(false)
 
@@ -189,15 +192,53 @@ function openCustomItem() {
     return
   }
 
+  // Modo nuevo
+  editingCustomItem.value = null
+
   showCustomItem.value = true
 }
 
+function editItem(item) {
+  if (!item) {
+    return
+  }
+
+  if (item.item_type === 'CUSTOM') {
+    editingCustomItem.value = item
+
+    showCustomItem.value = true
+
+    return
+  }
+
+  console.warn('Tipo de item no soportado para edición:', item.item_type)
+}
+
 function closeCustomItem() {
+  editingCustomItem.value = null
   showCustomItem.value = false
 }
 
+function customItemSaved(item) {
+  if (!item) {
+    return
+  }
+
+  if (item.uuid) {
+    store.updateItem(item.uuid, item)
+  } else {
+    store.addCustomItem(item)
+  }
+
+  closeCustomItem()
+}
+
 function customItemCreated(item) {
-  store.addCustomItem(item)
+  if (editingCustomItem.value) {
+    store.updateItem(editingCustomItem.value.uuid, item)
+  } else {
+    store.addCustomItem(item)
+  }
 
   closeCustomItem()
 }

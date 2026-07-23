@@ -41,11 +41,17 @@ class ServiceService {
 
   // Futuras funcionalidades
 
-  getVariants(uuid) {}
+  getVariants(uuid) {
+    return api.get(`${BASE_URL}/${uuid}/variants`)
+  }
 
   getDestinations(uuid) {}
 
-  getPrices(uuid) {}
+  getPrices(uuid, variantId, params = {}) {
+    return api.get(`${BASE_URL}/${uuid}/variants/${variantId}/prices`, {
+      params,
+    })
+  }
 
   duplicate(uuid) {}
 

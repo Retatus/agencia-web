@@ -139,6 +139,17 @@ export const useQuotationStore = defineStore('quotation', {
       }
     },
 
+    async fetchQuotations() {
+      this.loading = true
+
+      try {
+        const response = await QuotationService.getAll()
+        this.items = response.data.data
+      } finally {
+        this.loading = false
+      }
+    },
+
     async save() {
       this.saving = true
 

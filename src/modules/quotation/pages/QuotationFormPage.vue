@@ -1,13 +1,10 @@
 <template>
   <div class="container-fluid">
-    <!-- Encabezado -->
-
     <div class="d-flex justify-content-between align-items-center mb-4">
       <div>
         <h2 class="mb-0">
           {{ pageTitle }}
         </h2>
-
         <small class="text-muted"> Gestión de Cotizaciones </small>
       </div>
 
@@ -20,21 +17,21 @@
     </div>
 
     <form @submit.prevent="save">
-      <!-- =========================== -->
-      <!-- Datos Generales             -->
-      <!-- =========================== -->
+      <!-- ================================================= -->
+      <!-- DATOS GENERALES                                  -->
+      <!-- ================================================= -->
 
       <QuotationHeader
         :quotation="store.quotation"
         :customers="customers"
         :currencies="currencies"
         :statuses="statuses"
-        :priceLists="priceLists"
+        :price-lists="priceLists"
       />
 
-      <!-- =========================== -->
-      <!-- Itinerario                  -->
-      <!-- =========================== -->
+      <!-- ================================================= -->
+      <!-- ITINERARIO                                        -->
+      <!-- ================================================= -->
 
       <QuotationItineraryManager
         :itineraries="store.quotation.itineraries"
@@ -45,31 +42,31 @@
         @remove-itinerary="store.removeItinerary"
         @move-itinerary-up="store.moveItineraryUp"
         @move-itinerary-down="store.moveItineraryDown"
-        @add-service="openServiceSelector"
-        @add-custom-item="openCustomItem"
+        @add-service="openCatalogModal"
+        @add-custom-item="openCustomModal"
         @edit-item="editItem"
         @remove-item="store.removeItem"
       />
 
-      <!-- =========================== -->
-      <!-- Totales                     -->
-      <!-- =========================== -->
+      <!-- ================================================= -->
+      <!-- TOTALES                                          -->
+      <!-- ================================================= -->
 
       <QuotationTotals :quotation="store.quotation" />
 
-      <!-- =========================== -->
-      <!-- Pasajeros                   -->
-      <!-- =========================== -->
+      <!-- ================================================= -->
+      <!-- PASAJEROS                                         -->
+      <!-- ================================================= -->
 
       <QuotationPassengerManager
         :passengers="store.quotation.passengers"
-        :passengerTypes="passengerTypesAux"
+        :passenger-types="passengerTypesAux"
         @add-passenger="openPassengerModal"
       />
 
-      <!-- =========================== -->
-      <!-- Acciones                    -->
-      <!-- =========================== -->
+      <!-- ================================================= -->
+      <!-- ACCIONES                                          -->
+      <!-- ================================================= -->
 
       <QuotationActions
         :loading="store.saving"
@@ -80,62 +77,110 @@
         @email="sendQuotation"
       />
 
+      <!-- ================================================= -->
+      <!-- MODAL SERVICIO CATALOG                            -->
+      <!-- ================================================= -->
+
       <ServiceSelectorModal
-        v-if="showServiceSelector"
-        @close="closeServiceSelector"
-        @selected="serviceSelected"
+        v-if="showServiceModal"
+        :item="editingItem"
+        :price-list-id="store.quotation.price_list_id"
+        @close="closeServiceModal"
+        @save="handleItemSave"
       />
 
+      <!-- ================================================= -->
+      <!-- MODAL SERVICIO CUSTOM                             -->
+      <!-- ================================================= -->
+
       <CustomItemModal
-        v-if="showCustomItem"
-        :item="editingCustomItem"
-        @close="closeCustomItem"
-        @save="customItemCreated"
+        v-if="showCustomModal"
+        :item="editingItem"
+        @close="closeCustomModal"
+        @save="handleItemSave"
       />
     </form>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue'
-
-import { useRoute } from 'vue-router'
-
-import { ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 import { useQuotationStore } from '../stores/quotation.store'
 
 import QuotationHeader from '../components/QuotationHeader.vue'
-
 import QuotationItineraryManager from '../components/QuotationItineraryManager.vue'
-
 import QuotationTotals from '../components/QuotationTotals.vue'
-
 import QuotationActions from '../components/QuotationActions.vue'
-
-import ServiceSelectorModal from '../components/ServiceSelectorModal.vue'
-
-import CustomItemModal from '../components/CustomItemModal.vue'
-
 import QuotationPassengerManager from '../components/QuotationPassengerManager.vue'
 
-const showServiceSelector = ref(false)
+import ServiceSelectorModal from '../components/ServiceSelectorModal.vue'
+import CustomItemModal from '../components/CustomItemModal.vue'
 
-const showCustomItem = ref(false)
-
-const editingCustomItem = ref(null)
-
-const showPassengerModal = ref(false)
-
-const editingPassenger = ref(null)
+/*
+|--------------------------------------------------------------------------
+| ROUTER
+|--------------------------------------------------------------------------
+*/
 
 const route = useRoute()
 
+const router = useRouter()
+
+/*
+|--------------------------------------------------------------------------
+| STORE
+|--------------------------------------------------------------------------
+*/
+
 const store = useQuotationStore()
 
-const isEdit = computed(() => !!route.params.uuid)
+/*
+|--------------------------------------------------------------------------
+| STATE
+|--------------------------------------------------------------------------
+*/
 
-const pageTitle = computed(() => (route.params.uuid ? 'Editar Cotización' : 'Nueva Cotización'))
+const editingItem = ref(null)
+
+/*
+| Modal CUSTOM.
+*/
+
+const showCustomModal = ref(false)
+
+/*
+| Modal CATALOG.
+*/
+
+const showServiceModal = ref(false)
+
+/*
+| Modal pasajeros.
+*/
+
+const showPassengerModal = ref(false)
+
+/*
+|--------------------------------------------------------------------------
+| COMPUTED
+|--------------------------------------------------------------------------
+*/
+
+const isEdit = computed(() => {
+  return !!route.params.uuid
+})
+
+const pageTitle = computed(() => {
+  return isEdit.value ? 'Editar Cotización' : 'Nueva Cotización'
+})
+
+/*
+|--------------------------------------------------------------------------
+| INIT
+|--------------------------------------------------------------------------
+*/
 
 onMounted(() => {
   if (isEdit.value) {
@@ -145,13 +190,21 @@ onMounted(() => {
   }
 })
 
+/*
+|--------------------------------------------------------------------------
+| SAVE QUOTATION
+|--------------------------------------------------------------------------
+*/
+
 async function save() {
   await store.save()
 }
 
-import { useRouter } from 'vue-router'
-
-const router = useRouter()
+/*
+|--------------------------------------------------------------------------
+| CANCEL
+|--------------------------------------------------------------------------
+*/
 
 function cancel() {
   router.push({
@@ -171,31 +224,44 @@ function sendQuotation() {
   console.log('Email')
 }
 
-function openServiceSelector() {
+function openCustomModal() {
   if (!store.selectedItinerary) {
     alert('Seleccione un día del itinerario.')
 
     return
   }
 
-  showServiceSelector.value = true
+  /*
+  | Nuevo item.
+  */
+
+  editingItem.value = null
+
+  /*
+  | Abrir modal.
+  */
+
+  showCustomModal.value = true
 }
 
-function closeServiceSelector() {
-  showServiceSelector.value = false
-}
-
-function openCustomItem() {
+function openCatalogModal() {
   if (!store.selectedItinerary) {
     alert('Seleccione un día del itinerario.')
 
     return
   }
 
-  // Modo nuevo
-  editingCustomItem.value = null
+  /*
+  | Nuevo item.
+  */
 
-  showCustomItem.value = true
+  editingItem.value = null
+
+  /*
+  | Abrir modal.
+  */
+
+  showServiceModal.value = true
 }
 
 function editItem(item) {
@@ -203,59 +269,114 @@ function editItem(item) {
     return
   }
 
-  if (item.item_type === 'CUSTOM') {
-    editingCustomItem.value = item
+  /*
+  |--------------------------------------------------------------------------
+  | Guardamos el item que estamos editando.
+  |--------------------------------------------------------------------------
+  */
 
-    showCustomItem.value = true
+  editingItem.value = item
+
+  /*
+  |--------------------------------------------------------------------------
+  | CUSTOM
+  |--------------------------------------------------------------------------
+  */
+
+  if (item.item_type === 'CUSTOM') {
+    showCustomModal.value = true
 
     return
   }
+
+  /*
+  |--------------------------------------------------------------------------
+  | CATALOG
+  |--------------------------------------------------------------------------
+  */
+
+  if (item.item_type === 'CATALOG') {
+    showServiceModal.value = true
+
+    return
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Tipo desconocido
+  |--------------------------------------------------------------------------
+  */
 
   console.warn('Tipo de item no soportado para edición:', item.item_type)
 }
 
-function closeCustomItem() {
-  editingCustomItem.value = null
-  showCustomItem.value = false
-}
+/*
+|--------------------------------------------------------------------------
+| HANDLE ITEM SAVE
+|--------------------------------------------------------------------------
+*/
 
-function customItemSaved(item) {
+function handleItemSave(item) {
   if (!item) {
     return
   }
 
-  if (item.uuid) {
-    store.updateItem(item.uuid, item)
+  /*
+  |--------------------------------------------------------------------------
+  | EDITAR
+  |--------------------------------------------------------------------------
+  */
+
+  if (editingItem.value) {
+    store.updateItem(editingItem.value, item)
   } else {
     store.addCustomItem(item)
   }
 
-  closeCustomItem()
+  closeItemModal()
 }
 
-function customItemCreated(item) {
-  if (editingCustomItem.value) {
-    store.updateItem(editingCustomItem.value.uuid, item)
-  } else {
-    store.addCustomItem(item)
-  }
+/*
+|--------------------------------------------------------------------------
+| CLOSE ITEM MODAL
+|--------------------------------------------------------------------------
+*/
 
-  closeCustomItem()
+function closeItemModal() {
+  editingItem.value = null
+
+  showCustomModal.value = false
+
+  showServiceModal.value = false
 }
 
-function serviceSelected(item) {
-  store.addService(item)
+/*
+|--------------------------------------------------------------------------
+| CLOSE CUSTOM MODAL
+|--------------------------------------------------------------------------
+*/
 
-  closeServiceSelector()
+function closeCustomModal() {
+  closeItemModal()
 }
 
-/**
- * passenger
- */
+/*
+|--------------------------------------------------------------------------
+| CLOSE SERVICE MODAL
+|--------------------------------------------------------------------------
+*/
+
+function closeServiceModal() {
+  closeItemModal()
+}
+
+/*
+|--------------------------------------------------------------------------
+| PASSENGER MODAL
+|--------------------------------------------------------------------------
+*/
 
 function openPassengerModal() {
-  editingPassenger.value = null
-
   showPassengerModal.value = true
 }
 

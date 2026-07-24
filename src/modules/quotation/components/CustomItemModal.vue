@@ -159,26 +159,51 @@ const props = defineProps({
   },
 })
 
+/*
+|--------------------------------------------------------------------------
+| EVENTS
+|--------------------------------------------------------------------------
+*/
+
 const emit = defineEmits(['close', 'save'])
 
-const isEdit = computed(() => !!props.item)
+/*
+|--------------------------------------------------------------------------
+| MODE
+|--------------------------------------------------------------------------
+*/
+
+const isEdit = computed(() => {
+  return !!props.item
+})
+
+/*
+|--------------------------------------------------------------------------
+| FORM
+|--------------------------------------------------------------------------
+*/
 
 const form = reactive({
   service_id: props.item?.service_id ?? null,
+
   service_variant_id: props.item?.service_variant_id ?? null,
 
   item_type: props.item?.item_type ?? 'CUSTOM',
 
   name: props.item?.name ?? '',
+
   variant_name: props.item?.variant_name ?? '',
+
   description: props.item?.description ?? '',
 
   duration: props.item?.duration ?? 1,
+
   quantity: props.item?.quantity ?? 1,
 
   price_id: props.item?.price_id ?? null,
 
   unit_cost: props.item?.unit_cost ?? 0,
+
   unit_price: props.item?.unit_price ?? 0,
 
   subtotal: props.item?.subtotal ?? 0,
@@ -190,55 +215,73 @@ const form = reactive({
   active: props.item?.active ?? true,
 })
 
+/*
+|--------------------------------------------------------------------------
+| SUBTOTAL
+|--------------------------------------------------------------------------
+*/
+
 const subtotal = computed(() => {
   return Number(form.quantity || 0) * Number(form.unit_price || 0)
 })
+
+/*
+|--------------------------------------------------------------------------
+| CAN SAVE
+|--------------------------------------------------------------------------
+*/
 
 const canSave = computed(() => {
   return form.name.trim() !== '' && Number(form.quantity) > 0
 })
 
+/*
+|--------------------------------------------------------------------------
+| SAVE
+|--------------------------------------------------------------------------
+*/
+
 function save() {
-  if (!canSave.value) return
+  if (!canSave.value) {
+    return
+  }
 
-  emit('save', {
+  const item = {
     ...form,
-  })
 
-  reset()
+    subtotal: subtotal.value,
+  }
 
+  emit('save', item)
+
+  close()
+}
+
+/*
+|--------------------------------------------------------------------------
+| CLOSE
+|--------------------------------------------------------------------------
+*/
+
+function close() {
   emit('close')
 }
+
+/*
+|--------------------------------------------------------------------------
+| CANCEL
+|--------------------------------------------------------------------------
+*/
 
 function cancel() {
-  reset()
-
-  emit('close')
+  close()
 }
 
-function reset() {
-  form.service_id = null
-  form.service_variant_id = null
-
-  form.item_type = 'CUSTOM'
-
-  form.name = ''
-  form.variant_name = ''
-  form.description = ''
-
-  form.duration = 1
-  form.quantity = 1
-
-  form.price_id = null
-  form.unit_cost = 0
-  form.unit_price = 0
-
-  form.subtotal = 0
-  form.sort_order = 1
-
-  form.notes = ''
-  form.active = true
-}
+/*
+|--------------------------------------------------------------------------
+| MONEY
+|--------------------------------------------------------------------------
+*/
 
 function money(value) {
   return Number(value || 0).toFixed(2)

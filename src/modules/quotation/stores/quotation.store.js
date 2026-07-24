@@ -354,20 +354,6 @@ export const useQuotationStore = defineStore('quotation', {
 |--------------------------------------------------------------------------
 */
 
-    addService(item) {
-      return this.addItem({
-        ...item,
-        item_type: 'CATALOG',
-      })
-    },
-
-    addCustomItem(item) {
-      return this.addItem({
-        ...item,
-        item_type: 'CUSTOM',
-      })
-    },
-
     addItem(item = {}) {
       if (!this.selectedItinerary) return null
 
@@ -380,7 +366,7 @@ export const useQuotationStore = defineStore('quotation', {
         service_id: null,
         service_variant_id: null,
 
-        item_type: 'CUSTOM',
+        item_type: '',
 
         name: '',
         variant_name: '',

@@ -330,7 +330,7 @@ function handleItemSave(item) {
   if (editingItem.value) {
     store.updateItem(editingItem.value, item)
   } else {
-    store.addCustomItem(item)
+    store.addItem(item)
   }
 
   closeItemModal()

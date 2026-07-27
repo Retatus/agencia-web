@@ -45,6 +45,7 @@
         @add-service="openCatalogModal"
         @add-custom-item="openCustomModal"
         @edit-item="editItem"
+        @duplicate-item="store.duplicateItem"
         @remove-item="store.removeItem"
       />
 
@@ -328,7 +329,7 @@ function handleItemSave(item) {
   */
 
   if (editingItem.value) {
-    store.updateItem(editingItem.value, item)
+    store.updateItem(editingItem.value.uuid, item)
   } else {
     store.addItem(item)
   }

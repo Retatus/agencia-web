@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import QuotationService from '../services/quotation.service'
+import { toRaw } from 'vue'
 
 function createQuotation() {
   return {
@@ -296,7 +297,7 @@ export const useQuotationStore = defineStore('quotation', {
 
       if (!itinerary) return
 
-      const copy = structuredClone(itinerary)
+      const copy = structuredClone(toRaw(itinerary))
 
       copy.id = null
       copy.uuid = crypto.randomUUID()
@@ -444,7 +445,7 @@ export const useQuotationStore = defineStore('quotation', {
 
       if (!item) return
 
-      const copy = structuredClone(item)
+      const copy = structuredClone(toRaw(item))
 
       copy.id = null
       copy.uuid = crypto.randomUUID()

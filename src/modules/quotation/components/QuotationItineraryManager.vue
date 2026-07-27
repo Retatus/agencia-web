@@ -36,6 +36,7 @@
         v-if="store.selectedItinerary"
         :itinerary="store.selectedItinerary"
         @edit-item="$emit('edit-item', $event)"
+        @duplicate-item="$emit('duplicate-item', $event)"
         @remove-item="$emit('remove-item', $event)"
       />
 
@@ -58,7 +59,7 @@ import QuotationItineraryServicesTable from './QuotationItineraryServicesTable.v
 
 const store = useQuotationStore()
 
-defineEmits(['add-service', 'add-custom-item', 'edit-item', 'remove-item'])
+defineEmits(['add-service', 'add-custom-item', 'edit-item', 'duplicate-item', 'remove-item'])
 
 function selectItinerary(uuid) {
   store.selectItinerary(uuid)

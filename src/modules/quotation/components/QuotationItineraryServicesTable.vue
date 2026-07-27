@@ -101,12 +101,16 @@
               <i
                 class="bi bi-check-circle-fill text-success"
                 v-if="item.active"
-              />
+              >
+                activo
+              </i>
 
               <i
                 class="bi bi-x-circle-fill text-danger"
                 v-else
-              />
+              >
+                inactivo
+              </i>
             </td>
 
             <td>
@@ -116,6 +120,28 @@
                 @click="$emit('edit-item', item)"
               >
                 edit
+              </button>
+              <button
+                type="button"
+                class="btn btn-outline-danger btn-sm"
+                @click="$emit('duplicate-item', item.uuid)"
+              >
+                duplicar
+              </button>
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                @click="moveUp(item.uuid)"
+              >
+                ↑
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                @click="moveDown(item.uuid)"
+              >
+                ↓
               </button>
 
               <button
@@ -145,12 +171,20 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['edit-item'])
+const emit = defineEmits(['edit-item', 'duplicate-item'])
 
 function updateQuantity(item) {
   store.updateItem(item.uuid, {
     quantity: item.quantity,
   })
+}
+
+function moveUp(uuid) {
+  store.moveItemUp(uuid)
+}
+
+function moveDown(uuid) {
+  store.moveItemDown(uuid)
 }
 
 function remove(item) {

@@ -102,6 +102,7 @@
             class="form-select"
             v-model="store.quotation.quotation_status_id"
           >
+            <option :value="null"> Seleccione... </option>
             <option
               v-for="status in statuses"
               :key="status.id"

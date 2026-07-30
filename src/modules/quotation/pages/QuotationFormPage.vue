@@ -215,6 +215,10 @@ function cancel() {
 
 function duplicateQuotation() {
   store.duplicate()
+
+  router.push({
+    name: 'quotations.create',
+  })
 }
 
 function printQuotation() {

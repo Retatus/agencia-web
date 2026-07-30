@@ -104,7 +104,7 @@ function edit(uuid) {
 }
 async function remove(uuid) {
   if (!confirm('¿Desea eliminar esta cotización?')) return
-  await store.deleteQuotation(uuid)
+  await store.destroy(uuid)
   await load()
 }
 function money(value) {

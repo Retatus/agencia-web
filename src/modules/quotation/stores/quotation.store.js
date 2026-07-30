@@ -188,21 +188,42 @@ export const useQuotationStore = defineStore('quotation', {
     },
 
     duplicate() {
-      const quotation = structuredClone(this.quotation)
+      const quotation = JSON.parse(JSON.stringify(this.quotation))
 
       quotation.id = null
       quotation.uuid = null
       quotation.code = ''
 
-      quotation.itineraries.forEach((itinerary) => {
-        itinerary.id = null
-        itinerary.uuid = crypto.randomUUID()
+      quotation.quotation_status_id = null
 
-        itinerary.items.forEach((item) => {
-          item.id = null
-          item.uuid = crypto.randomUUID()
-        })
+      quotation.itineraries = (quotation.itineraries ?? []).map((itinerary) => {
+        return {
+          ...itinerary,
+          id: null,
+          uuid: crypto.randomUUID(),
+          quotation_id: null,
+
+          items: (itinerary.items ?? []).map((item) => {
+            return {
+              ...item,
+              id: null,
+              uuid: crypto.randomUUID(),
+              quotation_itinerary_id: null,
+            }
+          }),
+        }
       })
+
+      quotation.passengers = (quotation.passengers ?? []).map((passenger) => {
+        return {
+          ...passenger,
+          id: null,
+          uuid: crypto.randomUUID(),
+          quotation_id: null,
+        }
+      })
+
+      // ASIGNAR COPIA AL STORE
 
       this.quotation = quotation
 
@@ -210,6 +231,7 @@ export const useQuotationStore = defineStore('quotation', {
         quotation.itineraries.length > 0 ? quotation.itineraries[0].uuid : null
 
       this.refreshCalculations()
+      return this.quotation
     },
 
     async destroy() {

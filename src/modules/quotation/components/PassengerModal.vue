@@ -97,6 +97,7 @@
                 v-model="form.nationality"
                 class="form-control"
               />
+              {{ form.uuid }}
             </div>
 
             <!-- Email -->
@@ -190,6 +191,8 @@ const isEdit = computed(() => !!props.passenger)
 const form = reactive({
   id: props.passenger?.id ?? null,
 
+  uuid: props.passenger?.uuid ?? crypto.randomUUID(),
+
   passenger_type_id: props.passenger?.passenger_type_id ?? null,
 
   first_name: props.passenger?.first_name ?? '',
@@ -221,7 +224,7 @@ function save() {
   const data = { ...form }
 
   if (isEdit.value) {
-    store.updatePassenger(props.passenger.id, data)
+    store.updatePassenger(props.passenger.uuid, data)
   } else {
     store.addPassenger(data)
   }

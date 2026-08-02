@@ -59,6 +59,7 @@
             <td>
               <div class="fw-semibold">
                 {{ item.name }}
+                {{ item.uuid }}
               </div>
 
               <small class="text-muted">

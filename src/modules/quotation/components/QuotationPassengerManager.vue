@@ -81,6 +81,7 @@
 
               <td>
                 {{ passenger.nationality }}
+                {{ passenger.uuid }}
               </td>
 
               <td>

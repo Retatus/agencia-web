@@ -14,6 +14,8 @@
           <tr>
             <th width="50"> # </th>
 
+            <th> Id </th>
+
             <th> Servicio </th>
 
             <th width="180"> Variante </th>
@@ -51,7 +53,9 @@
             <td>
               {{ index + 1 }}
             </td>
-
+            <td>
+              {{ item.id }}
+            </td>
             <td>
               <div class="fw-semibold">
                 {{ item.name }}
@@ -224,3 +228,21 @@ utils/
     money.js
     badges.js
 -->
+
+<style scoped>
+table {
+  border-collapse: collapse; /* Une los bordes en una sola línea */
+  width: 100%; /* Hace que la tabla ocupe todo el ancho */
+}
+
+table,
+th,
+td {
+  border: 1px solid black; /* Define el grosor, tipo y color del borde */
+}
+
+th,
+td {
+  padding: 2px; /* Añade espacio interno para que no esté apretado */
+}
+</style>

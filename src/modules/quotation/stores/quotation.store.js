@@ -852,16 +852,16 @@ export const useQuotationStore = defineStore('quotation', {
       this.quotation.notes = notes
     },
 
-    findPassenger(uuid) {
-      return this.quotation.passengers.find((passenger) => passenger.uuid === uuid) ?? null
+    findPassenger(id) {
+      return this.quotation.passengers.find((passenger) => passenger.id === id) ?? null
     },
 
-    getPassenger(uuid) {
-      return this.findPassenger(uuid)
+    getPassenger(id) {
+      return this.findPassenger(id)
     },
 
-    existsPassenger(uuid) {
-      return this.findPassenger(uuid) !== null
+    existsPassenger(id) {
+      return this.findPassenger(id) !== null
     },
   },
 })

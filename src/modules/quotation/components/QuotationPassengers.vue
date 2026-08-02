@@ -24,6 +24,8 @@
           <tr>
             <th>#</th>
 
+            <th>Id</th>
+
             <th>Tipo</th>
 
             <th>Nombres</th>
@@ -53,6 +55,8 @@
             :key="passenger.uuid ?? index"
           >
             <td>{{ index + 1 }}</td>
+
+            <td>{{ passenger.id }}</td>
 
             <td>{{ passenger.passenger_type_id }}</td>
 

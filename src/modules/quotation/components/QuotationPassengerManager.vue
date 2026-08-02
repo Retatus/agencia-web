@@ -38,7 +38,9 @@
             <tr>
               <th width="50"> # </th>
 
-              <th> Tipo </th>
+              <th width="50"> Id </th>
+
+              <!-- <th> Tipo </th> -->
 
               <th> Nombres </th>
 
@@ -163,3 +165,21 @@ function removePassenger(passenger) {
   store.removePassenger(passenger.uuid)
 }
 </script>
+
+<style scoped>
+table {
+  border-collapse: collapse; /* Une los bordes en una sola línea */
+  width: 100%; /* Hace que la tabla ocupe todo el ancho */
+}
+
+table,
+th,
+td {
+  border: 1px solid black; /* Define el grosor, tipo y color del borde */
+}
+
+th,
+td {
+  padding: 2px; /* Añade espacio interno para que no esté apretado */
+}
+</style>

@@ -1,5 +1,6 @@
 <template>
   <div class="container-fluid">
+    <!-- HEADER -->
     <div class="d-flex justify-content-between align-items-center mb-4">
       <div>
         <h2 class="mb-0"> Cotizaciones </h2>
@@ -17,7 +18,7 @@
         <BaseTable
           :items="store.items"
           :loading="store.loading"
-          :columns="8"
+          :columns="9"
         >
           <template #header>
             <tr>
@@ -25,10 +26,11 @@
               <th>Cliente</th>
               <th>Viaje</th>
               <th>Válida Hasta</th>
+              <th>Notas</th>
               <th>Moneda</th>
               <th class="text-end"> Total </th>
               <th>Estado</th>
-              <th width="170"> Acciones </th>
+              <th width="230"> Acciones </th>
             </tr>
           </template>
           <template #body="{ items }">
@@ -39,12 +41,18 @@
               <td>
                 {{ quotation.code }}
               </td>
-              <td> {{ quotation.customer?.first_name }} {{ quotation.customer?.last_name }} </td>
+              <td>
+                {{ quotation.customer?.first_name }}
+                {{ quotation.customer?.last_name }}
+              </td>
               <td>
                 {{ quotation.travel_date }}
               </td>
               <td>
                 {{ quotation.valid_until }}
+              </td>
+              <td>
+                {{ quotation.notes }}
               </td>
               <td>
                 {{ quotation.currency?.code }}
@@ -62,12 +70,21 @@
               </td>
               <td>
                 <button
+                  type="button"
                   class="btn btn-warning btn-sm me-2"
                   @click="edit(quotation.uuid)"
                 >
                   Editar
                 </button>
                 <button
+                  type="button"
+                  class="btn btn-info btn-sm me-2"
+                  @click="viewHistory(quotation)"
+                >
+                  Historial
+                </button>
+                <button
+                  type="button"
                   class="btn btn-danger btn-sm"
                   @click="remove(quotation.uuid)"
                 >
@@ -79,18 +96,45 @@
         </BaseTable>
       </div>
     </div>
+    <QuotationHistoryModal
+      v-if="showHistory"
+      :quotation="selectedQuotation"
+      @close="closeHistory"
+    />
   </div>
 </template>
+
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import BaseTable from '@/shared/components/BaseTable.vue'
 import { useQuotationStore } from '../stores/quotation.store'
-import { storeToRefs } from 'pinia'
+import QuotationHistoryModal from '../components/QuotationHistoryModal.vue'
+import quotationService from '../services/quotation.service.js'
 const router = useRouter()
 const store = useQuotationStore()
 
+/*
+|--------------------------------------------------------------------------
+| History
+|--------------------------------------------------------------------------
+*/
+
+const showHistory = ref(false)
+const selectedQuotation = ref(null)
+
+function openHistory(quotation) {
+  selectedQuotation.value = quotation
+  showHistory.value = true
+}
+
+function closeHistory() {
+  showHistory.value = false
+  selectedQuotation.value = null
+}
+
 onMounted(load)
+
 async function load() {
   await store.fetchQuotations()
 }
@@ -102,14 +146,22 @@ function edit(uuid) {
     },
   })
 }
+
+function viewHistory(quotation) {
+  selectedQuotation.value = quotation
+  showHistory.value = true
+}
+
 async function remove(uuid) {
   if (!confirm('¿Desea eliminar esta cotización?')) return
   await store.destroy(uuid)
   await load()
 }
+
 function money(value) {
   return Number(value || 0).toFixed(2)
 }
+
 function statusClass(code) {
   switch (code) {
     case 'DRAFT':

@@ -3,10 +3,10 @@
     class="modal fade show d-block"
     tabindex="-1"
   >
-    <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content">
         <!-- ===================================================== -->
-        <!-- HEADER                                                -->
+        <!-- HEADER -->
         <!-- ===================================================== -->
 
         <div class="modal-header">
@@ -32,12 +32,12 @@
         </div>
 
         <!-- ===================================================== -->
-        <!-- BODY                                                  -->
+        <!-- BODY -->
         <!-- ===================================================== -->
 
         <div class="modal-body">
           <!-- ================================================= -->
-          <!-- ERROR GENERAL                                     -->
+          <!-- ERROR -->
           <!-- ================================================= -->
 
           <div
@@ -56,7 +56,7 @@
           </div>
 
           <!-- ================================================= -->
-          <!-- FILTROS                                           -->
+          <!-- FILTROS -->
           <!-- ================================================= -->
 
           <div class="card border-0 bg-light mb-4">
@@ -112,7 +112,7 @@
           </div>
 
           <!-- ================================================= -->
-          <!-- LOADING SERVICIOS                                 -->
+          <!-- LOADING SERVICIOS -->
           <!-- ================================================= -->
 
           <div
@@ -128,7 +128,7 @@
           </div>
 
           <!-- ================================================= -->
-          <!-- CONTENIDO                                        -->
+          <!-- CONTENIDO -->
           <!-- ================================================= -->
 
           <div
@@ -136,7 +136,7 @@
             class="row g-4"
           >
             <!-- =============================================== -->
-            <!-- LISTA DE SERVICIOS                              -->
+            <!-- LISTA DE SERVICIOS -->
             <!-- =============================================== -->
 
             <div class="col-lg-7">
@@ -153,15 +153,11 @@
                   <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                       <tr>
-                        <th> Servicio </th>
-
-                        <th> Proveedor </th>
-
-                        <th> Categoría </th>
-
-                        <th> Variantes </th>
-
-                        <th width="80"> </th>
+                        <th>Servicio</th>
+                        <th>Proveedor</th>
+                        <th>Categoría</th>
+                        <th>Variantes</th>
+                        <th width="80"></th>
                       </tr>
                     </thead>
 
@@ -241,7 +237,7 @@
                               <i class="bi bi-chevron-right"></i>
 
                               {{
-                                isEdit && Number(props.item?.service_id) === Number(service.id)
+                                isEdit && Number(editBaseItem?.service_id) === Number(service.id)
                                   ? 'Seleccionado'
                                   : 'Seleccionar'
                               }}
@@ -256,7 +252,7 @@
             </div>
 
             <!-- =============================================== -->
-            <!-- CONFIGURACIÓN                                   -->
+            <!-- CONFIGURACIÓN -->
             <!-- =============================================== -->
 
             <div class="col-lg-5">
@@ -267,7 +263,7 @@
 
                 <div class="card-body">
                   <!-- ========================================= -->
-                  <!-- SIN SERVICIO                              -->
+                  <!-- SIN SERVICIO -->
                   <!-- ========================================= -->
 
                   <div
@@ -280,7 +276,7 @@
                   </div>
 
                   <!-- ========================================= -->
-                  <!-- LOADING DETALLE                           -->
+                  <!-- LOADING DETALLE -->
                   <!-- ========================================= -->
 
                   <div
@@ -296,7 +292,7 @@
                   </div>
 
                   <!-- ========================================= -->
-                  <!-- SERVICIO SELECCIONADO                     -->
+                  <!-- SERVICIO SELECCIONADO -->
                   <!-- ========================================= -->
 
                   <div v-else>
@@ -313,6 +309,15 @@
                         <small class="text-muted">
                           {{ selectedService.provider?.business_name ?? '-' }}
                         </small>
+
+                        <div class="mt-2">
+                          <span
+                            class="badge"
+                            :class="calculationBadgeClass"
+                          >
+                            {{ calculationTypeLabel }}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
@@ -328,193 +333,468 @@
                       />
                     </div>
 
-                    <!-- ======================================= -->
-                    <!-- VARIANTE                                -->
-                    <!-- ======================================= -->
+                    <!-- ================================================= -->
+                    <!-- SERVICIO GENÉRICO -->
+                    <!-- ================================================= -->
 
-                    <div class="mb-4">
-                      <label class="form-label"> Variante * </label>
+                    <template v-if="!isRecommendationType">
+                      <!-- Variante -->
 
-                      <!-- Loading variantes -->
-
-                      <div
-                        v-if="loadingVariants"
-                        class="text-muted"
-                      >
-                        <span
-                          class="spinner-border spinner-border-sm me-2"
-                          role="status"
-                        />
-
-                        Cargando variantes...
-                      </div>
-
-                      <!-- Select variantes -->
-
-                      <select
-                        v-else
-                        v-model="form.service_variant_id"
-                        class="form-select"
-                        :disabled="!variants.length"
-                        @change="onVariantChange"
-                      >
-                        <option :value="null">
-                          {{
-                            variants.length
-                              ? 'Seleccione una variante...'
-                              : 'No hay variantes disponibles'
-                          }}
-                        </option>
-
-                        <option
-                          v-for="variant in variants"
-                          :key="variant.id"
-                          :value="variant.id"
-                        >
-                          {{ variant.name }}
-                        </option>
-                      </select>
-                    </div>
-
-                    <!-- ======================================= -->
-                    <!-- INFORMACIÓN VARIANTE                    -->
-                    <!-- ======================================= -->
-
-                    <div
-                      v-if="selectedVariant"
-                      class="alert alert-info"
-                    >
-                      <div class="fw-semibold mb-2">
-                        {{ selectedVariant.name }}
-                      </div>
-
-                      <div class="small">
-                        <div v-if="selectedVariant.code">
-                          Código:
-                          {{ selectedVariant.code }}
-                        </div>
+                      <div class="mb-4">
+                        <label class="form-label"> Variante * </label>
 
                         <div
-                          v-if="
-                            selectedVariant.min_capacity !== null &&
-                            selectedVariant.max_capacity !== null
-                          "
+                          v-if="loadingVariants"
+                          class="text-muted"
                         >
-                          Capacidad:
-                          {{ selectedVariant.min_capacity }}
-                          -
-                          {{ selectedVariant.max_capacity }}
+                          <span
+                            class="spinner-border spinner-border-sm me-2"
+                            role="status"
+                          />
+
+                          Cargando variantes...
                         </div>
 
-                        <div v-if="selectedVariant.unit_type">
-                          Unidad:
-                          {{ selectedVariant.unit_type }}
-                        </div>
+                        <select
+                          v-else
+                          v-model="form.service_variant_id"
+                          class="form-select"
+                          :disabled="!variants.length"
+                          @change="onVariantChange"
+                        >
+                          <option :value="null">
+                            {{
+                              variants.length
+                                ? 'Seleccione una variante...'
+                                : 'No hay variantes disponibles'
+                            }}
+                          </option>
+
+                          <option
+                            v-for="variant in variants"
+                            :key="variant.id"
+                            :value="variant.id"
+                          >
+                            {{ variant.name }}
+                          </option>
+                        </select>
                       </div>
-                    </div>
 
-                    <!-- ======================================= -->
-                    <!-- TARIFA                                  -->
-                    <!-- ======================================= -->
-
-                    <div
-                      v-if="selectedVariant"
-                      class="mb-4"
-                    >
-                      <label class="form-label"> Tarifa * </label>
-
-                      <!-- Loading precios -->
+                      <!-- Información variante -->
 
                       <div
-                        v-if="loadingPrices"
-                        class="text-muted"
+                        v-if="selectedVariant"
+                        class="alert alert-info"
                       >
-                        <span
-                          class="spinner-border spinner-border-sm me-2"
+                        <div class="fw-semibold mb-2">
+                          {{ selectedVariant.name }}
+                        </div>
+
+                        <div class="small">
+                          <div v-if="selectedVariant.code">
+                            Código:
+                            {{ selectedVariant.code }}
+                          </div>
+
+                          <div
+                            v-if="
+                              selectedVariant.min_capacity !== null &&
+                              selectedVariant.max_capacity !== null
+                            "
+                          >
+                            Capacidad:
+                            {{ selectedVariant.min_capacity }}
+                            -
+                            {{ selectedVariant.max_capacity }}
+                          </div>
+
+                          <div v-if="selectedVariant.unit_type">
+                            Unidad:
+                            {{ selectedVariant.unit_type }}
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Tarifa -->
+
+                      <div
+                        v-if="selectedVariant"
+                        class="mb-4"
+                      >
+                        <label class="form-label"> Tarifa * </label>
+
+                        <div
+                          v-if="loadingPrices"
+                          class="text-muted"
+                        >
+                          <span
+                            class="spinner-border spinner-border-sm me-2"
+                            role="status"
+                          />
+
+                          Cargando tarifas...
+                        </div>
+
+                        <select
+                          v-else
+                          v-model="form.price_id"
+                          class="form-select"
+                          :disabled="!prices.length"
+                        >
+                          <option :value="null">
+                            {{
+                              prices.length
+                                ? 'Seleccione una tarifa...'
+                                : 'No hay tarifas disponibles'
+                            }}
+                          </option>
+
+                          <option
+                            v-for="price in prices"
+                            :key="price.id"
+                            :value="price.id"
+                          >
+                            {{ price.name ?? 'Tarifa' }}
+                            -
+                            {{ price.sale_price }}
+                            {{ price.currency?.code ?? '' }}
+                          </option>
+                        </select>
+                      </div>
+
+                      <!-- Precio seleccionado -->
+
+                      <div
+                        v-if="selectedPrice"
+                        class="alert alert-success"
+                      >
+                        <div class="fw-semibold"> Tarifa seleccionada </div>
+
+                        <div class="small mt-1">
+                          <div>
+                            Precio:
+                            {{ selectedPrice.sale_price }}
+                            {{ selectedPrice.currency?.code ?? '' }}
+                          </div>
+
+                          <div v-if="selectedPrice.name">
+                            Tarifa:
+                            {{ selectedPrice.name }}
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Cantidad -->
+
+                      <div class="mb-4">
+                        <label class="form-label"> Cantidad * </label>
+
+                        <input
+                          v-model.number="form.quantity"
+                          type="number"
+                          min="1"
+                          step="1"
+                          class="form-control"
+                        />
+                      </div>
+                    </template>
+
+                    <!-- ================================================= -->
+                    <!-- ALOJAMIENTO / TRANSPORTE -->
+                    <!-- ================================================= -->
+
+                    <template v-else>
+                      <!-- Noches -->
+
+                      <div
+                        v-if="calculationType === 'accommodation'"
+                        class="mb-4"
+                      >
+                        <label class="form-label"> Noches * </label>
+
+                        <input
+                          v-model.number="form.duration"
+                          type="number"
+                          class="form-control"
+                          min="1"
+                          step="1"
+                        />
+                      </div>
+
+                      <!-- Pasajeros -->
+
+                      <div class="alert alert-light border mb-4">
+                        <div class="d-flex justify-content-between">
+                          <span> Pasajeros </span>
+
+                          <strong>
+                            {{ props.passengers.length }}
+                          </strong>
+                        </div>
+
+                        <div class="small text-muted mt-1">
+                          El cálculo utiliza los pasajeros actuales de la cotización.
+                        </div>
+                      </div>
+
+                      <!-- ================================================= -->
+                      <!-- DISTRIBUCIÓN ACTUAL - EDICIÓN -->
+                      <!-- ================================================= -->
+
+                      <div
+                        v-if="isGroupEdit && !recommendations.length"
+                        class="mb-4"
+                      >
+                        <label class="form-label fw-semibold"> Distribución actual </label>
+
+                        <div class="border rounded p-3">
+                          <div
+                            v-for="item in currentGroupItems"
+                            :key="item.uuid ?? item.id ?? item.group_index"
+                            class="d-flex justify-content-between mb-2"
+                          >
+                            <div>
+                              <strong> {{ item.quantity }} × </strong>
+
+                              {{ item.variant_name }}
+                            </div>
+
+                            <div class="text-muted">
+                              {{ money(item.subtotal) }}
+                            </div>
+                          </div>
+
+                          <hr />
+
+                          <div class="d-flex justify-content-between small">
+                            <span> Cantidad total </span>
+
+                            <strong>
+                              {{ currentGroupSummary.quantity }}
+                            </strong>
+                          </div>
+
+                          <div class="d-flex justify-content-between small">
+                            <span> Costo total </span>
+
+                            <strong>
+                              {{ money(currentGroupSummary.total_cost) }}
+                            </strong>
+                          </div>
+
+                          <div class="d-flex justify-content-between">
+                            <span> Venta total </span>
+
+                            <strong>
+                              {{ money(currentGroupSummary.total_sale) }}
+                            </strong>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          class="btn btn-outline-primary w-100 mt-3"
+                          :disabled="loadingRecommendations"
+                          @click="loadRecommendations"
+                        >
+                          <span
+                            v-if="loadingRecommendations"
+                            class="spinner-border spinner-border-sm me-2"
+                          />
+
+                          <i
+                            v-else
+                            class="bi bi-arrow-repeat me-1"
+                          ></i>
+
+                          Buscar nuevas recomendaciones
+                        </button>
+                      </div>
+
+                      <!-- ================================================= -->
+                      <!-- CREAR: CARGAR RECOMENDACIONES -->
+                      <!-- ================================================= -->
+
+                      <div
+                        v-if="!isGroupEdit && !recommendations.length && !loadingRecommendations"
+                        class="mb-4"
+                      >
+                        <button
+                          type="button"
+                          class="btn btn-outline-primary w-100"
+                          :disabled="!props.passengers.length"
+                          @click="loadRecommendations"
+                        >
+                          <i class="bi bi-stars me-1"></i>
+
+                          Generar recomendaciones
+                        </button>
+                      </div>
+
+                      <!-- Loading -->
+
+                      <div
+                        v-if="loadingRecommendations"
+                        class="text-center py-4"
+                      >
+                        <div
+                          class="spinner-border text-primary"
                           role="status"
                         />
 
-                        Cargando tarifas...
+                        <div class="small text-muted mt-2"> Calculando recomendaciones... </div>
                       </div>
 
-                      <!-- Select precios -->
+                      <!-- Sin resultados -->
 
-                      <select
-                        v-else
-                        v-model="form.price_id"
-                        class="form-select"
-                        :disabled="!prices.length"
+                      <div
+                        v-else-if="recommendationsLoaded && !recommendations.length"
+                        class="alert alert-warning"
                       >
-                        <option :value="null">
-                          {{
-                            prices.length
-                              ? 'Seleccione una tarifa...'
-                              : 'No hay tarifas disponibles'
-                          }}
-                        </option>
+                        No se encontraron combinaciones disponibles para
+                        {{ props.passengers.length }} pasajeros.
+                      </div>
 
-                        <option
-                          v-for="price in prices"
-                          :key="price.id"
-                          :value="price.id"
-                        >
-                          {{ price.name ?? 'Tarifa' }}
+                      <!-- ================================================= -->
+                      <!-- RECOMENDACIONES -->
+                      <!-- ================================================= -->
 
-                          -
+                      <div
+                        v-if="recommendations.length"
+                        class="mb-4"
+                      >
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                          <label class="form-label fw-semibold mb-0">
+                            {{
+                              calculationType === 'accommodation'
+                                ? 'Distribuciones de habitaciones'
+                                : 'Distribuciones de transporte'
+                            }}
+                          </label>
 
-                          {{ price.sale_price }}
-
-                          {{ price.currency?.code ?? '' }}
-                        </option>
-                      </select>
-                    </div>
-
-                    <!-- ======================================= -->
-                    <!-- PRECIO SELECCIONADO                     -->
-                    <!-- ======================================= -->
-
-                    <div
-                      v-if="selectedPrice"
-                      class="alert alert-success"
-                    >
-                      <div class="fw-semibold"> Tarifa seleccionada </div>
-
-                      <div class="small mt-1">
-                        <div>
-                          Precio:
-
-                          {{ selectedPrice.sale_price }}
-
-                          {{ selectedPrice.currency?.code ?? '' }}
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-outline-secondary"
+                            @click="loadRecommendations"
+                          >
+                            <i class="bi bi-arrow-repeat"></i>
+                          </button>
                         </div>
 
-                        <div v-if="selectedPrice.name">
-                          Tarifa:
+                        <div class="d-flex flex-column gap-3">
+                          <div
+                            v-for="recommendation in recommendations"
+                            :key="recommendation.rank"
+                            class="border rounded p-3"
+                            :class="{
+                              'border-primary bg-light':
+                                selectedRecommendation?.rank === recommendation.rank,
+                            }"
+                            style="cursor: pointer"
+                            @click="selectRecommendation(recommendation)"
+                          >
+                            <!-- Cabecera -->
 
-                          {{ selectedPrice.name }}
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                              <div>
+                                <strong> Opción {{ recommendation.rank }} </strong>
+
+                                <span
+                                  v-if="recommendation.recommended"
+                                  class="badge bg-success ms-2"
+                                >
+                                  Recomendada
+                                </span>
+                              </div>
+
+                              <input
+                                type="radio"
+                                :checked="selectedRecommendation?.rank === recommendation.rank"
+                                @change="selectRecommendation(recommendation)"
+                              />
+                            </div>
+
+                            <!-- Habitaciones -->
+
+                            <template v-if="calculationType === 'accommodation'">
+                              <div
+                                v-for="room in recommendation.rooms"
+                                :key="room.service_variant_id"
+                                class="small mb-1"
+                              >
+                                <strong> {{ room.quantity }} × </strong>
+
+                                {{ room.name }}
+
+                                <span class="text-muted">
+                                  · capacidad {{ room.total_capacity }}
+                                </span>
+                              </div>
+
+                              <div class="small text-muted mt-2">
+                                {{ recommendation.total_rooms }}
+                                habitaciones · capacidad
+                                {{ recommendation.total_capacity }}
+
+                                · libres
+                                {{ recommendation.unused_capacity }}
+                              </div>
+                            </template>
+
+                            <!-- Vehículos -->
+
+                            <template v-else>
+                              <div
+                                v-for="vehicle in recommendation.vehicles"
+                                :key="vehicle.service_variant_id"
+                                class="small mb-1"
+                              >
+                                <strong> {{ vehicle.quantity }} × </strong>
+
+                                {{ vehicle.name }}
+
+                                <span class="text-muted">
+                                  · capacidad {{ vehicle.total_capacity }}
+                                </span>
+                              </div>
+
+                              <div class="small text-muted mt-2">
+                                {{ recommendation.total_vehicles }}
+                                vehículos · capacidad
+                                {{ recommendation.total_capacity }}
+
+                                · libres
+                                {{ recommendation.unused_capacity }}
+                              </div>
+                            </template>
+
+                            <!-- Totales -->
+
+                            <div class="row mt-3 small">
+                              <div class="col-6">
+                                <span class="text-muted"> Costo </span>
+
+                                <div class="fw-semibold">
+                                  {{ money(recommendation.total_cost) }}
+                                </div>
+                              </div>
+
+                              <div class="col-6">
+                                <span class="text-muted"> Venta </span>
+
+                                <div class="fw-semibold">
+                                  {{ money(recommendation.total_sale) }}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    </template>
 
-                    <!-- ======================================= -->
-                    <!-- CANTIDAD                                -->
-                    <!-- ======================================= -->
-
-                    <div class="mb-4">
-                      <label class="form-label"> Cantidad * </label>
-
-                      <input
-                        v-model.number="form.quantity"
-                        type="number"
-                        min="1"
-                        step="1"
-                        class="form-control"
-                      />
-                    </div>
-
-                    <!-- ======================================= -->
-                    <!-- NOTAS                                  -->
-                    <!-- ======================================= -->
+                    <!-- ================================================= -->
+                    <!-- NOTAS -->
+                    <!-- ================================================= -->
 
                     <div class="mb-3">
                       <label class="form-label"> Observaciones </label>
@@ -533,7 +813,7 @@
         </div>
 
         <!-- ===================================================== -->
-        <!-- FOOTER                                                -->
+        <!-- FOOTER -->
         <!-- ===================================================== -->
 
         <div class="modal-footer">
@@ -553,7 +833,7 @@
           >
             <i :class="isEdit ? 'bi bi-check-circle me-1' : 'bi bi-plus-circle me-1'"></i>
 
-            {{ isEdit ? 'Actualizar' : 'Agregar' }}
+            {{ isEdit ? 'Actualizar' : 'Agregar servicio' }}
           </button>
         </div>
       </div>
@@ -568,33 +848,47 @@ import { computed, onMounted, reactive, ref } from 'vue'
 
 import ServiceService from '../../catalog/services/services/service.service'
 
+// ==========================================================================
+// AJUSTAR LA RUTA SEGÚN TU ESTRUCTURA
+// ==========================================================================
+import { useQuotationCalculationStore } from '../stores/quotation-calculation.store'
+
 /*
 |--------------------------------------------------------------------------
 | PROPS
 |--------------------------------------------------------------------------
+|
+| item puede ser:
+|
+| ITEM NORMAL
+|
+| {
+|   id,
+|   uuid,
+|   service_id,
+|   ...
+| }
+|
+| GRUPO
+|
+| {
+|   group_uuid,
+|   calculation_type,
+|   items: [...]
+| }
+|
 */
 
 const props = defineProps({
-  /*
-  |--------------------------------------------------------------------------
-  | Lista de precios de la cotización
-  |--------------------------------------------------------------------------
-  */
-
   priceListId: {
     type: [Number, String],
     required: true,
   },
 
-  /*
-  |--------------------------------------------------------------------------
-  | Item del itinerario
-  |--------------------------------------------------------------------------
-  |
-  | null  -> modo agregar
-  | item  -> modo editar
-  |
-  */
+  passengers: {
+    type: Array,
+    default: () => [],
+  },
 
   item: {
     type: Object,
@@ -606,9 +900,31 @@ const props = defineProps({
 |--------------------------------------------------------------------------
 | EVENTS
 |--------------------------------------------------------------------------
+|
+| GENERIC:
+|
+| emit('save', item)
+|
+| AGRUPADO:
+|
+| emit('save', {
+|   type: 'group',
+|   group_uuid,
+|   calculation_type,
+|   items: [...]
+| })
+|
 */
 
 const emit = defineEmits(['close', 'save'])
+
+/*
+|--------------------------------------------------------------------------
+| STORES
+|--------------------------------------------------------------------------
+*/
+
+const calculationStore = useQuotationCalculationStore()
 
 /*
 |--------------------------------------------------------------------------
@@ -620,65 +936,67 @@ const isEdit = computed(() => {
   return !!props.item
 })
 
+const isGroupEdit = computed(() => {
+  return Boolean(props.item?.group_uuid && Array.isArray(props.item?.items))
+})
+
+/*
+|--------------------------------------------------------------------------
+| EDIT BASE ITEM
+|--------------------------------------------------------------------------
+|
+| Para grupos utilizamos el primer item para recuperar
+| servicio, notas, duración, sort_order, etc.
+|
+*/
+
+const editBaseItem = computed(() => {
+  if (!props.item) {
+    return null
+  }
+
+  if (isGroupEdit.value) {
+    return props.item.items?.[0] ?? null
+  }
+
+  return props.item
+})
+
 /*
 |--------------------------------------------------------------------------
 | STATE
 |--------------------------------------------------------------------------
 */
 
-/*
-| Loading listado de servicios.
-*/
-
 const loading = ref(false)
-
-/*
-| Loading detalle del servicio.
-*/
 
 const loadingDetail = ref(false)
 
-/*
-| Loading variantes.
-*/
-
 const loadingVariants = ref(false)
-
-/*
-| Loading precios.
-*/
 
 const loadingPrices = ref(false)
 
-/*
-| Error general.
-*/
+const loadingRecommendations = ref(false)
+
+const recommendationsLoaded = ref(false)
 
 const error = ref(null)
 
-/*
-| Listado de servicios.
-*/
-
 const services = ref([])
-
-/*
-| Servicio seleccionado.
-*/
 
 const selectedService = ref(null)
 
-/*
-| Variantes del servicio.
-*/
-
 const variants = ref([])
 
-/*
-| Precios de la variante.
-*/
-
 const prices = ref([])
+
+const variantPrices = ref({})
+
+const recommendations = ref([])
+
+const selectedRecommendation = ref(null)
+
+const currentGroupItems = ref([])
 
 /*
 |--------------------------------------------------------------------------
@@ -688,7 +1006,6 @@ const prices = ref([])
 
 const filters = reactive({
   search: '',
-
   category: '',
 })
 
@@ -699,35 +1016,35 @@ const filters = reactive({
 */
 
 const form = reactive({
-  service_id: props.item?.service_id ?? null,
+  service_id: editBaseItem.value?.service_id ?? null,
 
-  service_variant_id: props.item?.service_variant_id ?? null,
+  service_variant_id: editBaseItem.value?.service_variant_id ?? null,
 
-  item_type: props.item?.item_type ?? 'CATALOG',
+  item_type: editBaseItem.value?.item_type ?? 'CATALOG',
 
-  name: props.item?.name ?? '',
+  name: editBaseItem.value?.name ?? '',
 
-  variant_name: props.item?.variant_name ?? '',
+  variant_name: editBaseItem.value?.variant_name ?? '',
 
-  description: props.item?.description ?? '',
+  description: editBaseItem.value?.description ?? '',
 
-  duration: props.item?.duration ?? 1,
+  duration: editBaseItem.value?.duration ?? 1,
 
-  quantity: props.item?.quantity ?? 1,
+  quantity: editBaseItem.value?.quantity ?? 1,
 
-  price_id: props.item?.price_id ?? null,
+  price_id: editBaseItem.value?.price_id ?? null,
 
-  unit_cost: props.item?.unit_cost ?? 0,
+  unit_cost: editBaseItem.value?.unit_cost ?? 0,
 
-  unit_price: props.item?.unit_price ?? 0,
+  unit_price: editBaseItem.value?.unit_price ?? 0,
 
-  subtotal: props.item?.subtotal ?? 0,
+  subtotal: editBaseItem.value?.subtotal ?? 0,
 
-  sort_order: props.item?.sort_order ?? 1,
+  sort_order: editBaseItem.value?.sort_order ?? 1,
 
-  notes: props.item?.notes ?? '',
+  notes: editBaseItem.value?.notes ?? '',
 
-  active: props.item?.active ?? true,
+  active: editBaseItem.value?.active ?? true,
 })
 
 /*
@@ -781,6 +1098,78 @@ const filteredServices = computed(() => {
 
 /*
 |--------------------------------------------------------------------------
+| CALCULATION TYPE
+|--------------------------------------------------------------------------
+|
+| Idealmente después debe venir del backend.
+|
+*/
+
+const calculationType = computed(() => {
+  /*
+  |--------------------------------------------------------------------------
+  | En edición de grupo confiamos primero en lo persistido
+  |--------------------------------------------------------------------------
+  */
+
+  if (isGroupEdit.value && props.item?.calculation_type) {
+    return props.item.calculation_type
+  }
+
+  const category = selectedService.value?.service_category
+
+  const code = category?.code?.toUpperCase()
+
+  const name = category?.name?.toUpperCase()
+
+  if (
+    code === 'HOTEL' ||
+    code === 'ACCOMMODATION' ||
+    name?.includes('HOTEL') ||
+    name?.includes('HABIT')
+  ) {
+    return 'accommodation'
+  }
+
+  if (code === 'TRANSPORT' || code === 'TRANSPORTATION' || name?.includes('TRANSPORT')) {
+    return 'transport'
+  }
+
+  return 'generic'
+})
+
+const isRecommendationType = computed(() => {
+  return ['accommodation', 'transport'].includes(calculationType.value)
+})
+
+const calculationTypeLabel = computed(() => {
+  switch (calculationType.value) {
+    case 'accommodation':
+      return 'Alojamiento'
+
+    case 'transport':
+      return 'Transporte'
+
+    default:
+      return 'Servicio'
+  }
+})
+
+const calculationBadgeClass = computed(() => {
+  switch (calculationType.value) {
+    case 'accommodation':
+      return 'bg-info text-dark'
+
+    case 'transport':
+      return 'bg-warning text-dark'
+
+    default:
+      return 'bg-secondary'
+  }
+})
+
+/*
+|--------------------------------------------------------------------------
 | SELECTED VARIANT
 |--------------------------------------------------------------------------
 */
@@ -811,17 +1200,78 @@ const selectedPrice = computed(() => {
 
 /*
 |--------------------------------------------------------------------------
+| CURRENT GROUP SUMMARY
+|--------------------------------------------------------------------------
+*/
+
+const currentGroupSummary = computed(() => {
+  const items = currentGroupItems.value
+
+  const quantity = items.reduce((total, item) => total + Number(item.quantity ?? 0), 0)
+
+  const totalCost = items.reduce((total, item) => {
+    const duration = calculationType.value === 'accommodation' ? Number(item.duration ?? 1) : 1
+
+    return total + Number(item.quantity ?? 0) * Number(item.unit_cost ?? 0) * duration
+  }, 0)
+
+  const totalSale = items.reduce((total, item) => total + Number(item.subtotal ?? 0), 0)
+
+  return {
+    quantity,
+    total_cost: totalCost,
+    total_sale: totalSale,
+  }
+})
+
+/*
+|--------------------------------------------------------------------------
 | CAN SAVE
 |--------------------------------------------------------------------------
 */
 
 const canSave = computed(() => {
-  return Boolean(
-    selectedService.value &&
-    selectedVariant.value &&
-    selectedPrice.value &&
-    Number(form.quantity) > 0,
-  )
+  if (!selectedService.value) {
+    return false
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Compuesto
+  |--------------------------------------------------------------------------
+  */
+
+  if (isRecommendationType.value) {
+    /*
+    |--------------------------------------------------------------------------
+    | Si se seleccionó nueva recomendación
+    |--------------------------------------------------------------------------
+    */
+
+    if (selectedRecommendation.value) {
+      return true
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Edición sin recalcular
+    |--------------------------------------------------------------------------
+    */
+
+    if (isGroupEdit.value && currentGroupItems.value.length) {
+      return true
+    }
+
+    return false
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Generic
+  |--------------------------------------------------------------------------
+  */
+
+  return Boolean(selectedVariant.value && selectedPrice.value && Number(form.quantity) > 0)
 })
 
 /*
@@ -838,7 +1288,6 @@ async function loadServices() {
   try {
     const response = await ServiceService.getAll({
       active: 1,
-
       per_page: 15,
     })
 
@@ -856,13 +1305,11 @@ async function loadServices() {
 |--------------------------------------------------------------------------
 | SELECT SERVICE
 |--------------------------------------------------------------------------
-|
-| 1. GET /services/{uuid}
-| 2. GET /services/{uuid}/variants
-|
 */
 
-async function selectService(service) {
+async function selectService(service, options = {}) {
+  const { autoRecommendations = true } = options
+
   if (loadingDetail.value && selectedService.value?.uuid === service.uuid) {
     return
   }
@@ -871,17 +1318,19 @@ async function selectService(service) {
 
   error.value = null
 
-  /*
-  |--------------------------------------------------------------------------
-  | Limpiar selección anterior
-  |--------------------------------------------------------------------------
-  */
-
   selectedService.value = null
 
   variants.value = []
 
   prices.value = []
+
+  variantPrices.value = {}
+
+  recommendations.value = []
+
+  selectedRecommendation.value = null
+
+  recommendationsLoaded.value = false
 
   form.service_id = null
 
@@ -892,7 +1341,7 @@ async function selectService(service) {
   try {
     /*
     |--------------------------------------------------------------------------
-    | Obtener detalle
+    | Servicio
     |--------------------------------------------------------------------------
     */
 
@@ -904,11 +1353,26 @@ async function selectService(service) {
 
     /*
     |--------------------------------------------------------------------------
-    | Obtener variantes
+    | Variantes
     |--------------------------------------------------------------------------
     */
 
     await loadVariants()
+
+    /*
+    |--------------------------------------------------------------------------
+    | Crear servicio compuesto
+    |--------------------------------------------------------------------------
+    |
+    | Al crear podemos calcular automáticamente.
+    |
+    | En edición NO.
+    |
+    */
+
+    if (isRecommendationType.value && autoRecommendations && !isGroupEdit.value) {
+      await loadRecommendations()
+    }
   } catch (err) {
     console.error('Error cargando detalle del servicio:', err)
 
@@ -924,9 +1388,6 @@ async function selectService(service) {
 |--------------------------------------------------------------------------
 | LOAD VARIANTS
 |--------------------------------------------------------------------------
-|
-| GET /services/{uuid}/variants
-|
 */
 
 async function loadVariants() {
@@ -958,31 +1419,13 @@ async function loadVariants() {
 */
 
 async function onVariantChange() {
-  /*
-  |--------------------------------------------------------------------------
-  | Limpiar precio anterior
-  |--------------------------------------------------------------------------
-  */
-
   form.price_id = null
 
   prices.value = []
 
-  /*
-  |--------------------------------------------------------------------------
-  | Validar variante
-  |--------------------------------------------------------------------------
-  */
-
   if (!selectedVariant.value) {
     return
   }
-
-  /*
-  |--------------------------------------------------------------------------
-  | Obtener precios
-  |--------------------------------------------------------------------------
-  */
 
   await loadPrices()
 }
@@ -991,14 +1434,6 @@ async function onVariantChange() {
 |--------------------------------------------------------------------------
 | LOAD PRICES
 |--------------------------------------------------------------------------
-|
-| GET /services/{uuid}/variants/{variant_id}/prices
-|
-| Parámetros:
-|
-| service_variant_id
-| price_list_id
-|
 */
 
 async function loadPrices() {
@@ -1035,18 +1470,249 @@ async function loadPrices() {
 
 /*
 |--------------------------------------------------------------------------
+| LOAD ALL VARIANT PRICES
+|--------------------------------------------------------------------------
+*/
+
+async function loadAllVariantPrices() {
+  if (!selectedService.value) {
+    return
+  }
+
+  variantPrices.value = {}
+
+  const requests = variants.value.map(async (variant) => {
+    try {
+      const response = await ServiceService.getPrices(
+        selectedService.value.uuid,
+
+        variant.id,
+
+        {
+          price_list_id: props.priceListId,
+        },
+      )
+
+      const list = response.data.data ?? []
+
+      /*
+          |--------------------------------------------------------------------------
+          | MVP
+          |--------------------------------------------------------------------------
+          |
+          | Usamos la primera tarifa válida.
+          |
+          */
+
+      variantPrices.value[variant.id] = list[0] ?? null
+    } catch (err) {
+      console.error(`Error cargando precio variante ${variant.id}:`, err)
+
+      variantPrices.value[variant.id] = null
+    }
+  })
+
+  await Promise.all(requests)
+}
+
+/*
+|--------------------------------------------------------------------------
+| BUILD VARIANT OPTIONS
+|--------------------------------------------------------------------------
+*/
+
+function buildVariantOptions() {
+  return variants.value
+    .map((variant) => {
+      const price = variantPrices.value[variant.id]
+
+      if (!price) {
+        return null
+      }
+
+      return {
+        id: variant.id,
+
+        service_variant_id: variant.id,
+
+        name: variant.name,
+
+        min_capacity: Number(variant.min_capacity ?? 1),
+
+        max_capacity: Number(variant.max_capacity ?? 1),
+
+        unit_cost: Number(price.cost ?? 0),
+
+        unit_price: Number(price.sale_price ?? 0),
+
+        /*
+        |--------------------------------------------------------------------------
+        | Importante
+        |--------------------------------------------------------------------------
+        |
+        | El algoritmo puede no devolver price_id.
+        |
+        | Lo conservamos aquí para recuperarlo al crear
+        | cada QuotationItem.
+        |
+        */
+
+        price_id: price.id,
+      }
+    })
+    .filter(Boolean)
+}
+
+/*
+|--------------------------------------------------------------------------
+| LOAD RECOMMENDATIONS
+|--------------------------------------------------------------------------
+*/
+
+async function loadRecommendations() {
+  if (!isRecommendationType.value) {
+    return
+  }
+
+  recommendationsLoaded.value = false
+
+  selectedRecommendation.value = null
+
+  if (!props.passengers.length) {
+    recommendations.value = []
+
+    error.value = 'La cotización no tiene pasajeros.'
+
+    return
+  }
+
+  loadingRecommendations.value = true
+
+  error.value = null
+
+  try {
+    /*
+    |--------------------------------------------------------------------------
+    | Precios
+    |--------------------------------------------------------------------------
+    */
+
+    await loadAllVariantPrices()
+
+    const options = buildVariantOptions()
+
+    if (!options.length) {
+      recommendations.value = []
+
+      error.value = 'No existen variantes con tarifas disponibles.'
+
+      return
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Item temporal
+    |--------------------------------------------------------------------------
+    */
+
+    const item = {
+      service_id: selectedService.value.id,
+
+      name: selectedService.value.name,
+
+      calculation_type: calculationType.value,
+
+      duration: Number(form.duration ?? 1),
+
+      passengers: props.passengers,
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Accommodation
+    |--------------------------------------------------------------------------
+    */
+
+    if (calculationType.value === 'accommodation') {
+      item.room_types = options
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Transport
+    |--------------------------------------------------------------------------
+    */
+
+    if (calculationType.value === 'transport') {
+      item.vehicle_types = options
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Motor
+    |--------------------------------------------------------------------------
+    */
+
+    const result = await calculationStore.calculate({
+      itineraries: [
+        {
+          day_number: 1,
+
+          items: [item],
+        },
+      ],
+    })
+
+    const calculatedItem = result.items?.[0]
+
+    recommendations.value = calculatedItem?.metadata?.recommendations ?? []
+
+    /*
+    |--------------------------------------------------------------------------
+    | Recomendación #1
+    |--------------------------------------------------------------------------
+    */
+
+    selectedRecommendation.value = recommendations.value[0] ?? null
+  } catch (err) {
+    console.error('Error calculando recomendaciones:', err)
+
+    recommendations.value = []
+
+    selectedRecommendation.value = null
+
+    error.value = 'No fue posible generar las recomendaciones.'
+  } finally {
+    recommendationsLoaded.value = true
+
+    loadingRecommendations.value = false
+  }
+}
+
+/*
+|--------------------------------------------------------------------------
+| SELECT RECOMMENDATION
+|--------------------------------------------------------------------------
+*/
+
+function selectRecommendation(recommendation) {
+  selectedRecommendation.value = recommendation
+}
+
+/*
+|--------------------------------------------------------------------------
+| FIND PRICE FOR VARIANT
+|--------------------------------------------------------------------------
+*/
+
+function getVariantPrice(serviceVariantId) {
+  return variantPrices.value[serviceVariantId] ?? null
+}
+
+/*
+|--------------------------------------------------------------------------
 | INITIALIZE EDIT
 |--------------------------------------------------------------------------
-|
-| Cuando el modal recibe un item existente:
-|
-| 1. Busca el servicio.
-| 2. Carga el detalle.
-| 3. Carga las variantes.
-| 4. Selecciona la variante existente.
-| 5. Carga los precios.
-| 6. Selecciona el precio existente.
-|
 */
 
 async function initializeEdit() {
@@ -1054,7 +1720,9 @@ async function initializeEdit() {
     return
   }
 
-  if (!props.item.service_id) {
+  const baseItem = editBaseItem.value
+
+  if (!baseItem?.service_id) {
     error.value = 'El item no tiene un servicio asociado.'
 
     return
@@ -1062,19 +1730,13 @@ async function initializeEdit() {
 
   /*
   |--------------------------------------------------------------------------
-  | Buscar servicio en listado
+  | Buscar servicio
   |--------------------------------------------------------------------------
   */
 
-  let service = services.value.find(
-    (service) => Number(service.id) === Number(props.item.service_id),
+  const service = services.value.find(
+    (service) => Number(service.id) === Number(baseItem.service_id),
   )
-
-  /*
-  |--------------------------------------------------------------------------
-  | Si no está en el listado
-  |--------------------------------------------------------------------------
-  */
 
   if (!service) {
     error.value = 'No se encontró el servicio en el catálogo.'
@@ -1084,20 +1746,42 @@ async function initializeEdit() {
 
   /*
   |--------------------------------------------------------------------------
-  | Seleccionar servicio
+  | Grupo
   |--------------------------------------------------------------------------
   */
 
-  await selectService(service)
+  if (isGroupEdit.value) {
+    currentGroupItems.value = clonePlain(props.item.items ?? [])
+
+    form.duration = baseItem.duration ?? 1
+
+    form.notes = baseItem.notes ?? ''
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cargar servicio sin recalcular
+    |--------------------------------------------------------------------------
+    */
+
+    await selectService(service, {
+      autoRecommendations: false,
+    })
+
+    return
+  }
 
   /*
   |--------------------------------------------------------------------------
-  | Restaurar variante
+  | Item normal
   |--------------------------------------------------------------------------
   */
 
+  await selectService(service, {
+    autoRecommendations: false,
+  })
+
   const variantExists = variants.value.some(
-    (variant) => Number(variant.id) === Number(props.item.service_variant_id),
+    (variant) => Number(variant.id) === Number(baseItem.service_variant_id),
   )
 
   if (!variantExists) {
@@ -1106,51 +1790,27 @@ async function initializeEdit() {
     return
   }
 
-  form.service_variant_id = props.item.service_variant_id
-
-  /*
-  |--------------------------------------------------------------------------
-  | Cargar precios
-  |--------------------------------------------------------------------------
-  */
+  form.service_variant_id = baseItem.service_variant_id
 
   await loadPrices()
 
-  /*
-  |--------------------------------------------------------------------------
-  | Restaurar precio
-  |--------------------------------------------------------------------------
-  */
+  const priceExists = prices.value.some((price) => Number(price.id) === Number(baseItem.price_id))
 
-  const priceExists = prices.value.some((price) => Number(price.id) === Number(props.item.price_id))
-
-  if (props.item.price_id && priceExists) {
-    form.price_id = props.item.price_id
-  } else if (props.item.price_id) {
+  if (baseItem.price_id && priceExists) {
+    form.price_id = baseItem.price_id
+  } else if (baseItem.price_id) {
     error.value = 'La tarifa utilizada anteriormente ya no está disponible.'
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Restaurar datos editables
-  |--------------------------------------------------------------------------
-  */
+  form.quantity = baseItem.quantity ?? 1
 
-  form.quantity = props.item.quantity ?? 1
-
-  form.notes = props.item.notes ?? ''
+  form.notes = baseItem.notes ?? ''
 }
 
 /*
 |--------------------------------------------------------------------------
 | SAVE
 |--------------------------------------------------------------------------
-|
-| Funciona tanto para:
-|
-| AGREGAR
-| EDITAR
-|
 */
 
 function save() {
@@ -1158,7 +1818,64 @@ function save() {
     return
   }
 
+  /*
+  |--------------------------------------------------------------------------
+  | SERVICIO COMPUESTO
+  |--------------------------------------------------------------------------
+  */
+
+  if (isRecommendationType.value) {
+    /*
+    |--------------------------------------------------------------------------
+    | Si estamos editando y NO se seleccionó una nueva recomendación,
+    | mantenemos la distribución actual.
+    |--------------------------------------------------------------------------
+    */
+
+    if (isGroupEdit.value && !selectedRecommendation.value) {
+      saveExistingGroup()
+
+      return
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Nueva recomendación
+    |--------------------------------------------------------------------------
+    */
+
+    saveRecommendedGroup()
+
+    return
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | GENERIC
+  |--------------------------------------------------------------------------
+  */
+
+  saveGenericItem()
+}
+
+/*
+|--------------------------------------------------------------------------
+| SAVE GENERIC ITEM
+|--------------------------------------------------------------------------
+*/
+
+function saveGenericItem() {
   const item = {
+    /*
+    |--------------------------------------------------------------------------
+    | Mantener identidad si estamos editando
+    |--------------------------------------------------------------------------
+    */
+
+    id: editBaseItem.value?.id ?? undefined,
+
+    uuid: editBaseItem.value?.uuid ?? undefined,
+
     service_id: selectedService.value.id,
 
     service_variant_id: selectedVariant.value.id,
@@ -1170,6 +1887,12 @@ function save() {
     variant_name: selectedVariant.value.name,
 
     description: selectedService.value.description ?? '',
+
+    calculation_type: 'generic',
+
+    group_uuid: null,
+
+    group_index: null,
 
     duration: selectedVariant.value.duration ?? 1,
 
@@ -1183,23 +1906,277 @@ function save() {
 
     subtotal: Number(form.quantity) * Number(selectedPrice.value.sale_price ?? 0),
 
-    sort_order: props.item?.sort_order ?? 1,
+    sort_order: editBaseItem.value?.sort_order ?? 1,
 
     notes: form.notes,
 
-    active: props.item?.active ?? true,
+    active: editBaseItem.value?.active ?? true,
   }
-
-  /*
-  |--------------------------------------------------------------------------
-  | Emitir resultado
-  |--------------------------------------------------------------------------
-  */
 
   emit('save', item)
 
   close()
 }
+
+/*
+|--------------------------------------------------------------------------
+| SAVE EXISTING GROUP
+|--------------------------------------------------------------------------
+|
+| El usuario abrió el grupo pero no solicitó
+| una nueva combinación.
+|
+| Conservamos IDs/UUIDs reales.
+|
+*/
+
+function saveExistingGroup() {
+  const items = currentGroupItems.value.map((item, index) => ({
+    ...clonePlain(item),
+
+    group_uuid: props.item.group_uuid,
+
+    group_index: index + 1,
+
+    calculation_type: calculationType.value,
+
+    duration: calculationType.value === 'accommodation' ? Number(form.duration ?? 1) : 1,
+
+    notes: form.notes,
+  }))
+
+  emit('save', {
+    type: 'group',
+
+    group_uuid: props.item.group_uuid,
+
+    calculation_type: calculationType.value,
+
+    items,
+  })
+
+  close()
+}
+
+/*
+|--------------------------------------------------------------------------
+| SAVE RECOMMENDED GROUP
+|--------------------------------------------------------------------------
+*/
+
+function saveRecommendedGroup() {
+  const selected = selectedRecommendation.value
+
+  /*
+  |--------------------------------------------------------------------------
+  | UUID
+  |--------------------------------------------------------------------------
+  |
+  | Si editamos mantenemos group_uuid.
+  |
+  | Si creamos generamos uno nuevo.
+  |
+  */
+
+  const groupUuid = isGroupEdit.value ? props.item.group_uuid : crypto.randomUUID()
+
+  /*
+  |--------------------------------------------------------------------------
+  | Componentes elegidos
+  |--------------------------------------------------------------------------
+  */
+
+  const selectedParts =
+    calculationType.value === 'accommodation' ? (selected.rooms ?? []) : (selected.vehicles ?? [])
+
+  /*
+  |--------------------------------------------------------------------------
+  | Items anteriores por service_variant_id
+  |--------------------------------------------------------------------------
+  |
+  | Esto permite conservar id/uuid si una variante
+  | continúa existiendo en la nueva distribución.
+  |
+  */
+
+  const existingByVariant = new Map()
+
+  if (isGroupEdit.value) {
+    currentGroupItems.value.forEach((item) => {
+      existingByVariant.set(Number(item.service_variant_id), item)
+    })
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Construir N QuotationItem
+  |--------------------------------------------------------------------------
+  */
+
+  const items = selectedParts.map((part, index) => {
+    const variantId = Number(part.service_variant_id)
+
+    const existing = existingByVariant.get(variantId)
+
+    /*
+        |--------------------------------------------------------------------------
+        | Tarifa
+        |--------------------------------------------------------------------------
+        */
+
+    const price = getVariantPrice(variantId)
+
+    const quantity = Number(part.quantity ?? 0)
+
+    const unitCost = Number(part.unit_cost ?? price?.cost ?? 0)
+
+    const unitPrice = Number(part.unit_price ?? price?.sale_price ?? 0)
+
+    const duration = calculationType.value === 'accommodation' ? Number(form.duration ?? 1) : 1
+
+    /*
+        |--------------------------------------------------------------------------
+        | Cada fila guarda SU subtotal real.
+        |--------------------------------------------------------------------------
+        */
+
+    const subtotal = quantity * unitPrice * duration
+
+    return {
+      /*
+          |--------------------------------------------------------------------------
+          | Identidad existente
+          |--------------------------------------------------------------------------
+          */
+
+      id: existing?.id ?? undefined,
+
+      uuid: existing?.uuid ?? undefined,
+
+      /*
+          |--------------------------------------------------------------------------
+          | Agrupación
+          |--------------------------------------------------------------------------
+          */
+
+      group_uuid: groupUuid,
+
+      group_index: index + 1,
+
+      calculation_type: calculationType.value,
+
+      /*
+          |--------------------------------------------------------------------------
+          | Relaciones reales
+          |--------------------------------------------------------------------------
+          */
+
+      service_id: selectedService.value.id,
+
+      service_variant_id: variantId,
+
+      price_id: price?.id ?? existing?.price_id ?? null,
+
+      /*
+          |--------------------------------------------------------------------------
+          | Datos descriptivos
+          |--------------------------------------------------------------------------
+          */
+
+      item_type: 'CATALOG',
+
+      name: selectedService.value.name,
+
+      variant_name: part.name,
+
+      description: selectedService.value.description ?? '',
+
+      /*
+          |--------------------------------------------------------------------------
+          | Economía
+          |--------------------------------------------------------------------------
+          */
+
+      duration,
+
+      quantity,
+
+      unit_cost: unitCost,
+
+      unit_price: unitPrice,
+
+      subtotal,
+
+      /*
+          |--------------------------------------------------------------------------
+          | Todos comparten sort_order del servicio lógico.
+          |--------------------------------------------------------------------------
+          */
+
+      sort_order: editBaseItem.value?.sort_order ?? 1,
+
+      notes: form.notes,
+
+      active: existing?.active ?? true,
+    }
+  })
+
+  /*
+  |--------------------------------------------------------------------------
+  | Emitir grupo
+  |--------------------------------------------------------------------------
+  */
+
+  emit('save', {
+    type: 'group',
+
+    group_uuid: groupUuid,
+
+    calculation_type: calculationType.value,
+
+    /*
+      |--------------------------------------------------------------------------
+      | Los items que desaparecieron NO vienen aquí.
+      |
+      | El update/backend podrá compararlos contra
+      | los existentes del group_uuid y eliminarlos.
+      |--------------------------------------------------------------------------
+      */
+
+    items,
+  })
+
+  close()
+}
+
+/*
+|--------------------------------------------------------------------------
+| CLONE PLAIN
+|--------------------------------------------------------------------------
+|
+| Evitamos structuredClone sobre proxies Vue.
+|
+*/
+
+function clonePlain(value) {
+  return JSON.parse(JSON.stringify(value))
+}
+
+/*
+|--------------------------------------------------------------------------
+| MONEY
+|--------------------------------------------------------------------------
+*/
+
+function money(value) {
+  return Number(value ?? 0).toFixed(2)
+}
+
+/*
+|--------------------------------------------------------------------------
+| CANCEL / CLOSE
+|--------------------------------------------------------------------------
+*/
 
 function cancel() {
   close()
@@ -1228,20 +2205,7 @@ function clearFilters() {
 */
 
 onMounted(async () => {
-  /*
-    |--------------------------------------------------------------------------
-    | Primero cargar catálogo
-    |--------------------------------------------------------------------------
-    */
-
   await loadServices()
-
-  /*
-    |--------------------------------------------------------------------------
-    | Si estamos editando,
-    | reconstruir selección
-    |--------------------------------------------------------------------------
-    */
 
   if (isEdit.value) {
     await initializeEdit()

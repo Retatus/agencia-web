@@ -34,10 +34,10 @@
 
       <QuotationHeader
         :quotation="store.quotation"
-        :customers="customersAux"
-        :currencies="currenciesAux"
-        :statuses="statusesAux"
-        :price-lists="priceListsAux"
+        :customers="customers"
+        :currencies="currencies"
+        :statuses="statuses"
+        :price-lists="priceLists"
       />
 
       <!-- ================================================= -->
@@ -231,122 +231,6 @@ const isEdit = computed(() => {
 const pageTitle = computed(() => {
   return isEdit.value ? 'Editar Cotización' : 'Nueva Cotización'
 })
-
-/*
-|--------------------------------------------------------------------------
-| AUXILIARY DATA
-|--------------------------------------------------------------------------
-*/
-
-const priceListsAux = [
-  {
-    id: 1,
-    name: 'publico general',
-  },
-  {
-    id: 2,
-    name: 'agencia mayorista',
-  },
-  {
-    id: 3,
-    name: 'cooperativa',
-  },
-  {
-    id: 4,
-    name: 'black friday',
-  },
-]
-
-const customersAux = [
-  {
-    id: 1,
-    first_name: 'Cliente 1',
-    last_name: 'Apellido 1',
-  },
-  {
-    id: 2,
-    first_name: 'Cliente 2',
-    last_name: 'Apellido 2',
-  },
-  {
-    id: 3,
-    first_name: 'Cliente 3',
-    last_name: 'Apellido 3',
-  },
-]
-
-const currenciesAux = [
-  {
-    id: 1,
-    code: 'USD',
-  },
-  {
-    id: 2,
-    code: 'EUR',
-  },
-  {
-    id: 3,
-    code: 'MXN',
-  },
-]
-
-const statusesAux = [
-  {
-    id: 1,
-    name: 'Draft',
-  },
-  {
-    id: 2,
-    name: 'Pending',
-  },
-  {
-    id: 3,
-    name: 'Sent',
-  },
-  {
-    id: 4,
-    name: 'Approved',
-  },
-  {
-    id: 5,
-    name: 'Rejected',
-  },
-  {
-    id: 6,
-    name: 'Expired',
-  },
-  {
-    id: 7,
-    name: 'Confirmed',
-  },
-  {
-    id: 8,
-    name: 'Cancelled',
-  },
-]
-
-const passengerTypesAux = [
-  {
-    id: 1,
-    code: 'ADT',
-    name: 'Adulto',
-  },
-  {
-    id: 2,
-    code: 'CHD',
-    name: 'Niño',
-  },
-  {
-    id: 3,
-    code: 'STD',
-    name: 'Estudiante',
-  },
-  {
-    id: 4,
-    code: 'INF',
-    name: 'Infante',
-  },
-]
 
 /*
 |--------------------------------------------------------------------------

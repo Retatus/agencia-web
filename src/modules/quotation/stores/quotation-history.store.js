@@ -37,7 +37,7 @@ export const useQuotationHistoryStore = defineStore('quotation-history', () => {
 
     try {
       const response = await QuotationHistoryService.getByQuotation(quotationUuid, params)
-      debugger
+
       items.value = response.data ?? []
 
       meta.value = response.data.meta ?? null

@@ -3,8 +3,8 @@ import ServiceFormPage from '../pages/ServiceFormPage.vue'
 
 export default [
   {
-    path: '/services',
-    name: 'services.index',
+    path: 'services',
+    name: 'services',
     component: ServiceListPage,
     meta: {
       title: 'Servicios',
@@ -12,7 +12,7 @@ export default [
   },
 
   {
-    path: '/services/create',
+    path: 'services/create',
     name: 'services.create',
     component: ServiceFormPage,
     meta: {
@@ -21,7 +21,7 @@ export default [
   },
 
   {
-    path: '/services/:uuid/edit',
+    path: 'services/:uuid/edit',
     name: 'services.edit',
     component: ServiceFormPage,
     props: true,

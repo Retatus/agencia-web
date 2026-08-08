@@ -3,8 +3,8 @@ import QuotationFormPage from '../pages/QuotationFormPage.vue'
 
 export default [
   {
-    path: '/quotations',
-    name: 'quotations.index',
+    path: 'quotations',
+    name: 'quotations',
     component: QuotationListPage,
     meta: {
       title: 'Cotizaciones',
@@ -12,7 +12,7 @@ export default [
   },
 
   {
-    path: '/quotations/create',
+    path: 'quotations/create',
     name: 'quotations.create',
     component: QuotationFormPage,
     meta: {
@@ -21,7 +21,7 @@ export default [
   },
 
   {
-    path: '/quotations/:uuid/edit',
+    path: 'quotations/:uuid/edit',
     name: 'quotations.edit',
     component: QuotationFormPage,
     props: true,

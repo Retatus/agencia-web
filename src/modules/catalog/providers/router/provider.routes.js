@@ -3,17 +3,17 @@ import ProviderFormPage from '../pages/ProviderFormPage.vue'
 
 export default [
   {
-    path: '/providers',
-    name: 'providers.index',
+    path: 'providers',
+    name: 'providers',
     component: ProviderListPage,
   },
   {
-    path: '/providers/create',
+    path: 'providers/create',
     name: 'providers.create',
     component: ProviderFormPage,
   },
   {
-    path: '/providers/:uuid/edit',
+    path: 'providers/:uuid/edit',
     name: 'providers.edit',
     component: ProviderFormPage,
     props: true,

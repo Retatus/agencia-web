@@ -1,56 +1,68 @@
 <template>
-  <div class="card shadow-sm mb-4">
-    <div class="card-header">
-      <h5 class="mb-0"> Datos Generales </h5>
-    </div>
+  <form
+    class="space-y-7"
+    @submit.prevent="submitForm"
+  >
+    <!-- Datos Generales -->
+    <fieldset class="space-y-5">
+      <legend class="text-sm font-semibold text-slate-900 dark:text-white">
+        Datos Generales
+      </legend>
 
-    <div class="card-body">
-      <div class="row g-3">
+      <div class="grid gap-5 md:grid-cols-12">
         <!-- Código -->
-
-        <div class="col-md-3">
-          <label class="form-label"> Código </label>
-
+        <div class="md:col-span-3">
+          <label
+            for="quotation-code"
+            class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+            >Código</label
+          >
           <input
-            class="form-control"
+            id="quotation-code"
             v-model="store.quotation.code"
             readonly
+            class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
           />
         </div>
 
         <!-- Cliente -->
-
-        <div class="col-md-9">
-          <label class="form-label"> Cliente </label>
-
-          <select
-            class="form-select"
-            v-model="store.quotation.customer_id"
+        <div class="md:col-span-9">
+          <label
+            for="quotation-customer"
+            class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+            >Cliente</label
           >
-            <option :value="null"> Seleccione... </option>
-
+          <select
+            id="quotation-customer"
+            v-model="store.quotation.customer_id"
+            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+          >
+            <option :value="null">Seleccione...</option>
             <option
               v-for="customer in customers"
               :key="customer.id"
               :value="customer.id"
             >
-              {{ customer.first_name }}
-              {{ customer.last_name }}
+              {{ customer.first_name }} {{ customer.last_name }}
             </option>
           </select>
         </div>
+      </div>
 
-        <!-- Lista -->
-
-        <div class="col-md-4">
-          <label class="form-label"> Lista de Precios </label>
-
-          <select
-            class="form-select"
-            v-model="store.quotation.price_list_id"
+      <div class="grid gap-5 md:grid-cols-3">
+        <!-- Lista de Precios -->
+        <div>
+          <label
+            for="quotation-price-list"
+            class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+            >Lista de Precios</label
           >
-            <option :value="null"> Seleccione... </option>
-
+          <select
+            id="quotation-price-list"
+            v-model="store.quotation.price_list_id"
+            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+          >
+            <option :value="null">Seleccione...</option>
             <option
               v-for="item in priceLists"
               :key="item.id"
@@ -62,13 +74,16 @@
         </div>
 
         <!-- Moneda -->
-
-        <div class="col-md-2">
-          <label class="form-label"> Moneda </label>
-
+        <div>
+          <label
+            for="quotation-currency"
+            class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+            >Moneda</label
+          >
           <select
-            class="form-select"
+            id="quotation-currency"
             v-model="store.quotation.currency_id"
+            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
           >
             <option
               v-for="currency in currencies"
@@ -81,28 +96,43 @@
         </div>
 
         <!-- Tipo Cambio -->
-
-        <div class="col-md-2">
-          <label class="form-label"> T/C </label>
-
+        <div>
+          <label
+            for="quotation-exchange-rate"
+            class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+            >T/C</label
+          >
           <input
+            id="quotation-exchange-rate"
+            v-model.number="store.quotation.exchange_rate"
             type="number"
             step="0.0001"
-            class="form-control"
-            v-model.number="store.quotation.exchange_rate"
+            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
           />
         </div>
+      </div>
+    </fieldset>
 
+    <!-- Estado y Fechas -->
+    <fieldset class="space-y-5 border-t border-slate-200 pt-6 dark:border-slate-800">
+      <legend class="px-1 text-sm font-semibold text-slate-900 dark:text-white">
+        Estado y Fechas
+      </legend>
+
+      <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
         <!-- Estado -->
-
-        <div class="col-md-4">
-          <label class="form-label"> Estado </label>
-
-          <select
-            class="form-select"
-            v-model="store.quotation.quotation_status_id"
+        <div>
+          <label
+            for="quotation-status"
+            class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+            >Estado</label
           >
-            <option :value="null"> Seleccione... </option>
+          <select
+            id="quotation-status"
+            v-model="store.quotation.quotation_status_id"
+            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+          >
+            <option :value="null">Seleccione...</option>
             <option
               v-for="status in statuses"
               :key="status.id"
@@ -113,44 +143,89 @@
           </select>
         </div>
 
-        <!-- Fecha -->
-
-        <div class="col-md-3">
-          <label class="form-label"> Fecha Viaje </label>
-
+        <!-- Fecha Viaje -->
+        <div>
+          <label
+            for="quotation-travel-date"
+            class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+            >Fecha Viaje</label
+          >
           <input
-            type="date"
-            class="form-control"
+            id="quotation-travel-date"
             v-model="store.quotation.travel_date"
-          />
-        </div>
-
-        <!-- Vigencia -->
-
-        <div class="col-md-3">
-          <label class="form-label"> Válido Hasta </label>
-
-          <input
             type="date"
-            class="form-control"
-            v-model="store.quotation.valid_until"
+            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:[color-scheme:dark]"
           />
         </div>
 
-        <!-- Observaciones -->
+        <!-- Válido Hasta -->
+        <div>
+          <label
+            for="quotation-valid-until"
+            class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+            >Válido Hasta</label
+          >
+          <input
+            id="quotation-valid-until"
+            v-model="store.quotation.valid_until"
+            type="date"
+            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:[color-scheme:dark]"
+          />
+        </div>
 
-        <div class="col-md-12">
-          <label class="form-label"> Observaciones </label>
-
-          <textarea
-            rows="3"
-            class="form-control"
+        <!-- Observaciones (columna extra) -->
+        <div>
+          <label
+            for="quotation-notes"
+            class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+            >Observaciones</label
+          >
+          <input
+            id="quotation-notes"
             v-model="store.quotation.notes"
+            type="text"
+            placeholder="Notas rápidas..."
+            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
           />
         </div>
       </div>
+
+      <!-- Observaciones (textarea completo) -->
+      <div>
+        <label
+          for="quotation-notes-full"
+          class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+          >Observaciones detalladas</label
+        >
+        <textarea
+          id="quotation-notes-full"
+          v-model="store.quotation.notes"
+          rows="3"
+          placeholder="Notas adicionales..."
+          class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+        />
+      </div>
+    </fieldset>
+
+    <!-- Acciones -->
+    <div
+      class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 dark:border-slate-800 sm:flex-row sm:justify-end"
+    >
+      <button
+        type="button"
+        class="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+        @click="cancel"
+      >
+        Cancelar
+      </button>
+      <button
+        type="submit"
+        class="rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+      >
+        Guardar Cotización
+      </button>
     </div>
-  </div>
+  </form>
 </template>
 
 <script setup>

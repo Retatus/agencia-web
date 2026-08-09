@@ -1,75 +1,75 @@
 <template>
-  <div class="card shadow-sm mt-4">
-    <div class="card-header">
-      <h5 class="mb-0"> Resumen de la Cotización </h5>
+  <div
+    class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900"
+  >
+    <!-- Header -->
+    <div class="border-b border-slate-200 px-4 py-3 dark:border-slate-700">
+      <h3 class="text-sm font-semibold text-slate-900 dark:text-white">
+        Resumen de la Cotización
+      </h3>
     </div>
 
-    <div class="card-body">
-      <div class="row">
-        <div class="col-lg-6 ms-auto">
-          <table class="table table-borderless align-middle mb-0">
-            <tbody>
-              <tr>
-                <td class="fw-semibold"> Subtotal </td>
+    <!-- Body -->
+    <div class="p-4">
+      <div class="space-y-3">
+        <!-- Subtotal -->
+        <div class="flex items-center justify-between">
+          <span class="text-sm font-medium text-slate-700 dark:text-slate-300"> Subtotal </span>
+          <span class="text-sm font-semibold text-slate-900 dark:text-white">
+            {{ money(quotation.subtotal) }}
+          </span>
+        </div>
 
-                <td class="text-end">
-                  {{ currency }}
-                </td>
+        <!-- Descuento -->
+        <div class="flex items-center justify-between gap-4">
+          <span class="text-sm font-medium text-slate-700 dark:text-slate-300"> Descuento </span>
+          <div class="flex items-center gap-2">
+            <span class="text-sm text-slate-500 dark:text-slate-400">
+              {{ currency }}
+            </span>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              class="w-28 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-right text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+              v-model.number="quotation.discount"
+              @input="calculate"
+            />
+          </div>
+        </div>
 
-                <td class="text-end fw-semibold">
-                  {{ money(quotation.subtotal) }}
-                </td>
-              </tr>
+        <!-- Impuesto -->
+        <div class="flex items-center justify-between gap-4">
+          <span class="text-sm font-medium text-slate-700 dark:text-slate-300"> Impuesto </span>
+          <div class="flex items-center gap-2">
+            <span class="text-sm text-slate-500 dark:text-slate-400">
+              {{ currency }}
+            </span>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              class="w-28 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-right text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+              v-model.number="quotation.tax"
+              @input="calculate"
+            />
+          </div>
+        </div>
 
-              <tr>
-                <td> Descuento </td>
+        <!-- Separador -->
+        <div class="border-t border-slate-200 dark:border-slate-700"></div>
 
-                <td></td>
-
-                <td>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    class="form-control text-end"
-                    v-model.number="quotation.discount"
-                    @input="calculate"
-                  />
-                </td>
-              </tr>
-
-              <tr>
-                <td> Impuesto </td>
-
-                <td></td>
-
-                <td>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    class="form-control text-end"
-                    v-model.number="quotation.tax"
-                    @input="calculate"
-                  />
-                </td>
-              </tr>
-            </tbody>
-
-            <tfoot>
-              <tr class="border-top">
-                <th class="fs-5"> TOTAL </th>
-
-                <th class="text-end fs-5">
-                  {{ currency }}
-                </th>
-
-                <th class="text-end fs-4 text-primary">
-                  {{ money(quotation.total) }}
-                </th>
-              </tr>
-            </tfoot>
-          </table>
+        <!-- Total -->
+        <div class="flex items-center justify-between">
+          <span class="text-base font-bold text-slate-900 dark:text-white"> TOTAL </span>
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-medium text-slate-600 dark:text-slate-400">
+              {{ currency }}
+            </span>
+            <span class="text-xl font-bold text-teal-600 dark:text-teal-400">
+              {{ money(quotation.total) }}
+            </span>
+          </div>
         </div>
       </div>
     </div>

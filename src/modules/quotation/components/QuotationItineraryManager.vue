@@ -1,51 +1,46 @@
 <template>
-  <div class="card shadow-sm mb-4">
+  <div class="space-y-5">
     <!-- Header -->
-
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <div>
-        <h5 class="mb-0"> Itinerario del Viaje </h5>
-
-        <small class="text-muted"> Organice los servicios por día. </small>
-      </div>
+    <div>
+      <h3 class="text-sm font-semibold text-slate-900 dark:text-white"> Itinerario del Viaje </h3>
+      <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+        Organice los servicios por día.
+      </p>
     </div>
 
-    <!-- Body -->
+    <!-- Tabs -->
+    <QuotationItineraryTabs
+      :itineraries="store.quotation.itineraries"
+      :selected-uuid="store.selectedItineraryUuid"
+      @select-itinerary="selectItinerary"
+      @add-itinerary="addItinerary"
+    />
 
-    <div class="card-body">
-      <!-- Tabs -->
+    <!-- Toolbar -->
+    <QuotationItineraryToolbar
+      :itinerary="store.selectedItinerary"
+      @add-service="$emit('add-service')"
+      @add-custom-item="$emit('add-custom-item')"
+    />
 
-      <QuotationItineraryTabs
-        :itineraries="store.quotation.itineraries"
-        :selected-uuid="store.selectedItineraryUuid"
-        @select-itinerary="selectItinerary"
-        @add-itinerary="addItinerary"
-      />
-
-      <!-- Toolbar -->
-
-      <QuotationItineraryToolbar
-        :itinerary="store.selectedItinerary"
-        @add-service="$emit('add-service')"
-        @add-custom-item="$emit('add-custom-item')"
-      />
-
-      <!-- Tabla -->
-
+    <!-- Tabla -->
+    <div
+      v-if="store.selectedItinerary"
+      class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900"
+    >
       <QuotationItineraryServicesTable
-        v-if="store.selectedItinerary"
         :itinerary="store.selectedItinerary"
         @edit-item="$emit('edit-item', $event)"
         @duplicate-item="$emit('duplicate-item', $event)"
         @remove-item="$emit('remove-item', $event)"
       />
+    </div>
 
-      <div
-        v-else
-        class="text-center py-5 text-muted"
-      >
-        No existe ningún día en el itinerario.
-      </div>
+    <div
+      v-else
+      class="rounded-lg border border-slate-200 bg-slate-50 py-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-400"
+    >
+      No existe ningún día en el itinerario.
     </div>
   </div>
 </template>

@@ -1,4 +1,5 @@
 import {
+  Component,
   LayoutDashboard,
   FileText,
   Users,
@@ -14,4 +15,10 @@ export const navigationItems = [
   { label: 'Servicios', route: 'services', icon: BriefcaseBusiness },
   { label: 'Proveedores', route: 'providers', icon: Building2 },
   // { label: 'Precios', route: 'prices.index', icon: BadgeDollarSign },
+
+  {
+    label: 'Componentes UI',
+    route: 'ui.components',
+    icon: Component,
+  },
 ]

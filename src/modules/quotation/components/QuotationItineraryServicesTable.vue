@@ -1,386 +1,326 @@
 <template>
-  <div class="card shadow-sm">
-    <!-- ===================================================== -->
-    <!-- HEADER                                                -->
-    <!-- ===================================================== -->
-
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <h6 class="mb-0"> Servicios del Día </h6>
-    </div>
-
-    <!-- ===================================================== -->
-    <!-- TABLE                                                 -->
-    <!-- ===================================================== -->
-
-    <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0">
-        <thead class="table-light">
-          <tr>
-            <th width="50"> # </th>
-
-            <th width="70"> Id </th>
-
-            <th> Servicio </th>
-
-            <th width="180"> Variante </th>
-
-            <th width="120"> Tipo </th>
-
-            <th width="90"> Cant. </th>
-
-            <th width="120"> Costo </th>
-
-            <th width="120"> Venta </th>
-
-            <th width="120"> Subtotal </th>
-
-            <th width="100"> Estado </th>
-
-            <th width="220"> Acciones </th>
-          </tr>
-        </thead>
-
-        <tbody>
-          <!-- ================================================= -->
-          <!-- SIN ITEMS                                         -->
-          <!-- ================================================= -->
-
-          <tr v-if="!itinerary.items?.length">
-            <td
-              colspan="11"
-              class="text-center py-5 text-muted"
-            >
-              No existen servicios registrados.
-            </td>
-          </tr>
-
-          <!-- ================================================= -->
-          <!-- ITEMS                                             -->
-          <!-- ================================================= -->
-
-          <tr
-            v-for="(item, index) in itinerary.items"
-            :key="item.uuid ?? index"
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <!-- HEADER -->
+      <thead
+        class="border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/50"
+      >
+        <tr>
+          <th
+            class="px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
           >
-            <!-- ================================================= -->
-            <!-- POSICIÓN LÓGICA                                   -->
-            <!-- ================================================= -->
-            <!--
-              ITEM NORMAL:
-              rowspan = 1
+            #
+          </th>
+          <th
+            class="px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+          >
+            Id
+          </th>
+          <th
+            class="px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+          >
+            Servicio
+          </th>
+          <th
+            class="px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+          >
+            Variante
+          </th>
+          <th
+            class="px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+          >
+            Tipo
+          </th>
+          <th
+            class="px-3 py-2.5 text-right text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+          >
+            Cant.
+          </th>
+          <th
+            class="px-3 py-2.5 text-right text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+          >
+            Costo
+          </th>
+          <th
+            class="px-3 py-2.5 text-right text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+          >
+            Venta
+          </th>
+          <th
+            class="px-3 py-2.5 text-right text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+          >
+            Subtotal
+          </th>
+          <th
+            class="px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+          >
+            Estado
+          </th>
+          <th
+            class="px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+          >
+            Acciones
+          </th>
+        </tr>
+      </thead>
 
-              GRUPO:
-              únicamente la primera fila genera este <td>.
-            -->
+      <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+        <!-- SIN ITEMS -->
+        <tr v-if="!itinerary.items?.length">
+          <td
+            colspan="11"
+            class="px-3 py-8 text-center text-sm text-slate-500 dark:text-slate-400"
+          >
+            No existen servicios registrados.
+          </td>
+        </tr>
 
-            <td
-              v-if="shouldRenderGroupCell(item)"
-              :rowspan="getRowspan(item)"
-              class="text-center align-middle"
+        <!-- ITEMS -->
+        <tr
+          v-for="(item, index) in itinerary.items"
+          :key="item.uuid ?? index"
+          class="hover:bg-slate-50 dark:hover:bg-slate-800/50"
+        >
+          <!-- POSICIÓN LÓGICA -->
+          <td
+            v-if="shouldRenderGroupCell(item)"
+            :rowspan="getRowspan(item)"
+            class="px-3 py-2.5 text-center align-middle text-sm text-slate-500 dark:text-slate-400"
+          >
+            {{ item.sort_order ?? index + 1 }}
+          </td>
+
+          <!-- ID REAL -->
+          <td class="px-3 py-2.5 text-center text-sm text-slate-600 dark:text-slate-300">
+            {{ item.id ?? '-' }}
+          </td>
+
+          <!-- SERVICIO -->
+          <td
+            v-if="shouldRenderGroupCell(item)"
+            :rowspan="getRowspan(item)"
+            class="px-3 py-2.5 align-middle"
+          >
+            <div class="font-medium text-slate-900 dark:text-white">
+              {{ item.name }}
+            </div>
+            <div
+              v-if="item.description"
+              class="mt-0.5 text-xs text-slate-500 dark:text-slate-400"
             >
-              {{ item.sort_order ?? index + 1 }}
-            </td>
+              {{ item.description }}
+            </div>
 
-            <!-- ================================================= -->
-            <!-- ID REAL                                           -->
-            <!-- ================================================= -->
-            <!--
-              El ID NO se agrupa.
-
-              Cada QuotationItem sigue siendo una fila real
-              e independiente en base de datos.
-            -->
-
-            <td class="text-center">
-              {{ item.id ?? '-' }}
-            </td>
-
-            <!-- ================================================= -->
-            <!-- SERVICIO                                          -->
-            <!-- ================================================= -->
-
-            <td
-              v-if="shouldRenderGroupCell(item)"
-              :rowspan="getRowspan(item)"
-              class="align-middle"
-            >
-              <div class="fw-semibold">
-                {{ item.name }}
-              </div>
-
-              <small
-                v-if="item.description"
-                class="text-muted d-block"
-              >
-                {{ item.description }}
-              </small>
-
-              <!-- Información del grupo -->
-
-              <template v-if="item.group_uuid">
-                <div class="mt-2">
-                  <span class="badge bg-light text-dark border">
-                    {{ getGroupLabel(item) }}
-                  </span>
-                </div>
-
-                <div class="small text-muted mt-1">
-                  {{ getGroupQuantity(item) }}
-                  {{ getGroupQuantityLabel(item) }}
-                </div>
-
-                <div
-                  v-if="item.calculation_type === 'accommodation'"
-                  class="small text-muted"
-                >
-                  {{ item.duration ?? 1 }}
-                  noches
-                </div>
-              </template>
-            </td>
-
-            <!-- ================================================= -->
-            <!-- VARIANTE                                          -->
-            <!-- ================================================= -->
-
-            <td>
-              <div class="fw-semibold">
-                {{ item.variant_name || '-' }}
-              </div>
-
-              <small
-                v-if="item.group_uuid"
-                class="text-muted"
-              >
-                {{ getVariantPosition(item) }}
-              </small>
-            </td>
-
-            <!-- ================================================= -->
-            <!-- TIPO                                              -->
-            <!-- ================================================= -->
-
-            <td
-              v-if="shouldRenderGroupCell(item)"
-              :rowspan="getRowspan(item)"
-              class="text-center align-middle"
-            >
-              <span
-                class="badge"
-                :class="badge(item.item_type)"
-              >
-                {{ item.item_type }}
-              </span>
-
-              <div
-                v-if="item.group_uuid"
-                class="small mt-2"
-              >
+            <!-- Información del grupo -->
+            <template v-if="item.group_uuid">
+              <div class="mt-2">
                 <span
-                  class="badge"
-                  :class="calculationBadge(item.calculation_type)"
+                  class="inline-flex rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
                 >
-                  {{ calculationLabel(item.calculation_type) }}
+                  {{ getGroupLabel(item) }}
                 </span>
               </div>
-            </td>
-
-            <!-- ================================================= -->
-            <!-- CANTIDAD                                          -->
-            <!-- ================================================= -->
-
-            <td class="text-end">
-              <!--
-                Para grupos mostramos la cantidad real de la
-                variante pero no permitimos modificarla directamente.
-
-                La distribución se modifica desde el modal.
-              -->
-
-              <template v-if="item.group_uuid">
-                {{ item.quantity }}
-              </template>
-
-              <!-- Item normal -->
-
-              <input
-                v-else
-                v-model.number="item.quantity"
-                class="form-control form-control-sm text-end"
-                type="number"
-                min="1"
-                @change="updateQuantity(item)"
-              />
-            </td>
-
-            <!-- ================================================= -->
-            <!-- COSTO                                             -->
-            <!-- ================================================= -->
-
-            <td class="text-end">
-              {{ money(item.unit_cost) }}
-            </td>
-
-            <!-- ================================================= -->
-            <!-- VENTA                                             -->
-            <!-- ================================================= -->
-
-            <td class="text-end">
-              {{ money(item.unit_price) }}
-            </td>
-
-            <!-- ================================================= -->
-            <!-- SUBTOTAL                                          -->
-            <!-- ================================================= -->
-
-            <td class="text-end fw-bold">
-              {{ money(item.subtotal) }}
-            </td>
-
-            <!-- ================================================= -->
-            <!-- ESTADO                                            -->
-            <!-- ================================================= -->
-
-            <td
-              v-if="shouldRenderGroupCell(item)"
-              :rowspan="getRowspan(item)"
-              class="text-center align-middle"
-            >
-              <template v-if="item.active">
-                <i class="bi bi-check-circle-fill text-success"></i>
-
-                <div class="small text-success"> activo </div>
-              </template>
-
-              <template v-else>
-                <i class="bi bi-x-circle-fill text-danger"></i>
-
-                <div class="small text-danger"> inactivo </div>
-              </template>
-            </td>
-
-            <!-- ================================================= -->
-            <!-- ACCIONES                                          -->
-            <!-- ================================================= -->
-            <!--
-              En un grupo solamente aparecen UNA VEZ.
-
-              El rowspan cubre Simple + Doble + Triple.
-            -->
-
-            <td
-              v-if="shouldRenderGroupCell(item)"
-              :rowspan="getRowspan(item)"
-              class="align-middle"
-            >
-              <div class="d-flex flex-wrap gap-1">
-                <!-- Editar -->
-
-                <button
-                  type="button"
-                  class="btn btn-outline-primary btn-sm"
-                  @click="emit('edit-item', item)"
-                >
-                  <i class="bi bi-pencil"></i>
-
-                  Editar
-                </button>
-
-                <!-- Duplicar -->
-
-                <button
-                  type="button"
-                  class="btn btn-outline-info btn-sm"
-                  @click="emit('duplicate-item', item)"
-                >
-                  <i class="bi bi-copy"></i>
-
-                  Duplicar
-                </button>
-
-                <!-- Subir -->
-
-                <button
-                  type="button"
-                  class="btn btn-outline-secondary btn-sm"
-                  @click="moveUp(item)"
-                >
-                  ↑
-                </button>
-
-                <!-- Bajar -->
-
-                <button
-                  type="button"
-                  class="btn btn-outline-secondary btn-sm"
-                  @click="moveDown(item)"
-                >
-                  ↓
-                </button>
-
-                <!-- Eliminar -->
-
-                <button
-                  type="button"
-                  class="btn btn-outline-danger btn-sm"
-                  @click="emit('remove-item', item)"
-                >
-                  <i class="bi bi-trash"></i>
-
-                  Eliminar
-                </button>
+              <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                {{ getGroupQuantity(item) }}
+                {{ getGroupQuantityLabel(item) }}
               </div>
-
-              <!-- ================================================= -->
-              <!-- RESUMEN DEL GRUPO                                 -->
-              <!-- ================================================= -->
-
               <div
-                v-if="item.group_uuid"
-                class="small border-top mt-2 pt-2"
+                v-if="item.calculation_type === 'accommodation'"
+                class="text-xs text-slate-500 dark:text-slate-400"
               >
-                <div class="d-flex justify-content-between">
-                  <span class="text-muted"> Costo: </span>
-
-                  <strong>
-                    {{ money(getGroupTotalCost(item)) }}
-                  </strong>
-                </div>
-
-                <div class="d-flex justify-content-between">
-                  <span class="text-muted"> Venta: </span>
-
-                  <strong>
-                    {{ money(getGroupTotalSale(item)) }}
-                  </strong>
-                </div>
+                {{ item.duration ?? 1 }} noches
               </div>
-            </td>
-          </tr>
-        </tbody>
+            </template>
+          </td>
 
-        <!-- ===================================================== -->
-        <!-- FOOTER / TOTAL ITINERARIO                             -->
-        <!-- ===================================================== -->
-
-        <tfoot v-if="itinerary.items?.length">
-          <tr>
-            <td
-              colspan="8"
-              class="text-end fw-semibold"
+          <!-- VARIANTE -->
+          <td class="px-3 py-2.5">
+            <div class="font-medium text-slate-800 dark:text-slate-200">
+              {{ item.variant_name || '-' }}
+            </div>
+            <div
+              v-if="item.group_uuid"
+              class="text-xs text-slate-500 dark:text-slate-400"
             >
-              Total del día
-            </td>
+              {{ getVariantPosition(item) }}
+            </div>
+          </td>
 
-            <td class="text-end fw-bold">
-              {{ money(itinerary.subtotal) }}
-            </td>
+          <!-- TIPO -->
+          <td
+            v-if="shouldRenderGroupCell(item)"
+            :rowspan="getRowspan(item)"
+            class="px-3 py-2.5 text-center align-middle"
+          >
+            <span
+              class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium"
+              :class="badge(item.item_type)"
+            >
+              {{ item.item_type }}
+            </span>
+            <div
+              v-if="item.group_uuid"
+              class="mt-2"
+            >
+              <span
+                class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium"
+                :class="calculationBadge(item.calculation_type)"
+              >
+                {{ calculationLabel(item.calculation_type) }}
+              </span>
+            </div>
+          </td>
 
-            <td colspan="2"></td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
+          <!-- CANTIDAD -->
+          <td class="px-3 py-2.5 text-right">
+            <template v-if="item.group_uuid">
+              <span class="text-sm text-slate-700 dark:text-slate-300">
+                {{ item.quantity }}
+              </span>
+            </template>
+            <input
+              v-else
+              v-model.number="item.quantity"
+              type="number"
+              min="1"
+              class="w-16 rounded-lg border border-slate-300 bg-white px-2 py-1 text-right text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+              @change="updateQuantity(item)"
+            />
+          </td>
+
+          <!-- COSTO -->
+          <td class="px-3 py-2.5 text-right text-sm text-slate-700 dark:text-slate-300">
+            {{ money(item.unit_cost) }}
+          </td>
+
+          <!-- VENTA -->
+          <td class="px-3 py-2.5 text-right text-sm text-slate-700 dark:text-slate-300">
+            {{ money(item.unit_price) }}
+          </td>
+
+          <!-- SUBTOTAL -->
+          <td class="px-3 py-2.5 text-right text-sm font-semibold text-slate-900 dark:text-white">
+            {{ money(item.subtotal) }}
+          </td>
+
+          <!-- ESTADO -->
+          <td
+            v-if="shouldRenderGroupCell(item)"
+            :rowspan="getRowspan(item)"
+            class="px-3 py-2.5 text-center align-middle"
+          >
+            <div class="flex flex-col items-center">
+              <span
+                class="inline-block h-2.5 w-2.5 rounded-full"
+                :class="item.active ? 'bg-green-500' : 'bg-red-500'"
+              ></span>
+              <span
+                class="mt-1 text-xs font-medium"
+                :class="
+                  item.active
+                    ? 'text-green-600 dark:text-green-400'
+                    : 'text-red-600 dark:text-red-400'
+                "
+              >
+                {{ item.active ? 'activo' : 'inactivo' }}
+              </span>
+            </div>
+          </td>
+
+          <!-- ACCIONES -->
+          <td
+            v-if="shouldRenderGroupCell(item)"
+            :rowspan="getRowspan(item)"
+            class="px-3 py-2.5 align-middle"
+          >
+            <div class="flex flex-wrap gap-1">
+              <!-- Editar -->
+              <button
+                type="button"
+                class="rounded-lg border border-blue-300 px-2 py-1 text-xs font-medium text-blue-600 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-950/30"
+                @click="emit('edit-item', item)"
+              >
+                Editar
+              </button>
+
+              <!-- Duplicar -->
+              <button
+                type="button"
+                class="rounded-lg border border-cyan-300 px-2 py-1 text-xs font-medium text-cyan-600 hover:bg-cyan-50 dark:border-cyan-700 dark:text-cyan-400 dark:hover:bg-cyan-950/30"
+                @click="emit('duplicate-item', item)"
+              >
+                Duplicar
+              </button>
+
+              <!-- Subir -->
+              <button
+                type="button"
+                class="rounded-lg border border-slate-300 px-2 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800"
+                @click="moveUp(item)"
+              >
+                ↑
+              </button>
+
+              <!-- Bajar -->
+              <button
+                type="button"
+                class="rounded-lg border border-slate-300 px-2 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800"
+                @click="moveDown(item)"
+              >
+                ↓
+              </button>
+
+              <!-- Eliminar -->
+              <button
+                type="button"
+                class="rounded-lg border border-red-300 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950/30"
+                @click="emit('remove-item', item)"
+              >
+                Eliminar
+              </button>
+            </div>
+
+            <!-- RESUMEN DEL GRUPO -->
+            <div
+              v-if="item.group_uuid"
+              class="mt-2 border-t border-slate-200 pt-2 dark:border-slate-700"
+            >
+              <div class="flex justify-between text-xs">
+                <span class="text-slate-500 dark:text-slate-400">Costo:</span>
+                <strong class="text-slate-900 dark:text-white">
+                  {{ money(getGroupTotalCost(item)) }}
+                </strong>
+              </div>
+              <div class="flex justify-between text-xs">
+                <span class="text-slate-500 dark:text-slate-400">Venta:</span>
+                <strong class="text-slate-900 dark:text-white">
+                  {{ money(getGroupTotalSale(item)) }}
+                </strong>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+
+      <!-- FOOTER / TOTAL ITINERARIO -->
+      <tfoot
+        v-if="itinerary.items?.length"
+        class="border-t border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/50"
+      >
+        <tr>
+          <td
+            colspan="8"
+            class="px-3 py-3 text-right text-sm font-medium text-slate-700 dark:text-slate-300"
+          >
+            Total del día
+          </td>
+          <td class="px-3 py-3 text-right text-sm font-bold text-slate-900 dark:text-white">
+            {{ money(itinerary.subtotal) }}
+          </td>
+          <td colspan="2"></td>
+        </tr>
+      </tfoot>
+    </table>
   </div>
 </template>
 

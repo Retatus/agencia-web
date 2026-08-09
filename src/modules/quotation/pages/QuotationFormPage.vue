@@ -1,119 +1,196 @@
 <template>
-  <div class="container-fluid">
-    <!-- ================================================= -->
-    <!-- HEADER                                            -->
-    <!-- ================================================= -->
+  <section class="mx-auto max-w-[1600px]">
+    <!-- ============================================================
+         ENCABEZADO
+    ============================================================= -->
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <div>
-        <h2 class="mb-0">
+    <div class="mb-6 flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+      <div class="min-w-0">
+        <div class="mb-2 flex flex-wrap items-center gap-2">
+          <span
+            class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold"
+            :class="
+              isEdit
+                ? 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300'
+                : 'bg-green-100 text-green-700 dark:bg-green-950/60 dark:text-green-300'
+            "
+          >
+            {{ isEdit ? 'Edición' : 'Nueva' }}
+          </span>
+
+          <span
+            v-if="store.quotation.code"
+            class="text-sm font-medium text-slate-500 dark:text-slate-400"
+          >
+            {{ store.quotation.code }}
+          </span>
+        </div>
+
+        <h2 class="truncate text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
           {{ pageTitle }}
         </h2>
 
-        <small class="text-muted"> Gestión de Cotizaciones </small>
+        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          Administra los datos generales, itinerarios, pasajeros y totales de la cotización.
+        </p>
       </div>
 
-      <div class="d-flex gap-2">
-        <router-link
-          :to="{ name: 'quotations.index' }"
-          class="btn btn-outline-secondary"
-        >
-          Volver
-        </router-link>
-      </div>
+      <router-link
+        :to="{ name: 'quotations' }"
+        class="inline-flex shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-teal-500/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+      >
+        Volver al listado
+      </router-link>
     </div>
 
-    <!-- ================================================= -->
-    <!-- FORM                                              -->
-    <!-- ================================================= -->
+    <!-- Indicador de guardado -->
 
-    <form @submit.prevent="save">
-      <!-- ================================================= -->
-      <!-- DATOS GENERALES                                  -->
-      <!-- ================================================= -->
-
-      <QuotationHeader
-        :quotation="store.quotation"
-        :customers="customers"
-        :currencies="currencies"
-        :statuses="statuses"
-        :price-lists="priceLists"
+    <div
+      v-if="store.saving"
+      class="mb-5 flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700 dark:border-blue-900 dark:bg-blue-950/50 dark:text-blue-300"
+    >
+      <span
+        class="h-4 w-4 animate-spin rounded-full border-2 border-blue-200 border-t-blue-600 dark:border-blue-800 dark:border-t-blue-300"
       />
 
-      <!-- ================================================= -->
-      <!-- ITINERARIO                                        -->
-      <!-- ================================================= -->
+      Guardando cotización...
+    </div>
 
-      <QuotationItineraryManager
-        :itineraries="store.quotation.itineraries"
-        :selected-itinerary="store.selectedItinerary"
-        @add-itinerary="store.addItinerary"
-        @select-itinerary="store.selectItinerary"
-        @duplicate-itinerary="store.duplicateItinerary"
-        @remove-itinerary="store.removeItinerary"
-        @move-itinerary-up="store.moveItineraryUp"
-        @move-itinerary-down="store.moveItineraryDown"
-        @add-service="openCatalogModal"
-        @add-custom-item="openCustomModal"
-        @edit-item="editItem"
-        @duplicate-item="duplicateItem"
-        @remove-item="removeItem"
-      />
+    <!-- ============================================================
+         FORMULARIO
+    ============================================================= -->
 
-      <!-- ================================================= -->
-      <!-- TOTALES                                          -->
-      <!-- ================================================= -->
+    <form
+      class="space-y-7"
+      @submit.prevent="save"
+    >
+      <!-- Datos generales -->
+      <fieldset class="space-y-5">
+        <legend class="text-sm font-semibold text-slate-900 dark:text-white">
+          Datos Generales
+        </legend>
 
-      <QuotationTotals :quotation="store.quotation" />
+        <QuotationHeader
+          :quotation="store.quotation"
+          :customers="customersAux"
+          :currencies="currenciesAux"
+          :statuses="statusesAux"
+          :price-lists="priceListsAux"
+        />
+      </fieldset>
 
-      <!-- ================================================= -->
-      <!-- PASAJEROS                                        -->
-      <!-- ================================================= -->
+      <!-- Itinerario -->
+      <fieldset class="space-y-5 border-t border-slate-200 pt-6 dark:border-slate-800">
+        <legend class="px-1 text-sm font-semibold text-slate-900 dark:text-white">
+          Itinerario
+        </legend>
 
-      <QuotationPassengerManager
-        :passengers="store.quotation.passengers"
-        :passenger-types="passengerTypesAux"
-        @add-passenger="openPassengerModal"
-      />
+        <QuotationItineraryManager
+          :itineraries="store.quotation.itineraries"
+          :selected-itinerary="store.selectedItinerary"
+          @add-itinerary="store.addItinerary"
+          @select-itinerary="store.selectItinerary"
+          @duplicate-itinerary="store.duplicateItinerary"
+          @remove-itinerary="store.removeItinerary"
+          @move-itinerary-up="store.moveItineraryUp"
+          @move-itinerary-down="store.moveItineraryDown"
+          @add-service="openCatalogModal"
+          @add-custom-item="openCustomModal"
+          @edit-item="editItem"
+          @duplicate-item="duplicateItem"
+          @remove-item="removeItem"
+        />
+      </fieldset>
 
-      <!-- ================================================= -->
-      <!-- ACCIONES                                          -->
-      <!-- ================================================= -->
+      <!-- Pasajeros y Totales -->
+      <fieldset class="space-y-5 border-t border-slate-200 pt-6 dark:border-slate-800">
+        <legend class="px-1 text-sm font-semibold text-slate-900 dark:text-white">
+          Pasajeros y Totales
+        </legend>
 
-      <QuotationActions
-        :loading="store.saving"
-        @save="save"
-        @cancel="cancel"
-        @duplicate="duplicateQuotation"
-        @print="printQuotation"
-        @email="sendQuotation"
-      />
+        <div class="grid gap-6 xl:grid-cols-12">
+          <!-- Pasajeros -->
+          <div class="xl:col-span-7">
+            <QuotationPassengerManager
+              :passengers="store.quotation.passengers"
+              :passenger-types="passengerTypesAux"
+              @add-passenger="openPassengerModal"
+            />
+          </div>
 
-      <!-- ================================================= -->
-      <!-- MODAL SERVICIO CATALOGO                           -->
-      <!-- ================================================= -->
+          <!-- Totales -->
+          <div class="xl:col-span-5">
+            <QuotationTotals :quotation="store.quotation" />
+          </div>
+        </div>
+      </fieldset>
 
-      <ServiceSelectorModal
-        v-if="showServiceModal"
-        :item="editingItem"
-        :price-list-id="store.quotation.price_list_id"
-        :passengers="store.quotation.passengers"
-        @close="closeServiceModal"
-        @save="handleItemSave"
-      />
+      <!-- Acciones -->
+      <div
+        class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 dark:border-slate-800 sm:flex-row sm:justify-end"
+      >
+        <button
+          type="button"
+          class="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+          @click="cancel"
+        >
+          Cancelar
+        </button>
 
-      <!-- ================================================= -->
-      <!-- MODAL CUSTOM                                      -->
-      <!-- ================================================= -->
+        <button
+          type="button"
+          class="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+          @click="duplicateQuotation"
+        >
+          Duplicar
+        </button>
 
-      <CustomItemModal
-        v-if="showCustomModal"
-        :item="editingItem"
-        @close="closeCustomModal"
-        @save="handleItemSave"
-      />
+        <button
+          type="button"
+          class="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+          @click="printQuotation"
+        >
+          Imprimir
+        </button>
+
+        <button
+          type="button"
+          class="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+          @click="sendQuotation"
+        >
+          Enviar Email
+        </button>
+
+        <button
+          type="submit"
+          class="rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+          :disabled="store.saving"
+        >
+          {{ store.saving ? 'Guardando...' : 'Guardar Cotización' }}
+        </button>
+      </div>
     </form>
-  </div>
+
+    <!-- ============================================================
+         MODALES
+    ============================================================= -->
+
+    <ServiceSelectorModal
+      v-if="showServiceModal"
+      :item="editingItem"
+      :price-list-id="store.quotation.price_list_id"
+      :passengers="store.quotation.passengers"
+      @close="closeServiceModal"
+      @save="handleItemSave"
+    />
+
+    <CustomItemModal
+      v-if="showCustomModal"
+      :item="editingItem"
+      @close="closeCustomModal"
+      @save="handleItemSave"
+    />
+  </section>
 </template>
 
 <script setup>
@@ -150,6 +227,17 @@ import QuotationPassengerManager from '../components/QuotationPassengerManager.v
 import ServiceSelectorModal from '../components/ServiceSelectorModal.vue'
 
 import CustomItemModal from '../components/CustomItemModal.vue'
+
+/*
+|--------------------------------------------------------------------------
+| MOCKS
+|--------------------------------------------------------------------------
+|
+| Solo para pruebas.
+|
+*/
+
+import mockPassengers from '../mocks/passengers.mock.json'
 
 /*
 |--------------------------------------------------------------------------
@@ -234,6 +322,122 @@ const pageTitle = computed(() => {
 
 /*
 |--------------------------------------------------------------------------
+| AUXILIARY DATA
+|--------------------------------------------------------------------------
+*/
+
+const priceListsAux = [
+  {
+    id: 1,
+    name: 'publico general',
+  },
+  {
+    id: 2,
+    name: 'agencia mayorista',
+  },
+  {
+    id: 3,
+    name: 'cooperativa',
+  },
+  {
+    id: 4,
+    name: 'black friday',
+  },
+]
+
+const customersAux = [
+  {
+    id: 1,
+    first_name: 'Cliente 1',
+    last_name: 'Apellido 1',
+  },
+  {
+    id: 2,
+    first_name: 'Cliente 2',
+    last_name: 'Apellido 2',
+  },
+  {
+    id: 3,
+    first_name: 'Cliente 3',
+    last_name: 'Apellido 3',
+  },
+]
+
+const currenciesAux = [
+  {
+    id: 1,
+    code: 'USD',
+  },
+  {
+    id: 2,
+    code: 'EUR',
+  },
+  {
+    id: 3,
+    code: 'MXN',
+  },
+]
+
+const statusesAux = [
+  {
+    id: 1,
+    name: 'Draft',
+  },
+  {
+    id: 2,
+    name: 'Pending',
+  },
+  {
+    id: 3,
+    name: 'Sent',
+  },
+  {
+    id: 4,
+    name: 'Approved',
+  },
+  {
+    id: 5,
+    name: 'Rejected',
+  },
+  {
+    id: 6,
+    name: 'Expired',
+  },
+  {
+    id: 7,
+    name: 'Confirmed',
+  },
+  {
+    id: 8,
+    name: 'Cancelled',
+  },
+]
+
+const passengerTypesAux = [
+  {
+    id: 1,
+    code: 'ADT',
+    name: 'Adulto',
+  },
+  {
+    id: 2,
+    code: 'CHD',
+    name: 'Niño',
+  },
+  {
+    id: 3,
+    code: 'STD',
+    name: 'Estudiante',
+  },
+  {
+    id: 4,
+    code: 'INF',
+    name: 'Infante',
+  },
+]
+
+/*
+|--------------------------------------------------------------------------
 | INIT
 |--------------------------------------------------------------------------
 */
@@ -295,7 +499,7 @@ async function save() {
     */
 
     // router.push({
-    //   name: 'quotations.index',
+    //   name: 'quotations',
     // })
   } catch (error) {
     console.error('Error guardando cotización:', error)
@@ -310,7 +514,7 @@ async function save() {
 
 function cancel() {
   router.push({
-    name: 'quotations.index',
+    name: 'quotations',
   })
 }
 

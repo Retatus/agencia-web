@@ -24,6 +24,14 @@ const router = createRouter({
         ...providerRoutes,
         ...serviceRoutes,
         ...quotationRoutes,
+        {
+          path: 'ui-components',
+          name: 'ui.components',
+          component: () => import('@/views/UiShowcaseView.vue'),
+          meta: {
+            title: 'Componentes UI',
+          },
+        },
       ],
     },
     // Las rutas públicas, como login, van fuera de AppLayout.

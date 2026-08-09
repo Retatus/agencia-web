@@ -9,7 +9,6 @@ import {
   BasePagination,
   BaseTable,
 } from '@/components/ui'
-import BaseTabs from '@/components/ui/BaseTabs.vue'
 
 const showModal = ref(false)
 const showSuccess = ref(true)
@@ -266,7 +265,7 @@ function submitForm() {
                 id="demo-travel-date"
                 v-model="form.travelDate"
                 type="date"
-                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:[color-scheme:dark]"
+                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:scheme-dark"
               />
             </div>
             <div>
@@ -280,7 +279,7 @@ function submitForm() {
                 v-model="form.validUntil"
                 type="date"
                 :min="form.travelDate"
-                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:[color-scheme:dark]"
+                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:scheme-dark"
               />
             </div>
             <div>
@@ -293,7 +292,7 @@ function submitForm() {
                 id="demo-departure"
                 v-model="form.departureAt"
                 type="datetime-local"
-                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:[color-scheme:dark]"
+                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:scheme-dark"
               />
             </div>
             <div>
@@ -306,7 +305,7 @@ function submitForm() {
                 id="demo-time"
                 v-model="form.meetingTime"
                 type="time"
-                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:[color-scheme:dark]"
+                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:scheme-dark"
               />
             </div>
           </div>
@@ -562,8 +561,8 @@ function submitForm() {
       >
         <template #header
           ><tr
-            ><th>Código</th><th>Servicio</th><th>Categoría</th><th class="!text-right">Precio</th
-            ><th>Estado</th><th class="!text-right">Acciones</th></tr
+            ><th>Código</th><th>Servicio</th><th>Categoría</th><th class="text-right!">Precio</th
+            ><th>Estado</th><th class="text-right!">Acciones</th></tr
           ></template
         >
         <template #body="{ items }">
@@ -580,7 +579,7 @@ function submitForm() {
                 service.name
               }}</span></td
             ><td>{{ service.category }}</td
-            ><td class="!text-right font-medium">$ {{ service.price.toFixed(2) }}</td
+            ><td class="text-right! font-medium">$ {{ service.price.toFixed(2) }}</td
             ><td
               ><BaseBadge :variant="service.active ? 'success' : 'danger'">{{
                 service.active ? 'Activo' : 'Inactivo'
@@ -617,7 +616,7 @@ function submitForm() {
       >
         <template #header
           ><tr
-            ><th>Código</th><th>Servicio</th><th>Categoría</th><th class="!text-right">Precio</th
+            ><th>Código</th><th>Servicio</th><th>Categoría</th><th class="text-right!">Precio</th
             ><th>Estado</th></tr
           ></template
         >
@@ -626,9 +625,9 @@ function submitForm() {
             v-for="service in items"
             :key="service.id"
             ><td class="font-semibold text-teal-700 dark:text-teal-300">{{ service.code }}</td
-            ><td class="font-medium !text-slate-900 dark:!text-white">{{ service.name }}</td
+            ><td class="font-medium text-slate-900! dark:text-white!">{{ service.name }}</td
             ><td>{{ service.category }}</td
-            ><td class="!text-right">$ {{ service.price.toFixed(2) }}</td
+            ><td class="text-right!">$ {{ service.price.toFixed(2) }}</td
             ><td
               ><BaseBadge :variant="service.active ? 'success' : 'danger'">{{
                 service.active ? 'Activo' : 'Inactivo'

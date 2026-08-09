@@ -22,7 +22,7 @@
           <tr>
             <td
               :colspan="columns"
-              class="!px-5 !py-14 text-center"
+              class="px-5! py-14! text-center"
             >
               <div class="flex flex-col items-center justify-center">
                 <span
@@ -53,7 +53,7 @@
           <tr>
             <td
               :colspan="columns"
-              class="!px-5 !py-14 text-center"
+              class="px-5! py-14! text-center"
             >
               <div class="flex flex-col items-center justify-center">
                 <div

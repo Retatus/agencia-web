@@ -274,7 +274,7 @@ import CustomItemModal from '../components/CustomItemModal.vue'
 */
 
 //import mockPassengers from '../mocks/passengers.mock.json'
-import { mockPassengers } from '@/modules/quotation/mocks/passengers.mock'
+import { mockPassengers } from '../../../mocks/passengers.mock'
 
 /*
 |--------------------------------------------------------------------------

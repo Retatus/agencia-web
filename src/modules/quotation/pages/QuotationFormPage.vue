@@ -102,73 +102,107 @@
         />
       </fieldset>
 
-      <!-- Pasajeros y Totales -->
+      <!-- Pasajeros -->
       <fieldset class="space-y-5 border-t border-slate-200 pt-6 dark:border-slate-800">
         <legend class="px-1 text-sm font-semibold text-slate-900 dark:text-white">
-          Pasajeros y Totales
+          Pasajeros
         </legend>
 
-        <div class="grid gap-6 xl:grid-cols-12">
-          <!-- Pasajeros -->
-          <div class="xl:col-span-7">
-            <QuotationPassengerManager
-              :passengers="store.quotation.passengers"
-              :passenger-types="passengerTypesAux"
-              @add-passenger="openPassengerModal"
-            />
+        <QuotationPassengerManager
+          :passengers="store.quotation.passengers"
+          :passenger-types="passengerTypesAux"
+          @add-passenger="openPassengerModal"
+        />
+      </fieldset>
+
+      <!-- Totales y Acciones -->
+      <fieldset class="space-y-5 border-t border-slate-200 pt-6 dark:border-slate-800">
+        <legend class="px-1 text-sm font-semibold text-slate-900 dark:text-white">
+          Totales y Acciones
+        </legend>
+
+        <div class="grid gap-6 lg:grid-cols-12">
+          <!-- Totales -->
+          <div class="lg:col-span-7">
+            <QuotationTotals :quotation="store.quotation" />
           </div>
 
-          <!-- Totales -->
-          <div class="xl:col-span-5">
-            <QuotationTotals :quotation="store.quotation" />
+          <!-- Acciones -->
+          <div class="lg:col-span-5">
+            <div
+              class="rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900"
+            >
+              <div class="border-b border-slate-200 px-4 py-3 dark:border-slate-700">
+                <h3 class="text-sm font-semibold text-slate-900 dark:text-white">
+                  Acciones de la cotización
+                </h3>
+              </div>
+              <div class="p-4 space-y-3">
+                <!-- Botones de acción -->
+                <div class="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    class="inline-flex items-center justify-center rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 hover:border-slate-400 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                    @click="duplicateQuotation"
+                  >
+                    <Copy class="mr-1.5 h-4 w-4" />
+                    Duplicar
+                  </button>
+
+                  <button
+                    type="button"
+                    class="inline-flex items-center justify-center rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 hover:border-slate-400 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                    @click="printQuotation"
+                  >
+                    <Printer class="mr-1.5 h-4 w-4" />
+                    Imprimir
+                  </button>
+
+                  <button
+                    type="button"
+                    class="inline-flex items-center justify-center rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 hover:border-slate-400 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                    @click="sendQuotation"
+                  >
+                    <Mail class="mr-1.5 h-4 w-4" />
+                    Enviar Email
+                  </button>
+
+                  <button
+                    type="button"
+                    class="inline-flex items-center justify-center rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 hover:border-slate-400 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                    @click="exportPDF"
+                  >
+                    <FileText class="mr-1.5 h-4 w-4" />
+                    PDF
+                  </button>
+                </div>
+
+                <!-- Separador -->
+                <div class="border-t border-slate-200 dark:border-slate-700"></div>
+
+                <!-- Botón Guardar -->
+                <button
+                  type="submit"
+                  class="w-full rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                  :disabled="store.saving"
+                >
+                  <Save class="mr-1.5 inline h-4 w-4" />
+                  {{ store.saving ? 'Guardando...' : 'Guardar Cotización' }}
+                </button>
+
+                <!-- Botón Cancelar -->
+                <button
+                  type="button"
+                  class="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 hover:border-slate-400 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                  @click="cancel"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </fieldset>
-
-      <!-- Acciones -->
-      <div
-        class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 dark:border-slate-800 sm:flex-row sm:justify-end"
-      >
-        <button
-          type="button"
-          class="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-          @click="cancel"
-        >
-          Cancelar
-        </button>
-
-        <button
-          type="button"
-          class="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-          @click="duplicateQuotation"
-        >
-          Duplicar
-        </button>
-
-        <button
-          type="button"
-          class="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-          @click="printQuotation"
-        >
-          Imprimir
-        </button>
-
-        <button
-          type="button"
-          class="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-          @click="sendQuotation"
-        >
-          Enviar Email
-        </button>
-
-        <button
-          type="submit"
-          class="rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-          :disabled="store.saving"
-        >
-          {{ store.saving ? 'Guardando...' : 'Guardar Cotización' }}
-        </button>
-      </div>
     </form>
 
     <!-- ============================================================
@@ -197,6 +231,8 @@
 import { computed, onMounted, ref } from 'vue'
 
 import { useRoute, useRouter } from 'vue-router'
+
+import { Copy, Printer, Mail, FileText, Save } from 'lucide-vue-next'
 
 /*
 |--------------------------------------------------------------------------
@@ -237,7 +273,8 @@ import CustomItemModal from '../components/CustomItemModal.vue'
 |
 */
 
-import mockPassengers from '../mocks/passengers.mock.json'
+//import mockPassengers from '../mocks/passengers.mock.json'
+import { mockPassengers } from '@/modules/quotation/mocks/passengers.mock'
 
 /*
 |--------------------------------------------------------------------------

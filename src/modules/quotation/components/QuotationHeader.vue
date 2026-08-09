@@ -206,25 +206,6 @@
         />
       </div>
     </fieldset>
-
-    <!-- Acciones -->
-    <div
-      class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 dark:border-slate-800 sm:flex-row sm:justify-end"
-    >
-      <button
-        type="button"
-        class="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-        @click="cancel"
-      >
-        Cancelar
-      </button>
-      <button
-        type="submit"
-        class="rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-      >
-        Guardar Cotización
-      </button>
-    </div>
   </form>
 </template>
 

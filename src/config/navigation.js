@@ -14,8 +14,7 @@ export const navigationItems = [
   { label: 'Clientes', route: 'crm.customers', icon: Users },
   { label: 'Servicios', route: 'services', icon: BriefcaseBusiness },
   { label: 'Proveedores', route: 'providers', icon: Building2 },
-  // { label: 'Precios', route: 'prices.index', icon: BadgeDollarSign },
-
+  { label: 'Precios', route: 'pricing.prices', icon: BadgeDollarSign },
   {
     label: 'Componentes UI',
     route: 'ui.components',

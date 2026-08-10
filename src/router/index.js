@@ -6,6 +6,7 @@ import customerRoutes from '@/modules/crm/customer.routes.js'
 import providerRoutes from '@/modules/catalog/providers/router/provider.routes.js'
 import serviceRoutes from '@/modules/catalog/services/router/service.routes.js'
 import quotationRoutes from '@/modules/quotation/router/quotation.routes.js'
+import PriceManagementPage from '@/modules/pricing/prices/PriceManagementPage.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -31,6 +32,16 @@ const router = createRouter({
           meta: {
             title: 'Componentes UI',
           },
+        },
+        {
+          path: '/pricing',
+          children: [
+            {
+              path: 'prices',
+              name: 'pricing.prices',
+              component: PriceManagementPage,
+            },
+          ],
         },
       ],
     },

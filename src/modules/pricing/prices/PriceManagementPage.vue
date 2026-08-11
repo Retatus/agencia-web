@@ -610,61 +610,33 @@
     <!-- TEMPORAL MODAL PLACEHOLDER -->
     <!-- ============================================================ -->
 
-    <div
+    <PriceFormModal
       v-if="showPriceModal"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      @click.self="closePriceModal"
-    >
-      <div class="w-full max-w-lg rounded-xl bg-white shadow-xl dark:bg-slate-900">
-        <div
-          class="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-slate-700"
-        >
-          <div>
-            <h3 class="font-semibold text-slate-900 dark:text-white">
-              {{ editingPrice ? 'Editar precio' : 'Nuevo precio' }}
-            </h3>
-            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              El formulario completo será implementado en PriceFormModal.vue.
-            </p>
-          </div>
-          <button
-            type="button"
-            class="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-            @click="closePriceModal"
-          >
-            <X class="h-5 w-5" />
-          </button>
-        </div>
-        <div class="p-5">
-          <div
-            class="rounded-lg bg-slate-50 p-4 text-sm text-slate-600 dark:bg-slate-800/50 dark:text-slate-400"
-          >
-            <template v-if="editingPrice">
-              Precio seleccionado:
-              <strong class="text-slate-900 dark:text-white"> #{{ editingPrice.id }} </strong>
-            </template>
-            <template v-else> Preparado para registrar un nuevo precio. </template>
-          </div>
-        </div>
-        <div class="flex justify-end border-t border-slate-200 px-5 py-4 dark:border-slate-700">
-          <button
-            type="button"
-            class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-            @click="closePriceModal"
-          >
-            Cerrar
-          </button>
-        </div>
-      </div>
-    </div>
+      :key="editingPrice?.id ?? 'new'"
+      :item="editingPrice"
+      :price-lists="priceLists"
+      :price-types="priceTypes"
+      :passenger-types="passengerTypes"
+      :services="services"
+      @close="closePriceModal"
+      @save="handlePriceSave"
+    />
   </div>
 </template>
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-
 import { usePriceStore } from '../stores/price.store'
+import { Pencil, Trash2 } from 'lucide-vue-next'
 
-import { BriefcaseBusiness, Pencil, Eye, Trash2 } from 'lucide-vue-next'
+import PriceFormModal from '../components/PriceFormModal.vue'
+
+import PriceListService from '../services/price-list.service'
+
+import PriceTypeService from '../services/price-type.service'
+
+import PassengerTypeService from '../../passenger/services/passenger-type.service'
+
+import ServiceService from '../../catalog/services/services/service.service'
 
 /*
 |--------------------------------------------------------------------------
@@ -754,7 +726,7 @@ const visiblePages = computed(() => {
 */
 
 onMounted(async () => {
-  await loadPrices()
+  await Promise.all([loadPrices(), loadCatalogs()])
 })
 
 /*
@@ -951,6 +923,7 @@ function openCreateModal() {
 */
 
 function editPrice(price) {
+  debugger
   editingPrice.value = JSON.parse(JSON.stringify(price))
 
   showPriceModal.value = true
@@ -1082,6 +1055,51 @@ function normalizeNumericFilter(value) {
   const number = Number(value)
 
   return Number.isNaN(number) ? null : number
+}
+
+const priceLists = ref([])
+const priceTypes = ref([])
+const passengerTypes = ref([])
+const services = ref([])
+
+const loadingCatalogs = ref(false)
+async function loadCatalogs() {
+  loadingCatalogs.value = true
+
+  try {
+    const [priceListsResponse, priceTypesResponse, passengerTypesResponse, servicesResponse] =
+      await Promise.all([
+        PriceListService.getAll({
+          active: 1,
+          per_page: 100,
+        }),
+
+        PriceTypeService.getAll({
+          active: 1,
+        }),
+
+        PassengerTypeService.getAll({
+          active: 1,
+        }),
+
+        ServiceService.getAll({
+          active: 1,
+          per_page: 100,
+        }),
+      ])
+
+    debugger
+
+    priceLists.value = priceListsResponse.data.data ?? []
+
+    priceTypes.value = priceTypesResponse.data.data ?? []
+
+    passengerTypes.value = passengerTypesResponse.data.data ?? []
+
+    services.value = servicesResponse.data.data ?? []
+  } finally {
+    loadingCatalogs.value = false
+  }
 }
 </script>
 

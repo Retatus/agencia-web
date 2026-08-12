@@ -102,179 +102,15 @@
     <!-- FILTERS -->
     <!-- ============================================================ -->
 
-    <div
-      class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900"
-    >
-      <div class="border-b border-slate-200 px-5 py-4 dark:border-slate-700">
-        <div class="flex items-center justify-between">
-          <div>
-            <h2 class="font-semibold text-slate-900 dark:text-white">Filtros</h2>
-            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400"
-              >Filtra las tarifas disponibles.</p
-            >
-          </div>
-          <button
-            type="button"
-            class="text-sm font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
-            @click="resetFilters"
-          >
-            Limpiar filtros
-          </button>
-        </div>
-      </div>
-
-      <div class="p-5">
-        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <!-- ================================================== -->
-          <!-- SEARCH -->
-          <!-- ================================================== -->
-
-          <div class="xl:col-span-2">
-            <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-              Buscar
-            </label>
-            <div class="relative">
-              <div
-                class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"
-              >
-                <Search class="h-4 w-4" />
-              </div>
-              <input
-                v-model="localFilters.search"
-                type="text"
-                class="w-full rounded-lg border border-slate-300 bg-white pl-10 pr-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-600"
-                placeholder="Servicio, variante, proveedor..."
-                @keyup.enter="applyFilters"
-              />
-            </div>
-          </div>
-
-          <!-- ================================================== -->
-          <!-- PRICE LIST -->
-          <!-- ================================================== -->
-
-          <div>
-            <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-              Lista de precios
-            </label>
-            <input
-              v-model="localFilters.price_list_id"
-              type="number"
-              min="1"
-              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-600"
-              placeholder="Todas"
-            />
-          </div>
-
-          <!-- ================================================== -->
-          <!-- ACTIVE -->
-          <!-- ================================================== -->
-
-          <div>
-            <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-              Estado
-            </label>
-            <select
-              v-model="localFilters.active"
-              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-            >
-              <option value="">Todos</option>
-              <option value="1">Activos</option>
-              <option value="0">Inactivos</option>
-            </select>
-          </div>
-
-          <!-- ================================================== -->
-          <!-- PROVIDER -->
-          <!-- ================================================== -->
-
-          <div>
-            <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-              Proveedor
-            </label>
-            <input
-              v-model="localFilters.provider_id"
-              type="number"
-              min="1"
-              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-600"
-              placeholder="Todos"
-            />
-          </div>
-
-          <!-- ================================================== -->
-          <!-- CATEGORY -->
-          <!-- ================================================== -->
-
-          <div>
-            <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-              Categoría
-            </label>
-            <input
-              v-model="localFilters.service_category_id"
-              type="number"
-              min="1"
-              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-600"
-              placeholder="Todas"
-            />
-          </div>
-
-          <!-- ================================================== -->
-          <!-- SERVICE -->
-          <!-- ================================================== -->
-
-          <div>
-            <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-              Servicio
-            </label>
-            <input
-              v-model="localFilters.service_id"
-              type="number"
-              min="1"
-              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-600"
-              placeholder="Todos"
-            />
-          </div>
-
-          <!-- ================================================== -->
-          <!-- PRICE TYPE -->
-          <!-- ================================================== -->
-
-          <div>
-            <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-              Tipo de precio
-            </label>
-            <input
-              v-model="localFilters.price_type_id"
-              type="number"
-              min="1"
-              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-600"
-              placeholder="Todos"
-            />
-          </div>
-        </div>
-
-        <!-- ==================================================== -->
-        <!-- FILTER ACTIONS -->
-        <!-- ==================================================== -->
-
-        <div class="mt-5 flex justify-end gap-2">
-          <button
-            type="button"
-            class="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
-            @click="resetFilters"
-          >
-            Limpiar
-          </button>
-          <button
-            type="button"
-            class="rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-            @click="applyFilters"
-          >
-            Aplicar filtros
-          </button>
-        </div>
-      </div>
-    </div>
+    <PriceFilters
+      v-model="filterValues"
+      :price-lists="priceLists"
+      :price-types="priceTypes"
+      :passenger-types="passengerTypes"
+      :services="services"
+      @apply="handleFiltersApply"
+      @reset="handleFiltersReset"
+    />
 
     <!-- ============================================================ -->
     <!-- PRICE TABLE -->
@@ -638,6 +474,8 @@ import PassengerTypeService from '../../passenger/services/passenger-type.servic
 
 import ServiceService from '../../catalog/services/services/service.service'
 
+import PriceFilters from '../components/PriceFilters.vue'
+
 /*
 |--------------------------------------------------------------------------
 | STORE
@@ -684,6 +522,14 @@ const localFilters = reactive({
   active: '1',
 })
 
+const filterValues = ref({
+  search: null,
+  price_list_id: null,
+  price_type_id: null,
+  service_uuid: null,
+  passenger_type_id: null,
+  active: 1,
+})
 /*
 |--------------------------------------------------------------------------
 | VISIBLE PAGES
@@ -762,6 +608,47 @@ async function reload() {
   }
 
   await loadPrices()
+}
+
+async function handleFiltersApply(filters) {
+  if (store.hasChanges) {
+    const confirmed = window.confirm(
+      'Hay cambios pendientes. ¿Desea descartarlos y aplicar los filtros?',
+    )
+
+    if (!confirmed) {
+      return
+    }
+  }
+
+  store.setFilters(filters)
+
+  await store.fetchPrices()
+}
+
+async function handleFiltersReset() {
+  if (store.hasChanges) {
+    const confirmed = window.confirm(
+      'Hay cambios pendientes. ¿Desea descartarlos y limpiar los filtros?',
+    )
+
+    if (!confirmed) {
+      return
+    }
+  }
+
+  store.resetFilters()
+
+  filterValues.value = {
+    search: null,
+    price_list_id: null,
+    price_type_id: null,
+    service_uuid: null,
+    passenger_type_id: null,
+    active: 1,
+  }
+
+  await store.fetchPrices()
 }
 
 /*

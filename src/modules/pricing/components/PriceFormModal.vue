@@ -136,7 +136,7 @@
                         :key="service.uuid"
                         :value="service.uuid"
                       >
-                        {{ service.name }} - {{ selectedServiceId }}
+                        {{ service.name }}
                       </option>
                     </select>
                   </div>
@@ -146,7 +146,7 @@
                     <label
                       class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
                     >
-                      Variante <span class="text-red-500">*</span> {{ form.service_variant_id }}
+                      Variante <span class="text-red-500">*</span>
                       {{ availableVariants.length }}
                     </label>
                     <select

@@ -76,6 +76,16 @@
         />
       </fieldset>
 
+      <!-- Pasajeros -->
+      <fieldset class="space-y-5 border-t border-slate-200 pt-6 dark:border-slate-800">
+        <QuotationPassengerManager
+          :passengers="store.quotation.passengers"
+          :passenger-types="passengerTypes"
+          @add-passenger="openPassengerModal"
+          @edit-passenger="openPassengerModal"
+        />
+      </fieldset>
+
       <!-- Itinerario -->
       <fieldset class="space-y-5 border-t border-slate-200 pt-6 dark:border-slate-800">
         <QuotationItineraryManager
@@ -94,16 +104,6 @@
           @remove-item="removeItem"
         />
       </fieldset>
-
-      <!-- Pasajeros -->
-      <fieldset class="space-y-5 border-t border-slate-200 pt-6 dark:border-slate-800">
-        <QuotationPassengerManager
-          :passengers="store.quotation.passengers"
-          :passenger-types="passengerTypesAux"
-          @add-passenger="openPassengerModal"
-        />
-      </fieldset>
-
       <!-- Totales y Acciones -->
       <div
         class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
@@ -224,7 +224,6 @@
 
     <CustomerQuickCreateModal
       v-if="showCustomerModal"
-      :document-types="documentTypesAux"
       :saving="customerStore.saving"
       @close="closeCustomerModal"
       @save="handleCustomerSave"
@@ -282,17 +281,6 @@ import CurrencyService from '@/modules/catalog/service/currency.service'
 import PassengerTypeService from '@/modules/catalog/service/passenger-type.service'
 
 import QuotationStatusService from '@/modules/catalog/service/quotation-status.service'
-/*
-|--------------------------------------------------------------------------
-| MOCKS
-|--------------------------------------------------------------------------
-|
-| Solo para pruebas.
-|
-*/
-
-//import mockPassengers from '../mocks/passengers.mock.json'
-import { mockPassengers } from '../../../mocks/passengers.mock'
 
 /*
 |--------------------------------------------------------------------------

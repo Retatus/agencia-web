@@ -1,6 +1,6 @@
 import api from '@/services/api'
 
-const BASE_URL = '/quotation/statuses'
+const BASE_URL = '/quotations/statuses'
 
 const QuotationStatusService = {
   getAll(params = {}) {

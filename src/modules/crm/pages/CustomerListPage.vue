@@ -39,8 +39,8 @@
 
     <!-- Tabla -->
     <BaseTable
-      v-else-if="store.items.length"
-      :items="store.items"
+      v-else-if="store.customers.length"
+      :items="store.customers"
       :loading="store.loading"
       :columns="7"
     >
@@ -132,7 +132,7 @@
         <BasePagination
           :current-page="currentPage"
           :last-page="lastPage"
-          :total="store.items.length"
+          :total="store.customers.length"
           :per-page="perPage"
           @change="currentPage = $event"
         />

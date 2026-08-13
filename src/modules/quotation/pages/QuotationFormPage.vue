@@ -68,10 +68,11 @@
       <fieldset class="space-y-5 border-t border-slate-200 pt-6 dark:border-slate-800">
         <QuotationHeader
           :quotation="store.quotation"
-          :customers="customersAux"
-          :currencies="currenciesAux"
-          :statuses="statusesAux"
-          :price-lists="priceListsAux"
+          :customers="customers"
+          :currencies="currencies"
+          :statuses="statuses"
+          :price-lists="priceLists"
+          @create-customer="openCustomerModal"
         />
       </fieldset>
 
@@ -220,6 +221,14 @@
       @close="closeCustomModal"
       @save="handleItemSave"
     />
+
+    <CustomerQuickCreateModal
+      v-if="showCustomerModal"
+      :document-types="documentTypesAux"
+      :saving="customerStore.saving"
+      @close="closeCustomerModal"
+      @save="handleCustomerSave"
+    />
   </section>
 </template>
 
@@ -260,6 +269,19 @@ import ServiceSelectorModal from '../components/ServiceSelectorModal.vue'
 
 import CustomItemModal from '../components/CustomItemModal.vue'
 
+import CustomerQuickCreateModal from '../../crm/components/CustomerQuickCreateModal.vue'
+//import { useCustomerStore } from '@/modules/crm/components/CustomerQuickCreateModal.vue'
+import { useCustomerStore } from '../../crm/stores/customer.store'
+
+import DocumentTypeService from '@/modules/catalog/service/document-type.service'
+
+import PriceListService from '@/modules/pricing/services/price-list.service'
+
+import CurrencyService from '@/modules/catalog/service/currency.service'
+
+import PassengerTypeService from '@/modules/catalog/service/passenger-type.service'
+
+import QuotationStatusService from '@/modules/catalog/service/quotation-status.service'
 /*
 |--------------------------------------------------------------------------
 | MOCKS
@@ -359,115 +381,72 @@ const pageTitle = computed(() => {
 |--------------------------------------------------------------------------
 */
 
-const priceListsAux = [
-  {
-    id: 1,
-    name: 'publico general',
-  },
-  {
-    id: 2,
-    name: 'agencia mayorista',
-  },
-  {
-    id: 3,
-    name: 'cooperativa',
-  },
-  {
-    id: 4,
-    name: 'black friday',
-  },
-]
+const customers = computed(() => customerStore.customers)
 
-const customersAux = [
-  {
-    id: 1,
-    first_name: 'Cliente 1',
-    last_name: 'Apellido 1',
-  },
-  {
-    id: 2,
-    first_name: 'Cliente 2',
-    last_name: 'Apellido 2',
-  },
-  {
-    id: 3,
-    first_name: 'Cliente 3',
-    last_name: 'Apellido 3',
-  },
-]
+const priceLists = ref([])
 
-const currenciesAux = [
-  {
-    id: 1,
-    code: 'USD',
-  },
-  {
-    id: 2,
-    code: 'EUR',
-  },
-  {
-    id: 3,
-    code: 'MXN',
-  },
-]
+const currencies = ref([])
 
-const statusesAux = [
-  {
-    id: 1,
-    name: 'Draft',
-  },
-  {
-    id: 2,
-    name: 'Pending',
-  },
-  {
-    id: 3,
-    name: 'Sent',
-  },
-  {
-    id: 4,
-    name: 'Approved',
-  },
-  {
-    id: 5,
-    name: 'Rejected',
-  },
-  {
-    id: 6,
-    name: 'Expired',
-  },
-  {
-    id: 7,
-    name: 'Confirmed',
-  },
-  {
-    id: 8,
-    name: 'Cancelled',
-  },
-]
+const statuses = ref([])
 
-const passengerTypesAux = [
-  {
-    id: 1,
-    code: 'ADT',
-    name: 'Adulto',
-  },
-  {
-    id: 2,
-    code: 'CHD',
-    name: 'Niño',
-  },
-  {
-    id: 3,
-    code: 'STD',
-    name: 'Estudiante',
-  },
-  {
-    id: 4,
-    code: 'INF',
-    name: 'Infante',
-  },
-]
+const passengerTypes = ref([])
+
+const loadingCatalogs = ref(false)
+
+/*
+|--------------------------------------------------------------------------
+| CUSTOMERS
+|--------------------------------------------------------------------------
+*/
+
+async function loadCustomers() {
+  await customerStore.fetchCustomers({
+    active: 1,
+    per_page: 100,
+  })
+}
+
+/*
+|--------------------------------------------------------------------------
+| AUXILIARY DATA
+|--------------------------------------------------------------------------
+*/
+
+async function loadAuxiliaryData() {
+  loadingCatalogs.value = true
+
+  try {
+    const [priceListsResponse, currenciesResponse, statusesResponse, passengerTypesResponse] =
+      await Promise.all([
+        PriceListService.getAll({
+          active: 1,
+          per_page: 100,
+        }),
+
+        CurrencyService.getAll({
+          active: 1,
+        }),
+
+        QuotationStatusService.getAll({
+          active: 1,
+        }),
+
+        PassengerTypeService.getAll({
+          active: 1,
+        }),
+      ])
+
+    priceLists.value = priceListsResponse.data.data ?? []
+
+    currencies.value = currenciesResponse.data.data ?? []
+
+    statuses.value = statusesResponse.data.data ?? []
+
+    passengerTypes.value = passengerTypesResponse.data.data ?? []
+  } finally {
+    loadingCatalogs.value = false
+  }
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -476,39 +455,16 @@ const passengerTypesAux = [
 */
 
 onMounted(async () => {
-  /*
-  |--------------------------------------------------------------------------
-  | EDITAR
-  |--------------------------------------------------------------------------
-  */
+  try {
+    await Promise.all([loadCustomers(), loadAuxiliaryData()])
 
-  if (isEdit.value) {
-    await store.load(route.params.uuid)
-  } else {
-    /*
-    |--------------------------------------------------------------------------
-    | NUEVO
-    |--------------------------------------------------------------------------
-    */
-
-    store.newQuotation()
-  }
-
-  /*
-  |--------------------------------------------------------------------------
-  | PASAJEROS MOCK
-  |--------------------------------------------------------------------------
-  |
-  | SOLO PARA PRUEBAS.
-  |
-  | Importante:
-  |
-  | se ejecuta DESPUÉS de load().
-  |
-  */
-
-  if (!store.quotation.passengers?.length) {
-    store.quotation.passengers = JSON.parse(JSON.stringify(mockPassengers))
+    if (isEdit.value) {
+      await store.load(route.params.uuid)
+    } else {
+      store.newQuotation()
+    }
+  } catch (error) {
+    console.error('Error inicializando cotización:', error)
   }
 })
 
@@ -941,94 +897,41 @@ function closePassengerModal() {
 /*
 |--------------------------------------------------------------------------
 |--------------------------------------------------------------------------
-| TEST CALCULATION
+| CLIENT MODAL
 |--------------------------------------------------------------------------
 |--------------------------------------------------------------------------
-|
-| Temporal.
-|
-| Puedes eliminar esta función cuando terminemos
-| la integración del motor.
-|
 */
 
-async function testCalculation() {
+const customerStore = useCustomerStore()
+
+const showCustomerModal = ref(false)
+
+function openCustomerModal() {
+  showCustomerModal.value = true
+}
+
+function closeCustomerModal() {
+  showCustomerModal.value = false
+}
+
+async function handleCustomerSave(payload) {
   try {
+    const customer = await customerStore.createCustomer(payload)
+
     /*
     |--------------------------------------------------------------------------
-    | Ejemplo simple
+    | El store ya agregó customer a customerStore.customers
     |--------------------------------------------------------------------------
+    |
+    | Por tanto `customers` se actualiza automáticamente.
+    |
     */
 
-    const payload = {
-      itineraries: [
-        {
-          day_number: 1,
+    store.quotation.customer_id = customer.id
 
-          items: [
-            {
-              name: 'Hotel Demo',
-
-              calculation_type: 'accommodation',
-
-              duration: 2,
-
-              passengers: store.quotation.passengers,
-
-              room_types: [
-                {
-                  id: 1,
-
-                  name: 'Simple',
-
-                  min_capacity: 1,
-
-                  max_capacity: 1,
-
-                  unit_cost: 60,
-
-                  unit_price: 80,
-                },
-
-                {
-                  id: 2,
-
-                  name: 'Doble',
-
-                  min_capacity: 1,
-
-                  max_capacity: 2,
-
-                  unit_cost: 90,
-
-                  unit_price: 120,
-                },
-
-                {
-                  id: 3,
-
-                  name: 'Triple',
-
-                  min_capacity: 1,
-
-                  max_capacity: 3,
-
-                  unit_cost: 160,
-
-                  unit_price: 200,
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    }
-
-    const result = await calculationStore.calculate(payload)
-
-    console.log('Calculation result:', result)
+    closeCustomerModal()
   } catch (error) {
-    console.error('Error probando cálculo:', error)
+    console.error('Error creando cliente:', error)
   }
 }
 </script>

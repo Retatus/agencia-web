@@ -34,27 +34,35 @@
 
           <!-- Cliente -->
           <div class="md:col-span-9">
-            <label
-              for="quotation-customer"
-              class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-            >
+            <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
               Cliente <span class="text-red-500">*</span>
             </label>
-            <select
-              id="quotation-customer"
-              v-model="store.quotation.customer_id"
-              required
-              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-            >
-              <option :value="null">Seleccione...</option>
-              <option
-                v-for="customer in customers"
-                :key="customer.id"
-                :value="customer.id"
+
+            <div class="flex gap-2">
+              <select
+                v-model="store.quotation.customer_id"
+                required
+                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
               >
-                {{ customer.first_name }} {{ customer.last_name }}
-              </option>
-            </select>
+                <option :value="null">Seleccione...</option>
+                <option
+                  v-for="customer in customers"
+                  :key="customer.id"
+                  :value="customer.id"
+                >
+                  {{ customer.first_name }} {{ customer.last_name }}
+                </option>
+              </select>
+
+              <button
+                type="button"
+                class="inline-flex shrink-0 items-center justify-center gap-1 rounded-lg border border-teal-600 bg-white px-4 py-2.5 text-sm font-medium text-teal-600 shadow-sm transition hover:bg-teal-50 hover:border-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500/30 dark:border-teal-500 dark:text-teal-400 dark:hover:bg-teal-950/30"
+                @click="$emit('create-customer')"
+              >
+                <Plus class="h-4 w-4" />
+                Nuevo
+              </button>
+            </div>
           </div>
         </div>
 

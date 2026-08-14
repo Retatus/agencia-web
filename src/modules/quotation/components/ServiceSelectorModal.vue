@@ -1,848 +1,793 @@
 <template>
-  <div
-    class="modal fade show d-block"
-    tabindex="-1"
-  >
-    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-      <div class="modal-content">
-        <!-- ===================================================== -->
-        <!-- HEADER -->
-        <!-- ===================================================== -->
-
-        <div class="modal-header">
-          <div>
-            <h5 class="modal-title mb-1">
-              {{ isEdit ? 'Editar Servicio' : 'Agregar Servicio' }}
-            </h5>
-
-            <small class="text-muted">
-              {{
-                isEdit
-                  ? 'Modifique la configuración del servicio del itinerario.'
-                  : 'Seleccione un servicio del catálogo para agregarlo al itinerario.'
-              }}
-            </small>
-          </div>
-
-          <button
-            type="button"
-            class="btn-close"
-            @click="cancel"
-          />
-        </div>
-
-        <!-- ===================================================== -->
-        <!-- BODY -->
-        <!-- ===================================================== -->
-
-        <div class="modal-body">
-          <!-- ================================================= -->
-          <!-- ERROR -->
-          <!-- ================================================= -->
-
+  <Teleport to="body">
+    <Transition
+      enter-active-class="transition duration-200"
+      enter-from-class="opacity-0"
+      leave-active-class="transition duration-150"
+      leave-to-class="opacity-0"
+    >
+      <div
+        class="fixed inset-0 z-50 overflow-y-auto bg-slate-950/60 p-4 backdrop-blur-sm"
+        @click.self="cancel"
+      >
+        <div class="flex min-h-full items-center justify-center">
           <div
-            v-if="error"
-            class="alert alert-danger"
+            role="dialog"
+            aria-modal="true"
+            :aria-label="isEdit ? 'Editar Servicio' : 'Agregar Servicio'"
+            class="w-full max-w-7xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900"
           >
-            {{ error }}
-
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-danger ms-2"
-              @click="error = null"
+            <!-- HEADER -->
+            <header
+              class="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4 dark:border-slate-800 sm:px-6"
             >
-              Cerrar
-            </button>
-          </div>
+              <div>
+                <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
+                  {{ isEdit ? 'Editar Servicio' : 'Agregar Servicio' }}
+                </h2>
+                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                  {{
+                    isEdit
+                      ? 'Modifique la configuración del servicio del itinerario.'
+                      : 'Seleccione un servicio del catálogo para agregarlo al itinerario.'
+                  }}
+                </p>
+              </div>
+              <button
+                type="button"
+                aria-label="Cerrar modal"
+                class="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                @click="cancel"
+              >
+                <X class="h-5 w-5" />
+              </button>
+            </header>
 
-          <!-- ================================================= -->
-          <!-- FILTROS -->
-          <!-- ================================================= -->
+            <!-- BODY -->
+            <div class="max-h-[80vh] overflow-y-auto p-5 sm:p-6">
+              <!-- ERROR -->
+              <div
+                v-if="error"
+                class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-400"
+              >
+                {{ error }}
+                <button
+                  type="button"
+                  class="ml-2 rounded border border-red-300 px-2 py-0.5 text-xs font-medium text-red-600 hover:bg-red-100 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950/50"
+                  @click="error = null"
+                >
+                  Cerrar
+                </button>
+              </div>
 
-          <div class="card border-0 bg-light mb-4">
-            <div class="card-body">
-              <div class="row g-3">
-                <!-- Buscar -->
-
-                <div class="col-md-6">
-                  <label class="form-label"> Buscar servicio </label>
-
-                  <input
-                    v-model="filters.search"
-                    type="text"
-                    class="form-control"
-                    placeholder="Nombre, código o proveedor..."
-                  />
-                </div>
-
-                <!-- Categoría -->
-
-                <div class="col-md-4">
-                  <label class="form-label"> Categoría </label>
-
-                  <select
-                    v-model="filters.category"
-                    class="form-select"
-                  >
-                    <option value=""> Todas las categorías </option>
-
-                    <option
-                      v-for="category in categories"
-                      :key="category.id"
-                      :value="category.id"
+              <!-- FILTROS -->
+              <div
+                class="mb-6 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950/50"
+              >
+                <div class="grid gap-4 sm:grid-cols-12">
+                  <!-- Buscar -->
+                  <div class="sm:col-span-6">
+                    <label
+                      class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
                     >
-                      {{ category.name }}
-                    </option>
-                  </select>
-                </div>
-
-                <!-- Limpiar -->
-
-                <div class="col-md-2 d-flex align-items-end">
-                  <button
-                    type="button"
-                    class="btn btn-outline-secondary w-100"
-                    @click="clearFilters"
-                  >
-                    Limpiar
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- ================================================= -->
-          <!-- LOADING SERVICIOS -->
-          <!-- ================================================= -->
-
-          <div
-            v-if="loading"
-            class="text-center py-5"
-          >
-            <div
-              class="spinner-border text-primary"
-              role="status"
-            />
-
-            <div class="mt-2 text-muted"> Cargando servicios... </div>
-          </div>
-
-          <!-- ================================================= -->
-          <!-- CONTENIDO -->
-          <!-- ================================================= -->
-
-          <div
-            v-else
-            class="row g-4"
-          >
-            <!-- =============================================== -->
-            <!-- LISTA DE SERVICIOS -->
-            <!-- =============================================== -->
-
-            <div class="col-lg-7">
-              <div class="card shadow-sm">
-                <div class="card-header d-flex justify-content-between">
-                  <strong> Servicios </strong>
-
-                  <span class="badge bg-secondary">
-                    {{ filteredServices.length }}
-                  </span>
-                </div>
-
-                <div class="table-responsive">
-                  <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                      <tr>
-                        <th>Servicio</th>
-                        <th>Proveedor</th>
-                        <th>Categoría</th>
-                        <th>Variantes</th>
-                        <th width="80"></th>
-                      </tr>
-                    </thead>
-
-                    <tbody>
-                      <!-- Sin resultados -->
-
-                      <tr v-if="!filteredServices.length">
-                        <td
-                          colspan="5"
-                          class="text-center text-muted py-5"
-                        >
-                          No se encontraron servicios.
-                        </td>
-                      </tr>
-
-                      <!-- Servicios -->
-
-                      <tr
-                        v-for="service in filteredServices"
-                        :key="service.uuid"
-                        :class="{
-                          'table-primary': selectedService?.uuid === service.uuid,
-                        }"
-                        style="cursor: pointer"
-                        @click="selectService(service)"
-                      >
-                        <!-- Servicio -->
-
-                        <td>
-                          <div class="fw-semibold">
-                            {{ service.name }}
-                          </div>
-
-                          <small class="text-muted">
-                            {{ service.code }}
-                          </small>
-                        </td>
-
-                        <!-- Proveedor -->
-
-                        <td>
-                          {{ service.provider?.business_name ?? '-' }}
-                        </td>
-
-                        <!-- Categoría -->
-
-                        <td>
-                          <span class="badge bg-light text-dark border">
-                            {{ service.service_category?.name ?? '-' }}
-                          </span>
-                        </td>
-
-                        <!-- Variantes -->
-
-                        <td>
-                          <span class="badge bg-secondary">
-                            {{ service.variants?.length ?? 0 }}
-                          </span>
-                        </td>
-
-                        <!-- Seleccionar -->
-
-                        <td>
-                          <button
-                            type="button"
-                            class="btn btn-sm btn-outline-primary"
-                            :disabled="loadingDetail && selectedService?.uuid === service.uuid"
-                            @click.stop="selectService(service)"
-                          >
-                            <span
-                              v-if="loadingDetail && selectedService?.uuid === service.uuid"
-                              class="spinner-border spinner-border-sm"
-                              role="status"
-                            />
-
-                            <template v-else>
-                              <i class="bi bi-chevron-right"></i>
-
-                              {{
-                                isEdit && Number(editBaseItem?.service_id) === Number(service.id)
-                                  ? 'Seleccionado'
-                                  : 'Seleccionar'
-                              }}
-                            </template>
-                          </button>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-
-            <!-- =============================================== -->
-            <!-- CONFIGURACIÓN -->
-            <!-- =============================================== -->
-
-            <div class="col-lg-5">
-              <div class="card shadow-sm">
-                <div class="card-header">
-                  <strong> Configuración del servicio </strong>
-                </div>
-
-                <div class="card-body">
-                  <!-- ========================================= -->
-                  <!-- SIN SERVICIO -->
-                  <!-- ========================================= -->
-
-                  <div
-                    v-if="!selectedService"
-                    class="text-center text-muted py-5"
-                  >
-                    <i class="bi bi-box-seam fs-1"></i>
-
-                    <p class="mt-3 mb-0"> Seleccione un servicio de la lista. </p>
+                      Buscar servicio
+                    </label>
+                    <input
+                      v-model="filters.search"
+                      type="text"
+                      placeholder="Nombre, código o proveedor..."
+                      class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-600"
+                    />
                   </div>
 
-                  <!-- ========================================= -->
-                  <!-- LOADING DETALLE -->
-                  <!-- ========================================= -->
+                  <!-- Categoría -->
+                  <div class="sm:col-span-4">
+                    <label
+                      class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+                    >
+                      Categoría
+                    </label>
+                    <select
+                      v-model="filters.category"
+                      class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                    >
+                      <option value=""> Todas las categorías </option>
+                      <option
+                        v-for="category in categories"
+                        :key="category.id"
+                        :value="category.id"
+                      >
+                        {{ category.name }}
+                      </option>
+                    </select>
+                  </div>
 
+                  <!-- Limpiar -->
+                  <div class="sm:col-span-2 flex items-end">
+                    <button
+                      type="button"
+                      class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+                      @click="clearFilters"
+                    >
+                      Limpiar
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- LOADING SERVICIOS -->
+              <div
+                v-if="loading"
+                class="py-8 text-center"
+              >
+                <div
+                  class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-teal-600 border-t-transparent"
+                ></div>
+                <div class="mt-2 text-sm text-slate-500 dark:text-slate-400"
+                  >Cargando servicios...</div
+                >
+              </div>
+
+              <!-- CONTENIDO -->
+              <div
+                v-else
+                class="grid gap-6 lg:grid-cols-12"
+              >
+                <!-- LISTA DE SERVICIOS -->
+                <div class="lg:col-span-7">
                   <div
-                    v-else-if="loadingDetail"
-                    class="text-center py-5"
+                    class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900"
                   >
                     <div
-                      class="spinner-border text-primary"
-                      role="status"
-                    />
-
-                    <div class="mt-2 text-muted"> Cargando información del servicio... </div>
-                  </div>
-
-                  <!-- ========================================= -->
-                  <!-- SERVICIO SELECCIONADO -->
-                  <!-- ========================================= -->
-
-                  <div v-else>
-                    <!-- Servicio -->
-
-                    <div class="mb-4">
-                      <label class="form-label"> Servicio </label>
-
-                      <div class="border rounded p-3">
-                        <div class="fw-semibold">
-                          {{ selectedService.name }}
-                        </div>
-
-                        <small class="text-muted">
-                          {{ selectedService.provider?.business_name ?? '-' }}
-                        </small>
-
-                        <div class="mt-2">
-                          <span
-                            class="badge"
-                            :class="calculationBadgeClass"
-                          >
-                            {{ calculationTypeLabel }}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Categoría -->
-
-                    <div class="mb-4">
-                      <label class="form-label"> Categoría </label>
-
-                      <input
-                        :value="selectedService.service_category?.name ?? ''"
-                        class="form-control"
-                        disabled
-                      />
-                    </div>
-
-                    <!-- ================================================= -->
-                    <!-- SERVICIO GENÉRICO -->
-                    <!-- ================================================= -->
-
-                    <template v-if="!isRecommendationType">
-                      <!-- Variante -->
-
-                      <div class="mb-4">
-                        <label class="form-label"> Variante * </label>
-
-                        <div
-                          v-if="loadingVariants"
-                          class="text-muted"
-                        >
-                          <span
-                            class="spinner-border spinner-border-sm me-2"
-                            role="status"
-                          />
-
-                          Cargando variantes...
-                        </div>
-
-                        <select
-                          v-else
-                          v-model="form.service_variant_id"
-                          class="form-select"
-                          :disabled="!variants.length"
-                          @change="onVariantChange"
-                        >
-                          <option :value="null">
-                            {{
-                              variants.length
-                                ? 'Seleccione una variante...'
-                                : 'No hay variantes disponibles'
-                            }}
-                          </option>
-
-                          <option
-                            v-for="variant in variants"
-                            :key="variant.id"
-                            :value="variant.id"
-                          >
-                            {{ variant.name }}
-                          </option>
-                        </select>
-                      </div>
-
-                      <!-- Información variante -->
-
-                      <div
-                        v-if="selectedVariant"
-                        class="alert alert-info"
+                      class="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-700"
+                    >
+                      <strong class="text-sm font-semibold text-slate-900 dark:text-white"
+                        >Servicios</strong
                       >
-                        <div class="fw-semibold mb-2">
-                          {{ selectedVariant.name }}
+                      <span
+                        class="inline-flex rounded-full bg-slate-200 px-2.5 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-300"
+                      >
+                        {{ filteredServices.length }}
+                      </span>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                      <table class="w-full text-sm">
+                        <thead
+                          class="border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/50"
+                        >
+                          <tr>
+                            <th
+                              class="px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                              >Servicio</th
+                            >
+                            <th
+                              class="px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                              >Proveedor</th
+                            >
+                            <th
+                              class="px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                              >Categoría</th
+                            >
+                            <th
+                              class="px-3 py-2.5 text-center text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                              >Variantes</th
+                            >
+                            <th
+                              class="px-3 py-2.5 text-center text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                            ></th>
+                          </tr>
+                        </thead>
+
+                        <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                          <!-- Sin resultados -->
+                          <tr v-if="!filteredServices.length">
+                            <td
+                              colspan="5"
+                              class="px-3 py-8 text-center text-sm text-slate-500 dark:text-slate-400"
+                            >
+                              No se encontraron servicios.
+                            </td>
+                          </tr>
+
+                          <!-- Servicios -->
+                          <tr
+                            v-for="service in filteredServices"
+                            :key="service.uuid"
+                            class="cursor-pointer transition hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                            :class="{
+                              'bg-teal-50 dark:bg-teal-950/30':
+                                selectedService?.uuid === service.uuid,
+                            }"
+                            @click="selectService(service)"
+                          >
+                            <!-- Servicio -->
+                            <td class="px-3 py-2.5">
+                              <div class="font-medium text-slate-900 dark:text-white">
+                                {{ service.name }}
+                              </div>
+                              <div class="text-xs text-slate-500 dark:text-slate-400">
+                                {{ service.code }}
+                              </div>
+                            </td>
+
+                            <!-- Proveedor -->
+                            <td class="px-3 py-2.5 text-sm text-slate-700 dark:text-slate-300">
+                              {{ service.provider?.business_name ?? '-' }}
+                            </td>
+
+                            <!-- Categoría -->
+                            <td class="px-3 py-2.5">
+                              <span
+                                class="inline-flex rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                              >
+                                {{ service.service_category?.name ?? '-' }}
+                              </span>
+                            </td>
+
+                            <!-- Variantes -->
+                            <td class="px-3 py-2.5 text-center">
+                              <span
+                                class="inline-flex rounded-full bg-slate-200 px-2.5 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-300"
+                              >
+                                {{ service.variants?.length ?? 0 }}
+                              </span>
+                            </td>
+
+                            <!-- Seleccionar -->
+                            <td class="px-3 py-2.5 text-center">
+                              <button
+                                type="button"
+                                class="inline-flex items-center rounded-lg border border-teal-300 px-3 py-1 text-xs font-medium text-teal-600 transition hover:bg-teal-50 disabled:opacity-50 dark:border-teal-700 dark:text-teal-400 dark:hover:bg-teal-950/30"
+                                :disabled="loadingDetail && selectedService?.uuid === service.uuid"
+                                @click.stop="selectService(service)"
+                              >
+                                <span
+                                  v-if="loadingDetail && selectedService?.uuid === service.uuid"
+                                  class="mr-1 inline-block h-3 w-3 animate-spin rounded-full border-2 border-teal-600 border-t-transparent"
+                                ></span>
+                                <span v-else>
+                                  {{
+                                    isEdit &&
+                                    Number(editBaseItem?.service_id) === Number(service.id)
+                                      ? 'Seleccionado'
+                                      : 'Seleccionar'
+                                  }}
+                                </span>
+                              </button>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- CONFIGURACIÓN -->
+                <div class="lg:col-span-5">
+                  <div
+                    class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900"
+                  >
+                    <div class="border-b border-slate-200 px-4 py-3 dark:border-slate-700">
+                      <strong class="text-sm font-semibold text-slate-900 dark:text-white"
+                        >Configuración del servicio</strong
+                      >
+                    </div>
+
+                    <div class="p-4">
+                      <!-- SIN SERVICIO -->
+                      <div
+                        v-if="!selectedService"
+                        class="py-8 text-center text-slate-500 dark:text-slate-400"
+                      >
+                        <div class="text-4xl mb-3">📦</div>
+                        <p class="text-sm">Seleccione un servicio de la lista.</p>
+                      </div>
+
+                      <!-- LOADING DETALLE -->
+                      <div
+                        v-else-if="loadingDetail"
+                        class="py-8 text-center"
+                      >
+                        <div
+                          class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-teal-600 border-t-transparent"
+                        ></div>
+                        <div class="mt-2 text-sm text-slate-500 dark:text-slate-400"
+                          >Cargando información del servicio...</div
+                        >
+                      </div>
+
+                      <!-- SERVICIO SELECCIONADO -->
+                      <div
+                        v-else
+                        class="space-y-4"
+                      >
+                        <!-- Servicio -->
+                        <div>
+                          <label
+                            class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+                            >Servicio</label
+                          >
+                          <div class="rounded-lg border border-slate-200 p-3 dark:border-slate-700">
+                            <div class="font-medium text-slate-900 dark:text-white">
+                              {{ selectedService.name }}
+                            </div>
+                            <div class="text-xs text-slate-500 dark:text-slate-400">
+                              {{ selectedService.provider?.business_name ?? '-' }}
+                            </div>
+                            <div class="mt-2">
+                              <span
+                                class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium"
+                                :class="calculationBadgeClass"
+                              >
+                                {{ calculationTypeLabel }}
+                              </span>
+                            </div>
+                          </div>
                         </div>
 
-                        <div class="small">
-                          <div v-if="selectedVariant.code">
-                            Código:
-                            {{ selectedVariant.code }}
+                        <!-- Categoría -->
+                        <div>
+                          <label
+                            class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+                            >Categoría</label
+                          >
+                          <input
+                            :value="selectedService.service_category?.name ?? ''"
+                            class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 shadow-sm outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300"
+                            disabled
+                          />
+                        </div>
+
+                        <!-- SERVICIO GENÉRICO -->
+                        <template v-if="!isRecommendationType">
+                          <!-- Variante -->
+                          <div>
+                            <label
+                              class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+                              >Variante *</label
+                            >
+                            <div
+                              v-if="loadingVariants"
+                              class="text-sm text-slate-500 dark:text-slate-400"
+                            >
+                              <span
+                                class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-teal-600 border-t-transparent mr-2"
+                              ></span>
+                              Cargando variantes...
+                            </div>
+                            <select
+                              v-else
+                              v-model="form.service_variant_id"
+                              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                              :disabled="!variants.length"
+                              @change="onVariantChange"
+                            >
+                              <option :value="null">
+                                {{
+                                  variants.length
+                                    ? 'Seleccione una variante...'
+                                    : 'No hay variantes disponibles'
+                                }}
+                              </option>
+                              <option
+                                v-for="variant in variants"
+                                :key="variant.id"
+                                :value="variant.id"
+                              >
+                                {{ variant.name }}
+                              </option>
+                            </select>
                           </div>
 
+                          <!-- Información variante -->
+                          <div
+                            v-if="selectedVariant"
+                            class="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950/30"
+                          >
+                            <div class="font-medium text-sm text-blue-800 dark:text-blue-300 mb-1">
+                              {{ selectedVariant.name }}
+                            </div>
+                            <div class="text-xs text-blue-700 dark:text-blue-400 space-y-0.5">
+                              <div v-if="selectedVariant.code"
+                                >Código: {{ selectedVariant.code }}</div
+                              >
+                              <div
+                                v-if="
+                                  selectedVariant.min_capacity !== null &&
+                                  selectedVariant.max_capacity !== null
+                                "
+                              >
+                                Capacidad: {{ selectedVariant.min_capacity }} -
+                                {{ selectedVariant.max_capacity }}
+                              </div>
+                              <div v-if="selectedVariant.unit_type"
+                                >Unidad: {{ selectedVariant.unit_type }}</div
+                              >
+                            </div>
+                          </div>
+
+                          <!-- Tarifa -->
+                          <div v-if="selectedVariant">
+                            <label
+                              class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+                              >Tarifa *</label
+                            >
+                            <div
+                              v-if="loadingPrices"
+                              class="text-sm text-slate-500 dark:text-slate-400"
+                            >
+                              <span
+                                class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-teal-600 border-t-transparent mr-2"
+                              ></span>
+                              Cargando tarifas...
+                            </div>
+                            <select
+                              v-else
+                              v-model="form.price_id"
+                              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                              :disabled="!prices.length"
+                            >
+                              <option :value="null">
+                                {{
+                                  prices.length
+                                    ? 'Seleccione una tarifa...'
+                                    : 'No hay tarifas disponibles'
+                                }}
+                              </option>
+                              <option
+                                v-for="price in prices"
+                                :key="price.id"
+                                :value="price.id"
+                              >
+                                {{ price.name ?? 'Tarifa' }} - {{ price.sale_price }}
+                                {{ price.currency?.code ?? '' }}
+                              </option>
+                            </select>
+                          </div>
+
+                          <!-- Precio seleccionado -->
+                          <div
+                            v-if="selectedPrice"
+                            class="rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-950/30"
+                          >
+                            <div class="font-medium text-sm text-green-800 dark:text-green-300"
+                              >Tarifa seleccionada</div
+                            >
+                            <div
+                              class="text-xs text-green-700 dark:text-green-400 mt-1 space-y-0.5"
+                            >
+                              <div
+                                >Precio: {{ selectedPrice.sale_price }}
+                                {{ selectedPrice.currency?.code ?? '' }}</div
+                              >
+                              <div v-if="selectedPrice.name">Tarifa: {{ selectedPrice.name }}</div>
+                            </div>
+                          </div>
+
+                          <!-- Cantidad -->
+                          <div>
+                            <label
+                              class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+                              >Cantidad *</label
+                            >
+                            <input
+                              v-model.number="form.quantity"
+                              type="number"
+                              min="1"
+                              step="1"
+                              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                            />
+                          </div>
+                        </template>
+
+                        <!-- ALOJAMIENTO / TRANSPORTE -->
+                        <template v-else>
+                          <!-- Noches -->
+                          <div v-if="calculationType === 'accommodation'">
+                            <label
+                              class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+                              >Noches *</label
+                            >
+                            <input
+                              v-model.number="form.duration"
+                              type="number"
+                              min="1"
+                              step="1"
+                              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                            />
+                          </div>
+
+                          <!-- Pasajeros -->
+                          <div
+                            class="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-950/50"
+                          >
+                            <div class="flex items-center justify-between">
+                              <span class="text-sm text-slate-600 dark:text-slate-400"
+                                >Pasajeros</span
+                              >
+                              <strong class="text-sm text-slate-900 dark:text-white">{{
+                                props.passengers.length
+                              }}</strong>
+                            </div>
+                            <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                              El cálculo utiliza los pasajeros actuales de la cotización.
+                            </div>
+                          </div>
+
+                          <!-- DISTRIBUCIÓN ACTUAL - EDICIÓN -->
+                          <div
+                            v-if="isGroupEdit && !recommendations.length"
+                            class="space-y-3"
+                          >
+                            <label
+                              class="block text-sm font-medium text-slate-700 dark:text-slate-300"
+                              >Distribución actual</label
+                            >
+                            <div
+                              class="rounded-lg border border-slate-200 p-3 dark:border-slate-700"
+                            >
+                              <div
+                                v-for="item in currentGroupItems"
+                                :key="item.uuid ?? item.id ?? item.group_index"
+                                class="flex items-center justify-between py-1 text-sm"
+                              >
+                                <div>
+                                  <strong>{{ item.quantity }} ×</strong>
+                                  {{ item.variant_name }}
+                                </div>
+                                <div class="text-slate-500 dark:text-slate-400">{{
+                                  money(item.subtotal)
+                                }}</div>
+                              </div>
+                              <hr class="my-2 border-slate-200 dark:border-slate-700" />
+                              <div class="flex items-center justify-between text-xs">
+                                <span class="text-slate-500 dark:text-slate-400"
+                                  >Cantidad total</span
+                                >
+                                <strong class="text-slate-900 dark:text-white">{{
+                                  currentGroupSummary.quantity
+                                }}</strong>
+                              </div>
+                              <div class="flex items-center justify-between text-xs">
+                                <span class="text-slate-500 dark:text-slate-400">Costo total</span>
+                                <strong class="text-slate-900 dark:text-white">{{
+                                  money(currentGroupSummary.total_cost)
+                                }}</strong>
+                              </div>
+                              <div class="flex items-center justify-between text-sm">
+                                <span class="text-slate-500 dark:text-slate-400">Venta total</span>
+                                <strong class="text-slate-900 dark:text-white">{{
+                                  money(currentGroupSummary.total_sale)
+                                }}</strong>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              class="w-full rounded-lg border border-teal-300 px-4 py-2.5 text-sm font-medium text-teal-600 transition hover:bg-teal-50 disabled:opacity-50 dark:border-teal-700 dark:text-teal-400 dark:hover:bg-teal-950/30"
+                              :disabled="loadingRecommendations"
+                              @click="loadRecommendations"
+                            >
+                              <span
+                                v-if="loadingRecommendations"
+                                class="inline-block mr-2 h-4 w-4 animate-spin rounded-full border-2 border-teal-600 border-t-transparent"
+                              ></span>
+                              <span v-else>⟳</span>
+                              Buscar nuevas recomendaciones
+                            </button>
+                          </div>
+
+                          <!-- CREAR: CARGAR RECOMENDACIONES -->
                           <div
                             v-if="
-                              selectedVariant.min_capacity !== null &&
-                              selectedVariant.max_capacity !== null
+                              !isGroupEdit && !recommendations.length && !loadingRecommendations
                             "
+                            class="pt-2"
                           >
-                            Capacidad:
-                            {{ selectedVariant.min_capacity }}
-                            -
-                            {{ selectedVariant.max_capacity }}
+                            <button
+                              type="button"
+                              class="w-full rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-teal-700 disabled:opacity-50"
+                              :disabled="!props.passengers.length"
+                              @click="loadRecommendations"
+                            >
+                              ✨ Generar recomendaciones
+                            </button>
                           </div>
 
-                          <div v-if="selectedVariant.unit_type">
-                            Unidad:
-                            {{ selectedVariant.unit_type }}
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- Tarifa -->
-
-                      <div
-                        v-if="selectedVariant"
-                        class="mb-4"
-                      >
-                        <label class="form-label"> Tarifa * </label>
-
-                        <div
-                          v-if="loadingPrices"
-                          class="text-muted"
-                        >
-                          <span
-                            class="spinner-border spinner-border-sm me-2"
-                            role="status"
-                          />
-
-                          Cargando tarifas...
-                        </div>
-
-                        <select
-                          v-else
-                          v-model="form.price_id"
-                          class="form-select"
-                          :disabled="!prices.length"
-                        >
-                          <option :value="null">
-                            {{
-                              prices.length
-                                ? 'Seleccione una tarifa...'
-                                : 'No hay tarifas disponibles'
-                            }}
-                          </option>
-
-                          <option
-                            v-for="price in prices"
-                            :key="price.id"
-                            :value="price.id"
-                          >
-                            {{ price.name ?? 'Tarifa' }}
-                            -
-                            {{ price.sale_price }}
-                            {{ price.currency?.code ?? '' }}
-                          </option>
-                        </select>
-                      </div>
-
-                      <!-- Precio seleccionado -->
-
-                      <div
-                        v-if="selectedPrice"
-                        class="alert alert-success"
-                      >
-                        <div class="fw-semibold"> Tarifa seleccionada </div>
-
-                        <div class="small mt-1">
-                          <div>
-                            Precio:
-                            {{ selectedPrice.sale_price }}
-                            {{ selectedPrice.currency?.code ?? '' }}
-                          </div>
-
-                          <div v-if="selectedPrice.name">
-                            Tarifa:
-                            {{ selectedPrice.name }}
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- Cantidad -->
-
-                      <div class="mb-4">
-                        <label class="form-label"> Cantidad * </label>
-
-                        <input
-                          v-model.number="form.quantity"
-                          type="number"
-                          min="1"
-                          step="1"
-                          class="form-control"
-                        />
-                      </div>
-                    </template>
-
-                    <!-- ================================================= -->
-                    <!-- ALOJAMIENTO / TRANSPORTE -->
-                    <!-- ================================================= -->
-
-                    <template v-else>
-                      <!-- Noches -->
-
-                      <div
-                        v-if="calculationType === 'accommodation'"
-                        class="mb-4"
-                      >
-                        <label class="form-label"> Noches * </label>
-
-                        <input
-                          v-model.number="form.duration"
-                          type="number"
-                          class="form-control"
-                          min="1"
-                          step="1"
-                        />
-                      </div>
-
-                      <!-- Pasajeros -->
-
-                      <div class="alert alert-light border mb-4">
-                        <div class="d-flex justify-content-between">
-                          <span> Pasajeros </span>
-
-                          <strong>
-                            {{ props.passengers.length }}
-                          </strong>
-                        </div>
-
-                        <div class="small text-muted mt-1">
-                          El cálculo utiliza los pasajeros actuales de la cotización.
-                        </div>
-                      </div>
-
-                      <!-- ================================================= -->
-                      <!-- DISTRIBUCIÓN ACTUAL - EDICIÓN -->
-                      <!-- ================================================= -->
-
-                      <div
-                        v-if="isGroupEdit && !recommendations.length"
-                        class="mb-4"
-                      >
-                        <label class="form-label fw-semibold"> Distribución actual </label>
-
-                        <div class="border rounded p-3">
+                          <!-- Loading -->
                           <div
-                            v-for="item in currentGroupItems"
-                            :key="item.uuid ?? item.id ?? item.group_index"
-                            class="d-flex justify-content-between mb-2"
-                          >
-                            <div>
-                              <strong> {{ item.quantity }} × </strong>
-
-                              {{ item.variant_name }}
-                            </div>
-
-                            <div class="text-muted">
-                              {{ money(item.subtotal) }}
-                            </div>
-                          </div>
-
-                          <hr />
-
-                          <div class="d-flex justify-content-between small">
-                            <span> Cantidad total </span>
-
-                            <strong>
-                              {{ currentGroupSummary.quantity }}
-                            </strong>
-                          </div>
-
-                          <div class="d-flex justify-content-between small">
-                            <span> Costo total </span>
-
-                            <strong>
-                              {{ money(currentGroupSummary.total_cost) }}
-                            </strong>
-                          </div>
-
-                          <div class="d-flex justify-content-between">
-                            <span> Venta total </span>
-
-                            <strong>
-                              {{ money(currentGroupSummary.total_sale) }}
-                            </strong>
-                          </div>
-                        </div>
-
-                        <button
-                          type="button"
-                          class="btn btn-outline-primary w-100 mt-3"
-                          :disabled="loadingRecommendations"
-                          @click="loadRecommendations"
-                        >
-                          <span
                             v-if="loadingRecommendations"
-                            class="spinner-border spinner-border-sm me-2"
-                          />
-
-                          <i
-                            v-else
-                            class="bi bi-arrow-repeat me-1"
-                          ></i>
-
-                          Buscar nuevas recomendaciones
-                        </button>
-                      </div>
-
-                      <!-- ================================================= -->
-                      <!-- CREAR: CARGAR RECOMENDACIONES -->
-                      <!-- ================================================= -->
-
-                      <div
-                        v-if="!isGroupEdit && !recommendations.length && !loadingRecommendations"
-                        class="mb-4"
-                      >
-                        <button
-                          type="button"
-                          class="btn btn-outline-primary w-100"
-                          :disabled="!props.passengers.length"
-                          @click="loadRecommendations"
-                        >
-                          <i class="bi bi-stars me-1"></i>
-
-                          Generar recomendaciones
-                        </button>
-                      </div>
-
-                      <!-- Loading -->
-
-                      <div
-                        v-if="loadingRecommendations"
-                        class="text-center py-4"
-                      >
-                        <div
-                          class="spinner-border text-primary"
-                          role="status"
-                        />
-
-                        <div class="small text-muted mt-2"> Calculando recomendaciones... </div>
-                      </div>
-
-                      <!-- Sin resultados -->
-
-                      <div
-                        v-else-if="recommendationsLoaded && !recommendations.length"
-                        class="alert alert-warning"
-                      >
-                        No se encontraron combinaciones disponibles para
-                        {{ props.passengers.length }} pasajeros.
-                      </div>
-
-                      <!-- ================================================= -->
-                      <!-- RECOMENDACIONES -->
-                      <!-- ================================================= -->
-
-                      <div
-                        v-if="recommendations.length"
-                        class="mb-4"
-                      >
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                          <label class="form-label fw-semibold mb-0">
-                            {{
-                              calculationType === 'accommodation'
-                                ? 'Distribuciones de habitaciones'
-                                : 'Distribuciones de transporte'
-                            }}
-                          </label>
-
-                          <button
-                            type="button"
-                            class="btn btn-sm btn-outline-secondary"
-                            @click="loadRecommendations"
+                            class="py-4 text-center"
                           >
-                            <i class="bi bi-arrow-repeat"></i>
-                          </button>
-                        </div>
+                            <div
+                              class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-teal-600 border-t-transparent"
+                            ></div>
+                            <div class="mt-2 text-sm text-slate-500 dark:text-slate-400"
+                              >Calculando recomendaciones...</div
+                            >
+                          </div>
 
-                        <div class="d-flex flex-column gap-3">
+                          <!-- Sin resultados -->
                           <div
-                            v-for="recommendation in recommendations"
-                            :key="recommendation.rank"
-                            class="border rounded p-3"
-                            :class="{
-                              'border-primary bg-light':
-                                selectedRecommendation?.rank === recommendation.rank,
-                            }"
-                            style="cursor: pointer"
-                            @click="selectRecommendation(recommendation)"
+                            v-else-if="recommendationsLoaded && !recommendations.length"
+                            class="rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950/30 dark:text-yellow-300"
                           >
-                            <!-- Cabecera -->
+                            No se encontraron combinaciones disponibles para
+                            {{ props.passengers.length }} pasajeros.
+                          </div>
 
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                              <div>
-                                <strong> Opción {{ recommendation.rank }} </strong>
-
-                                <span
-                                  v-if="recommendation.recommended"
-                                  class="badge bg-success ms-2"
-                                >
-                                  Recomendada
-                                </span>
-                              </div>
-
-                              <input
-                                type="radio"
-                                :checked="selectedRecommendation?.rank === recommendation.rank"
-                                @change="selectRecommendation(recommendation)"
-                              />
+                          <!-- RECOMENDACIONES -->
+                          <div
+                            v-if="recommendations.length"
+                            class="space-y-3"
+                          >
+                            <div class="flex items-center justify-between">
+                              <label class="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                {{
+                                  calculationType === 'accommodation'
+                                    ? 'Distribuciones de habitaciones'
+                                    : 'Distribuciones de transporte'
+                                }}
+                              </label>
+                              <button
+                                type="button"
+                                class="rounded-lg border border-slate-300 px-2 py-1 text-xs font-medium text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800"
+                                @click="loadRecommendations"
+                              >
+                                ⟳
+                              </button>
                             </div>
 
-                            <!-- Habitaciones -->
-
-                            <template v-if="calculationType === 'accommodation'">
+                            <div class="space-y-2">
                               <div
-                                v-for="room in recommendation.rooms"
-                                :key="room.service_variant_id"
-                                class="small mb-1"
+                                v-for="recommendation in recommendations"
+                                :key="recommendation.rank"
+                                class="cursor-pointer rounded-lg border p-3 transition hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                                :class="{
+                                  'border-teal-500 bg-teal-50 dark:bg-teal-950/30':
+                                    selectedRecommendation?.rank === recommendation.rank,
+                                  'border-slate-200 dark:border-slate-700':
+                                    selectedRecommendation?.rank !== recommendation.rank,
+                                }"
+                                @click="selectRecommendation(recommendation)"
                               >
-                                <strong> {{ room.quantity }} × </strong>
-
-                                {{ room.name }}
-
-                                <span class="text-muted">
-                                  · capacidad {{ room.total_capacity }}
-                                </span>
-                              </div>
-
-                              <div class="small text-muted mt-2">
-                                {{ recommendation.total_rooms }}
-                                habitaciones · capacidad
-                                {{ recommendation.total_capacity }}
-
-                                · libres
-                                {{ recommendation.unused_capacity }}
-                              </div>
-                            </template>
-
-                            <!-- Vehículos -->
-
-                            <template v-else>
-                              <div
-                                v-for="vehicle in recommendation.vehicles"
-                                :key="vehicle.service_variant_id"
-                                class="small mb-1"
-                              >
-                                <strong> {{ vehicle.quantity }} × </strong>
-
-                                {{ vehicle.name }}
-
-                                <span class="text-muted">
-                                  · capacidad {{ vehicle.total_capacity }}
-                                </span>
-                              </div>
-
-                              <div class="small text-muted mt-2">
-                                {{ recommendation.total_vehicles }}
-                                vehículos · capacidad
-                                {{ recommendation.total_capacity }}
-
-                                · libres
-                                {{ recommendation.unused_capacity }}
-                              </div>
-                            </template>
-
-                            <!-- Totales -->
-
-                            <div class="row mt-3 small">
-                              <div class="col-6">
-                                <span class="text-muted"> Costo </span>
-
-                                <div class="fw-semibold">
-                                  {{ money(recommendation.total_cost) }}
+                                <!-- Cabecera -->
+                                <div class="mb-2 flex items-center justify-between">
+                                  <div>
+                                    <strong class="text-sm text-slate-900 dark:text-white"
+                                      >Opción {{ recommendation.rank }}</strong
+                                    >
+                                    <span
+                                      v-if="recommendation.recommended"
+                                      class="ml-2 inline-flex rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                    >
+                                      Recomendada
+                                    </span>
+                                  </div>
+                                  <input
+                                    type="radio"
+                                    :checked="selectedRecommendation?.rank === recommendation.rank"
+                                    class="h-4 w-4 text-teal-600 accent-teal-600 focus:ring-teal-500"
+                                    @change="selectRecommendation(recommendation)"
+                                  />
                                 </div>
-                              </div>
 
-                              <div class="col-6">
-                                <span class="text-muted"> Venta </span>
+                                <!-- Habitaciones -->
+                                <template v-if="calculationType === 'accommodation'">
+                                  <div
+                                    v-for="room in recommendation.rooms"
+                                    :key="room.service_variant_id"
+                                    class="text-xs text-slate-700 dark:text-slate-300"
+                                  >
+                                    <strong>{{ room.quantity }} ×</strong>
+                                    {{ room.name }}
+                                    <span class="text-slate-500 dark:text-slate-400"
+                                      >· capacidad {{ room.total_capacity }}</span
+                                    >
+                                  </div>
+                                  <div class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                                    {{ recommendation.total_rooms }} habitaciones · capacidad
+                                    {{ recommendation.total_capacity }} · libres
+                                    {{ recommendation.unused_capacity }}
+                                  </div>
+                                </template>
 
-                                <div class="fw-semibold">
-                                  {{ money(recommendation.total_sale) }}
+                                <!-- Vehículos -->
+                                <template v-else>
+                                  <div
+                                    v-for="vehicle in recommendation.vehicles"
+                                    :key="vehicle.service_variant_id"
+                                    class="text-xs text-slate-700 dark:text-slate-300"
+                                  >
+                                    <strong>{{ vehicle.quantity }} ×</strong>
+                                    {{ vehicle.name }}
+                                    <span class="text-slate-500 dark:text-slate-400"
+                                      >· capacidad {{ vehicle.total_capacity }}</span
+                                    >
+                                  </div>
+                                  <div class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                                    {{ recommendation.total_vehicles }} vehículos · capacidad
+                                    {{ recommendation.total_capacity }} · libres
+                                    {{ recommendation.unused_capacity }}
+                                  </div>
+                                </template>
+
+                                <!-- Totales -->
+                                <div
+                                  class="mt-3 grid grid-cols-2 gap-2 border-t border-slate-200 pt-2 text-xs dark:border-slate-700"
+                                >
+                                  <div>
+                                    <span class="text-slate-500 dark:text-slate-400">Costo</span>
+                                    <div class="font-semibold text-slate-900 dark:text-white">{{
+                                      money(recommendation.total_cost)
+                                    }}</div>
+                                  </div>
+                                  <div>
+                                    <span class="text-slate-500 dark:text-slate-400">Venta</span>
+                                    <div class="font-semibold text-slate-900 dark:text-white">{{
+                                      money(recommendation.total_sale)
+                                    }}</div>
+                                  </div>
                                 </div>
                               </div>
                             </div>
                           </div>
+                        </template>
+
+                        <!-- NOTAS -->
+                        <div>
+                          <label
+                            class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+                            >Observaciones</label
+                          >
+                          <textarea
+                            v-model="form.notes"
+                            rows="3"
+                            class="w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-600"
+                          />
                         </div>
                       </div>
-                    </template>
-
-                    <!-- ================================================= -->
-                    <!-- NOTAS -->
-                    <!-- ================================================= -->
-
-                    <div class="mb-3">
-                      <label class="form-label"> Observaciones </label>
-
-                      <textarea
-                        v-model="form.notes"
-                        class="form-control"
-                        rows="3"
-                      />
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+
+            <!-- FOOTER -->
+            <footer
+              class="flex flex-col-reverse gap-3 border-t border-slate-200 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-950/50 sm:flex-row sm:justify-end sm:px-6"
+            >
+              <button
+                type="button"
+                class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+                @click="cancel"
+              >
+                Cancelar
+              </button>
+
+              <button
+                type="button"
+                class="inline-flex items-center justify-center rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                :disabled="!canSave"
+                @click="save"
+              >
+                <Pencil
+                  v-if="isEdit"
+                  class="mr-1 h-4 w-4"
+                />
+                <Plus
+                  v-else
+                  class="mr-1 h-4 w-4"
+                />
+                {{ isEdit ? 'Actualizar' : 'Agregar servicio' }}
+              </button>
+            </footer>
           </div>
         </div>
-
-        <!-- ===================================================== -->
-        <!-- FOOTER -->
-        <!-- ===================================================== -->
-
-        <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            @click="cancel"
-          >
-            Cancelar
-          </button>
-
-          <button
-            type="button"
-            class="btn btn-primary"
-            :disabled="!canSave"
-            @click="save"
-          >
-            <i :class="isEdit ? 'bi bi-check-circle me-1' : 'bi bi-plus-circle me-1'"></i>
-
-            {{ isEdit ? 'Actualizar' : 'Agregar servicio' }}
-          </button>
-        </div>
       </div>
-    </div>
-
-    <div class="modal-backdrop fade show"></div>
-  </div>
+    </Transition>
+  </Teleport>
 </template>
-
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 

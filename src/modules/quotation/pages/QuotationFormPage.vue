@@ -1,125 +1,242 @@
 <template>
-  <div class="container-fluid">
-    <!-- ================================================= -->
-    <!-- HEADER                                            -->
-    <!-- ================================================= -->
+  <section class="mx-auto max-w-[1600px]">
+    <!-- ============================================================
+         ENCABEZADO
+    ============================================================= -->
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <div>
-        <h2 class="mb-0">
+    <div class="mb-6 flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+      <div class="min-w-0">
+        <div class="mb-2 flex flex-wrap items-center gap-2">
+          <span
+            class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold"
+            :class="
+              isEdit
+                ? 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300'
+                : 'bg-green-100 text-green-700 dark:bg-green-950/60 dark:text-green-300'
+            "
+          >
+            {{ isEdit ? 'Edición' : 'Nueva' }}
+          </span>
+
+          <span
+            v-if="store.quotation.code"
+            class="text-sm font-medium text-slate-500 dark:text-slate-400"
+          >
+            {{ store.quotation.code }}
+          </span>
+        </div>
+
+        <h2 class="truncate text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
           {{ pageTitle }}
         </h2>
 
-        <small class="text-muted"> Gestión de Cotizaciones </small>
+        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          Administra los datos generales, itinerarios, pasajeros y totales de la cotización.
+        </p>
       </div>
 
-      <div class="d-flex gap-2">
-        <router-link
-          :to="{ name: 'quotations.index' }"
-          class="btn btn-outline-secondary"
-        >
-          Volver
-        </router-link>
-      </div>
+      <router-link
+        :to="{ name: 'quotations' }"
+        class="inline-flex shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-teal-500/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+      >
+        Volver al listado
+      </router-link>
     </div>
 
-    <!-- ================================================= -->
-    <!-- FORM                                              -->
-    <!-- ================================================= -->
+    <!-- Indicador de guardado -->
 
-    <form @submit.prevent="save">
-      <!-- ================================================= -->
-      <!-- DATOS GENERALES                                  -->
-      <!-- ================================================= -->
-
-      <QuotationHeader
-        :quotation="store.quotation"
-        :customers="customers"
-        :currencies="currencies"
-        :statuses="statuses"
-        :price-lists="priceLists"
+    <div
+      v-if="store.saving"
+      class="mb-5 flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700 dark:border-blue-900 dark:bg-blue-950/50 dark:text-blue-300"
+    >
+      <span
+        class="h-4 w-4 animate-spin rounded-full border-2 border-blue-200 border-t-blue-600 dark:border-blue-800 dark:border-t-blue-300"
       />
 
-      <!-- ================================================= -->
-      <!-- ITINERARIO                                        -->
-      <!-- ================================================= -->
+      Guardando cotización...
+    </div>
 
-      <QuotationItineraryManager
-        :itineraries="store.quotation.itineraries"
-        :selected-itinerary="store.selectedItinerary"
-        @add-itinerary="store.addItinerary"
-        @select-itinerary="store.selectItinerary"
-        @duplicate-itinerary="store.duplicateItinerary"
-        @remove-itinerary="store.removeItinerary"
-        @move-itinerary-up="store.moveItineraryUp"
-        @move-itinerary-down="store.moveItineraryDown"
-        @add-service="openCatalogModal"
-        @add-custom-item="openCustomModal"
-        @edit-item="editItem"
-        @duplicate-item="duplicateItem"
-        @remove-item="removeItem"
-      />
+    <!-- ============================================================
+         FORMULARIO
+    ============================================================= -->
 
-      <!-- ================================================= -->
-      <!-- TOTALES                                          -->
-      <!-- ================================================= -->
+    <form
+      class="space-y-7"
+      @submit.prevent="save"
+    >
+      <!-- Datos generales -->
+      <fieldset class="space-y-5 border-t border-slate-200 pt-6 dark:border-slate-800">
+        <QuotationHeader
+          :quotation="store.quotation"
+          :customers="customers"
+          :currencies="currencies"
+          :statuses="statuses"
+          :price-lists="priceLists"
+          @create-customer="openCustomerModal"
+        />
+      </fieldset>
 
-      <QuotationTotals :quotation="store.quotation" />
+      <!-- Pasajeros -->
+      <fieldset class="space-y-5 border-t border-slate-200 pt-6 dark:border-slate-800">
+        <QuotationPassengerManager
+          :passengers="store.quotation.passengers"
+          :passenger-types="passengerTypes"
+          @add-passenger="openPassengerModal"
+          @edit-passenger="openPassengerModal"
+        />
+      </fieldset>
 
-      <!-- ================================================= -->
-      <!-- PASAJEROS                                        -->
-      <!-- ================================================= -->
+      <!-- Itinerario -->
+      <fieldset class="space-y-5 border-t border-slate-200 pt-6 dark:border-slate-800">
+        <QuotationItineraryManager
+          :itineraries="store.quotation.itineraries"
+          :selected-itinerary="store.selectedItinerary"
+          @add-itinerary="store.addItinerary"
+          @select-itinerary="store.selectItinerary"
+          @duplicate-itinerary="store.duplicateItinerary"
+          @remove-itinerary="store.removeItinerary"
+          @move-itinerary-up="store.moveItineraryUp"
+          @move-itinerary-down="store.moveItineraryDown"
+          @add-service="openCatalogModal"
+          @add-custom-item="openCustomModal"
+          @edit-item="editItem"
+          @duplicate-item="duplicateItem"
+          @remove-item="removeItem"
+        />
+      </fieldset>
+      <!-- Totales y Acciones -->
+      <div
+        class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
+      >
+        <div class="border-b border-slate-200 px-5 py-4 dark:border-slate-800 sm:px-6">
+          <h3 class="font-semibold text-slate-900 dark:text-white"> Totales y Acciones </h3>
+          <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            Resumen de la cotización y acciones disponibles.
+          </p>
+        </div>
 
-      <QuotationPassengerManager
-        :passengers="store.quotation.passengers"
-        :passenger-types="passengerTypesAux"
-        @add-passenger="openPassengerModal"
-      />
+        <div class="p-5 sm:p-6">
+          <div class="grid gap-6 lg:grid-cols-12">
+            <!-- Totales -->
+            <div class="lg:col-span-7">
+              <QuotationTotals :quotation="store.quotation" />
+            </div>
 
-      <!-- ================================================= -->
-      <!-- ACCIONES                                          -->
-      <!-- ================================================= -->
+            <!-- Acciones -->
+            <div class="lg:col-span-5">
+              <div
+                class="rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-950/50"
+              >
+                <div class="border-b border-slate-200 px-4 py-3 dark:border-slate-700">
+                  <h4 class="text-sm font-semibold text-slate-900 dark:text-white">
+                    Acciones de la cotización
+                  </h4>
+                </div>
+                <div class="p-4 space-y-3">
+                  <!-- Botones de acción -->
+                  <div class="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+                      @click="duplicateQuotation"
+                    >
+                      <Copy class="mr-1.5 h-4 w-4" />
+                      Duplicar
+                    </button>
 
-      <QuotationActions
-        :loading="store.saving"
-        @save="save"
-        @cancel="cancel"
-        @duplicate="duplicateQuotation"
-        @print="printQuotation"
-        @email="sendQuotation"
-      />
+                    <button
+                      type="button"
+                      class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+                      @click="printQuotation"
+                    >
+                      <Printer class="mr-1.5 h-4 w-4" />
+                      Imprimir
+                    </button>
 
-      <!-- ================================================= -->
-      <!-- MODAL SERVICIO CATALOGO                           -->
-      <!-- ================================================= -->
+                    <button
+                      type="button"
+                      class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+                      @click="sendQuotation"
+                    >
+                      <Mail class="mr-1.5 h-4 w-4" />
+                      Enviar Email
+                    </button>
 
-      <ServiceSelectorModal
-        v-if="showServiceModal"
-        :item="editingItem"
-        :price-list-id="store.quotation.price_list_id"
-        :passengers="store.quotation.passengers"
-        @close="closeServiceModal"
-        @save="handleItemSave"
-      />
+                    <button
+                      type="button"
+                      class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+                      @click="exportPDF"
+                    >
+                      <FileText class="mr-1.5 h-4 w-4" />
+                      PDF
+                    </button>
+                  </div>
 
-      <!-- ================================================= -->
-      <!-- MODAL CUSTOM                                      -->
-      <!-- ================================================= -->
+                  <!-- Separador -->
+                  <div class="border-t border-slate-200 dark:border-slate-700"></div>
 
-      <CustomItemModal
-        v-if="showCustomModal"
-        :item="editingItem"
-        @close="closeCustomModal"
-        @save="handleItemSave"
-      />
+                  <!-- Botones Guardar y Cancelar en una sola fila -->
+                  <div class="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+                      @click="cancel"
+                    >
+                      Cancelar
+                    </button>
+
+                    <button
+                      type="submit"
+                      class="inline-flex items-center justify-center rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                      :disabled="store.saving"
+                    >
+                      <Save class="mr-1.5 h-4 w-4" />
+                      {{ store.saving ? 'Guardando...' : 'Guardar' }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </form>
-  </div>
+
+    <!-- ============================================================
+         MODALES
+    ============================================================= -->
+
+    <ServiceSelectorModal
+      v-if="showServiceModal"
+      :item="editingItem"
+      :price-list-id="store.quotation.price_list_id"
+      :passengers="store.quotation.passengers"
+      @close="closeServiceModal"
+      @save="handleItemSave"
+    />
+
+    <CustomItemModal
+      v-if="showCustomModal"
+      :item="editingItem"
+      @close="closeCustomModal"
+      @save="handleItemSave"
+    />
+
+    <CustomerQuickCreateModal
+      v-if="showCustomerModal"
+      :saving="customerStore.saving"
+      @close="closeCustomerModal"
+      @save="handleCustomerSave"
+    />
+  </section>
 </template>
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 
 import { useRoute, useRouter } from 'vue-router'
+
+import { Copy, Printer, Mail, FileText, Save } from 'lucide-vue-next'
 
 /*
 |--------------------------------------------------------------------------
@@ -150,6 +267,20 @@ import QuotationPassengerManager from '../components/QuotationPassengerManager.v
 import ServiceSelectorModal from '../components/ServiceSelectorModal.vue'
 
 import CustomItemModal from '../components/CustomItemModal.vue'
+
+import CustomerQuickCreateModal from '../../crm/components/CustomerQuickCreateModal.vue'
+//import { useCustomerStore } from '@/modules/crm/components/CustomerQuickCreateModal.vue'
+import { useCustomerStore } from '../../crm/stores/customer.store'
+
+import DocumentTypeService from '@/modules/catalog/service/document-type.service'
+
+import PriceListService from '@/modules/pricing/services/price-list.service'
+
+import CurrencyService from '@/modules/catalog/service/currency.service'
+
+import PassengerTypeService from '@/modules/catalog/service/passenger-type.service'
+
+import QuotationStatusService from '@/modules/catalog/service/quotation-status.service'
 
 /*
 |--------------------------------------------------------------------------
@@ -234,44 +365,94 @@ const pageTitle = computed(() => {
 
 /*
 |--------------------------------------------------------------------------
+| AUXILIARY DATA
+|--------------------------------------------------------------------------
+*/
+
+const customers = computed(() => customerStore.customers)
+
+const priceLists = ref([])
+
+const currencies = ref([])
+
+const statuses = ref([])
+
+const passengerTypes = ref([])
+
+const loadingCatalogs = ref(false)
+
+/*
+|--------------------------------------------------------------------------
+| CUSTOMERS
+|--------------------------------------------------------------------------
+*/
+
+async function loadCustomers() {
+  await customerStore.fetchCustomers({
+    active: 1,
+    per_page: 100,
+  })
+}
+
+/*
+|--------------------------------------------------------------------------
+| AUXILIARY DATA
+|--------------------------------------------------------------------------
+*/
+
+async function loadAuxiliaryData() {
+  loadingCatalogs.value = true
+
+  try {
+    const [priceListsResponse, currenciesResponse, statusesResponse, passengerTypesResponse] =
+      await Promise.all([
+        PriceListService.getAll({
+          active: 1,
+          per_page: 100,
+        }),
+
+        CurrencyService.getAll({
+          active: 1,
+        }),
+
+        QuotationStatusService.getAll({
+          active: 1,
+        }),
+
+        PassengerTypeService.getAll({
+          active: 1,
+        }),
+      ])
+
+    priceLists.value = priceListsResponse.data.data ?? []
+
+    currencies.value = currenciesResponse.data.data ?? []
+
+    statuses.value = statusesResponse.data.data ?? []
+
+    passengerTypes.value = passengerTypesResponse.data.data ?? []
+  } finally {
+    loadingCatalogs.value = false
+  }
+}
+
+/*
+|--------------------------------------------------------------------------
 | INIT
 |--------------------------------------------------------------------------
 */
 
 onMounted(async () => {
-  /*
-  |--------------------------------------------------------------------------
-  | EDITAR
-  |--------------------------------------------------------------------------
-  */
+  try {
+    await Promise.all([loadCustomers(), loadAuxiliaryData()])
 
-  if (isEdit.value) {
-    await store.load(route.params.uuid)
-  } else {
-    /*
-    |--------------------------------------------------------------------------
-    | NUEVO
-    |--------------------------------------------------------------------------
-    */
-
-    store.newQuotation()
-  }
-
-  /*
-  |--------------------------------------------------------------------------
-  | PASAJEROS MOCK
-  |--------------------------------------------------------------------------
-  |
-  | SOLO PARA PRUEBAS.
-  |
-  | Importante:
-  |
-  | se ejecuta DESPUÉS de load().
-  |
-  */
-
-  if (!store.quotation.passengers?.length) {
-    store.quotation.passengers = JSON.parse(JSON.stringify(mockPassengers))
+    if (isEdit.value) {
+      await store.load(route.params.uuid)
+    } else {
+      store.newQuotation()
+    }
+  } catch (error) {
+    console.error('Error inicializando cotización:', error)
   }
 })
 
@@ -295,7 +476,7 @@ async function save() {
     */
 
     // router.push({
-    //   name: 'quotations.index',
+    //   name: 'quotations',
     // })
   } catch (error) {
     console.error('Error guardando cotización:', error)
@@ -310,7 +491,7 @@ async function save() {
 
 function cancel() {
   router.push({
-    name: 'quotations.index',
+    name: 'quotations',
   })
 }
 
@@ -704,94 +885,41 @@ function closePassengerModal() {
 /*
 |--------------------------------------------------------------------------
 |--------------------------------------------------------------------------
-| TEST CALCULATION
+| CLIENT MODAL
 |--------------------------------------------------------------------------
 |--------------------------------------------------------------------------
-|
-| Temporal.
-|
-| Puedes eliminar esta función cuando terminemos
-| la integración del motor.
-|
 */
 
-async function testCalculation() {
+const customerStore = useCustomerStore()
+
+const showCustomerModal = ref(false)
+
+function openCustomerModal() {
+  showCustomerModal.value = true
+}
+
+function closeCustomerModal() {
+  showCustomerModal.value = false
+}
+
+async function handleCustomerSave(payload) {
   try {
+    const customer = await customerStore.createCustomer(payload)
+
     /*
     |--------------------------------------------------------------------------
-    | Ejemplo simple
+    | El store ya agregó customer a customerStore.customers
     |--------------------------------------------------------------------------
+    |
+    | Por tanto `customers` se actualiza automáticamente.
+    |
     */
 
-    const payload = {
-      itineraries: [
-        {
-          day_number: 1,
+    store.quotation.customer_id = customer.id
 
-          items: [
-            {
-              name: 'Hotel Demo',
-
-              calculation_type: 'accommodation',
-
-              duration: 2,
-
-              passengers: store.quotation.passengers,
-
-              room_types: [
-                {
-                  id: 1,
-
-                  name: 'Simple',
-
-                  min_capacity: 1,
-
-                  max_capacity: 1,
-
-                  unit_cost: 60,
-
-                  unit_price: 80,
-                },
-
-                {
-                  id: 2,
-
-                  name: 'Doble',
-
-                  min_capacity: 1,
-
-                  max_capacity: 2,
-
-                  unit_cost: 90,
-
-                  unit_price: 120,
-                },
-
-                {
-                  id: 3,
-
-                  name: 'Triple',
-
-                  min_capacity: 1,
-
-                  max_capacity: 3,
-
-                  unit_cost: 160,
-
-                  unit_price: 200,
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    }
-
-    const result = await calculationStore.calculate(payload)
-
-    console.log('Calculation result:', result)
+    closeCustomerModal()
   } catch (error) {
-    console.error('Error probando cálculo:', error)
+    console.error('Error creando cliente:', error)
   }
 }
 </script>

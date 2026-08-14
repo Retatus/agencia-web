@@ -1,35 +1,57 @@
 import { defineStore } from 'pinia'
+
 import CustomerService from '../services/customer.service'
 
-export const useCustomerStore = defineStore('customer', {
+export const useCustomerStore = defineStore('customers', {
   state: () => ({
-    items: [],
+    customers: [],
     item: null,
     meta: {},
     links: {},
     loading: false,
+
+    saving: false,
   }),
 
   actions: {
-    async fetchCustomers(filters = {}) {
+    async fetchCustomers(params = {}) {
       this.loading = true
       try {
-        const res = await CustomerService.getAll(filters)
-        this.items = res.data.data
-        this.links = res.data.links
-        this.meta = res.data.meta
+        const response = await CustomerService.getAll(params)
+        this.customers = response.data.data ?? []
+        this.links = response.data.links
+        this.meta = response.data.meta
+        return this.customers
       } finally {
         this.loading = false
       }
     },
 
     async fetchCustomer(uuid) {
-      const res = await CustomerService.get(uuid)
-      this.item = res.data.data
+      const response = await CustomerService.get(uuid)
+      this.item = response.data.data
     },
 
     async createCustomer(data) {
-      return await CustomerService.create(data)
+      this.saving = true
+
+      try {
+        const response = await CustomerService.create(data)
+
+        const customer = response.data.customer
+
+        /*
+        |--------------------------------------------------------------------------
+        | Mantener listado local actualizado
+        |--------------------------------------------------------------------------
+        */
+
+        this.customers.push(customer)
+
+        return customer
+      } finally {
+        this.saving = false
+      }
     },
 
     async updateCustomer(uuid, data) {

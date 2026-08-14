@@ -1,60 +1,68 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Login from '../views/Login.vue'
-import Dashboard from '../views/Dashboard.vue'
 
-import PaisIndex from '@/views/paises/IndexView.vue'
-import PaisForm from '@/views/paises/FormView.vue'
-
+import AppLayout from '@/layouts/AppLayout.vue'
+import DashboardView from '@/views/DashboardView.vue'
 import customerRoutes from '@/modules/crm/customer.routes.js'
 import providerRoutes from '@/modules/catalog/providers/router/provider.routes.js'
 import serviceRoutes from '@/modules/catalog/services/router/service.routes.js'
 import quotationRoutes from '@/modules/quotation/router/quotation.routes.js'
-
-const routes = [
-  {
-    path: '/',
-    redirect: '/dashboard',
-  },
-  {
-    path: '/dashboard',
-    name: 'dashboard',
-    component: Dashboard,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/login',
-    name: 'login',
-    component: Login,
-  },
-  {
-    path: '/paises',
-    component: PaisIndex,
-  },
-  {
-    path: '/paises/create',
-    component: PaisForm,
-  },
-  {
-    path: '/paises/:id/edit',
-    component: PaisForm,
-    props: true,
-  },
-]
+import PriceManagementPage from '@/modules/pricing/prices/PriceManagementPage.vue'
 
 const router = createRouter({
   history: createWebHistory(),
-  routes: [...customerRoutes, ...providerRoutes, ...serviceRoutes, ...quotationRoutes, ...routes],
+
+  routes: [
+    {
+      path: '/',
+      component: AppLayout,
+      children: [
+        {
+          path: '',
+          name: 'dashboard',
+          component: DashboardView,
+        },
+        ...customerRoutes,
+        ...providerRoutes,
+        ...serviceRoutes,
+        ...quotationRoutes,
+        {
+          path: 'ui-components',
+          name: 'ui.components',
+          component: () => import('@/views/UiShowcaseView.vue'),
+          meta: {
+            title: 'Componentes UI',
+          },
+        },
+        {
+          path: '/pricing',
+          children: [
+            {
+              path: 'prices',
+              name: 'pricing.prices',
+              component: PriceManagementPage,
+            },
+          ],
+        },
+      ],
+    },
+    // Las rutas públicas, como login, van fuera de AppLayout.
+    // {
+    //   path: '/login',
+    //   name: 'login',
+    //   component: () => import('@/views/auth/LoginPage.vue'),
+    //   meta: {
+    //     public: true,
+    //     title: 'Iniciar sesión',
+    //   },
+    // },
+
+    // // Ruta no encontrada
+    // {
+    //   path: '/:pathMatch(.*)*',
+    //   name: 'not-found',
+    //   component: () => import('@/views/NotFoundPage.vue'),
+    // },
+  ],
 })
-
-// Middleware de protección
-// router.beforeEach((to, from, next) => {
-//   const userStore = useUserStore();
-
-//   if (to.meta.requiresAuth && !userStore.isAuthenticated) {
-//     next('/');
-//   } else {
-//     next();
-//   }
-// });
 
 export default router

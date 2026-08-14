@@ -9,7 +9,6 @@
             type="button"
             class="btn btn-outline-secondary me-2"
             @click="$emit('duplicate')"
-            disabled
           >
             <i class="bi bi-files me-1"></i>
 

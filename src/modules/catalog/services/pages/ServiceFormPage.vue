@@ -1,55 +1,104 @@
 <template>
-  <div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2>
-        {{ isEdit ? 'Editar Servicio' : 'Nuevo Servicio' }}
-      </h2>
+  <section class="mx-auto max-w-5xl">
+    <!-- Encabezado -->
+
+    <div class="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+      <div>
+        <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+          {{ isEdit ? 'Editar servicio' : 'Nuevo servicio' }}
+        </h2>
+
+        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          {{
+            isEdit
+              ? 'Actualiza la información del servicio seleccionado.'
+              : 'Registra un nuevo servicio en el catálogo.'
+          }}
+        </p>
+      </div>
 
       <router-link
-        :to="{ name: 'services.index' }"
-        class="btn btn-secondary"
+        :to="{ name: 'services' }"
+        class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-teal-500/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
       >
         Volver
       </router-link>
     </div>
 
     <form @submit.prevent="save">
-      <div class="card">
-        <div class="card-header"> Información General </div>
+      <div
+        class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
+      >
+        <!-- Título de la sección -->
 
-        <div class="card-body">
-          <div class="row">
-            <div class="col-md-3 mb-3">
-              <label class="form-label"> Código </label>
+        <div class="border-b border-slate-200 px-5 py-4 dark:border-slate-800 sm:px-6">
+          <h3 class="font-semibold text-slate-900 dark:text-white"> Información general </h3>
+
+          <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            Los campos marcados con
+            <span class="text-red-500">*</span>
+            son obligatorios.
+          </p>
+        </div>
+
+        <!-- Campos -->
+
+        <div class="space-y-6 p-5 sm:p-6">
+          <div class="grid gap-5 md:grid-cols-12">
+            <div class="md:col-span-3">
+              <label
+                for="service-code"
+                class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+              >
+                Código
+              </label>
 
               <input
+                id="service-code"
                 v-model="form.code"
-                class="form-control"
                 type="text"
+                placeholder="SER0001"
+                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-600"
               />
             </div>
 
-            <div class="col-md-9 mb-3">
-              <label class="form-label"> Nombre </label>
+            <div class="md:col-span-9">
+              <label
+                for="service-name"
+                class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+              >
+                Nombre
+                <span class="text-red-500">*</span>
+              </label>
 
               <input
+                id="service-name"
                 v-model="form.name"
-                class="form-control"
+                type="text"
                 required
+                placeholder="Nombre del servicio"
+                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-600"
               />
             </div>
           </div>
 
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label class="form-label"> Proveedor </label>
+          <div class="grid gap-5 md:grid-cols-2">
+            <div>
+              <label
+                for="service-provider"
+                class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+              >
+                Proveedor
+                <span class="text-red-500">*</span>
+              </label>
 
               <select
+                id="service-provider"
                 v-model="form.provider_id"
-                class="form-select"
                 required
+                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
               >
-                <option value=""> Seleccione... </option>
+                <option value=""> Seleccione un proveedor </option>
 
                 <option
                   v-for="provider in providers"
@@ -61,15 +110,22 @@
               </select>
             </div>
 
-            <div class="col-md-6 mb-3">
-              <label class="form-label"> Categoría </label>
+            <div>
+              <label
+                for="service-category"
+                class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+              >
+                Categoría
+                <span class="text-red-500">*</span>
+              </label>
 
               <select
+                id="service-category"
                 v-model="form.service_category_id"
-                class="form-select"
                 required
+                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
               >
-                <option value=""> Seleccione... </option>
+                <option value=""> Seleccione una categoría </option>
 
                 <option
                   v-for="category in serviceCategoryStore.items"
@@ -82,53 +138,66 @@
             </div>
           </div>
 
-          <div class="mb-3">
-            <label class="form-label"> Descripción </label>
+          <div>
+            <label
+              for="service-description"
+              class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+            >
+              Descripción
+            </label>
 
             <textarea
+              id="service-description"
               v-model="form.description"
               rows="5"
-              class="form-control"
+              placeholder="Descripción general del servicio..."
+              class="w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-600"
             />
           </div>
 
-          <div class="form-check">
+          <label
+            class="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950/50"
+          >
             <input
               v-model="form.active"
-              class="form-check-input"
               type="checkbox"
+              class="mt-0.5 h-4 w-4 rounded border-slate-300 text-teal-600 accent-teal-600 focus:ring-teal-500 dark:border-slate-600 dark:bg-slate-800"
             />
 
-            <label class="form-check-label"> Activo </label>
-          </div>
+            <span>
+              <span class="block text-sm font-medium text-slate-800 dark:text-slate-200">
+                Servicio activo
+              </span>
+
+              <span class="mt-0.5 block text-xs text-slate-500 dark:text-slate-400">
+                El servicio estará disponible para utilizarse en cotizaciones.
+              </span>
+            </span>
+          </label>
+        </div>
+
+        <!-- Acciones -->
+
+        <div
+          class="flex flex-col-reverse gap-3 border-t border-slate-200 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-950/50 sm:flex-row sm:justify-end sm:px-6"
+        >
+          <router-link
+            :to="{ name: 'services' }"
+            class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+          >
+            Cancelar
+          </router-link>
+
+          <button
+            type="submit"
+            class="inline-flex items-center justify-center rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+          >
+            {{ isEdit ? 'Actualizar servicio' : 'Guardar servicio' }}
+          </button>
         </div>
       </div>
-
-      <div class="mt-4">
-        <button
-          class="btn btn-primary"
-          type="submit"
-        >
-          Guardar
-        </button>
-
-        <router-link
-          class="btn btn-secondary ms-2"
-          :to="{ name: 'services.index' }"
-        >
-          Cancelar
-        </router-link>
-      </div>
     </form>
-
-    <button
-      class="btn btn-danger ms-2"
-      type="button"
-      @click="quotation(form.uuid)"
-    >
-      Quotation
-    </button>
-  </div>
+  </section>
 </template>
 
 <script setup>
@@ -196,7 +265,7 @@ async function save() {
       await store.createService(form)
     }
     router.push({
-      name: 'services.index',
+      name: 'services',
     })
   } catch (error) {
     console.log('error de la peticion ', error)

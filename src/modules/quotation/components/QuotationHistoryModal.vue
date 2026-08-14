@@ -1,581 +1,292 @@
 <template>
-  <!-- Modal completamente independiente -->
-  <div
-    class="modal-overlay"
-    @click.self="emit('close')"
-  >
-    <div class="modal-container">
-      <!-- Header -->
-      <div class="modal-header">
-        <div>
-          <h5 class="modal-title">Historial de cambios</h5>
-          <small class="text-muted">{{ quotation?.code }}</small>
-        </div>
-        <button
-          class="close-btn"
-          @click="emit('close')"
-          >×</button
-        >
-      </div>
-
-      <!-- Body -->
-      <div class="modal-body">
-        <!-- Loading -->
-        <div
-          v-if="store.loading"
-          class="text-center py-5"
-        >
-          <div class="spinner"></div>
-          <div class="mt-3">Cargando historial...</div>
-        </div>
-
-        <!-- Sin registros -->
-        <div
-          v-else-if="!store.items.length"
-          class="text-center py-5"
-        >
-          <p class="text-muted">No existen cambios registrados.</p>
-        </div>
-
-        <!-- Timeline -->
-        <div
-          v-else
-          class="history-timeline"
-        >
+  <Teleport to="body">
+    <Transition
+      enter-active-class="transition duration-200"
+      enter-from-class="opacity-0"
+      leave-active-class="transition duration-150"
+      leave-to-class="opacity-0"
+    >
+      <div
+        class="fixed inset-0 z-50 overflow-y-auto bg-slate-950/60 p-4 backdrop-blur-sm"
+        @click.self="emit('close')"
+      >
+        <div class="flex min-h-full items-center justify-center">
           <div
-            v-for="batch in historyGroups"
-            :key="batch.batch_uuid"
-            class="history-card"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Historial de cambios"
+            class="w-full max-w-6xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900"
           >
-            <!-- Batch Header -->
-            <div class="card-header">
-              <div class="header-content">
-                <div>
-                  <h6 class="card-title">{{ batch.title }}</h6>
-                  <small class="text-muted">{{ formatDate(batch.created_at) }}</small>
+            <!-- HEADER -->
+            <header
+              class="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4 dark:border-slate-800 sm:px-6"
+            >
+              <div>
+                <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
+                  Historial de cambios
+                </h2>
+                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                  {{ quotation?.code }}
+                </p>
+              </div>
+              <button
+                type="button"
+                aria-label="Cerrar modal"
+                class="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                @click="emit('close')"
+              >
+                <X class="h-5 w-5" />
+              </button>
+            </header>
+
+            <!-- BODY -->
+            <div class="max-h-[70vh] overflow-y-auto p-5 sm:p-6">
+              <!-- Loading -->
+              <div
+                v-if="store.loading"
+                class="py-8 text-center"
+              >
+                <div
+                  class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-teal-600 border-t-transparent"
+                ></div>
+                <div class="mt-3 text-sm text-slate-500 dark:text-slate-400">
+                  Cargando historial...
                 </div>
-                <span class="badge"> {{ batch.totalChanges }} cambios </span>
+              </div>
+
+              <!-- Sin registros -->
+              <div
+                v-else-if="!store.items.length"
+                class="py-8 text-center"
+              >
+                <p class="text-sm text-slate-500 dark:text-slate-400">
+                  No existen cambios registrados.
+                </p>
+              </div>
+
+              <!-- Timeline -->
+              <div
+                v-else
+                class="space-y-6"
+              >
+                <div
+                  v-for="batch in historyGroups"
+                  :key="batch.batch_uuid"
+                  class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900"
+                >
+                  <!-- Batch Header -->
+                  <div
+                    class="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800/50"
+                  >
+                    <div>
+                      <h6 class="text-sm font-semibold text-slate-900 dark:text-white">
+                        {{ batch.title }}
+                      </h6>
+                      <span class="text-xs text-slate-500 dark:text-slate-400">
+                        {{ formatDate(batch.created_at) }}
+                      </span>
+                    </div>
+                    <span
+                      class="inline-flex rounded-full bg-slate-200 px-2.5 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-300"
+                    >
+                      {{ batch.totalChanges }} cambios
+                    </span>
+                  </div>
+
+                  <!-- Tabla -->
+                  <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                      <thead
+                        class="border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/50"
+                      >
+                        <tr>
+                          <th
+                            class="whitespace-nowrap px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                            style="min-width: 100px"
+                          >
+                            Hora
+                          </th>
+                          <th
+                            class="whitespace-nowrap px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                            style="min-width: 130px"
+                          >
+                            Entidad
+                          </th>
+                          <th
+                            class="whitespace-nowrap px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                            style="min-width: 100px"
+                          >
+                            Acción
+                          </th>
+                          <th
+                            class="whitespace-nowrap px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                            style="min-width: 130px"
+                          >
+                            Campo
+                          </th>
+                          <th
+                            class="px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                          >
+                            Descripción
+                          </th>
+                          <th
+                            class="px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                          >
+                            Valor anterior
+                          </th>
+                          <th
+                            class="px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                          >
+                            Valor nuevo
+                          </th>
+                        </tr>
+                      </thead>
+
+                      <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                        <tr
+                          v-for="history in batch.histories"
+                          :key="history.id"
+                          class="hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                        >
+                          <!-- Hora -->
+                          <td
+                            class="whitespace-nowrap px-3 py-2.5 text-xs text-slate-500 dark:text-slate-400"
+                          >
+                            {{ formatDateTime(history.created_at) }}
+                          </td>
+
+                          <!-- Entidad -->
+                          <td class="whitespace-nowrap px-3 py-2.5">
+                            <span class="font-medium text-slate-700 dark:text-slate-300">
+                              {{ formatEntity(history.entity_type) }}
+                            </span>
+                          </td>
+
+                          <!-- Acción -->
+                          <td class="px-3 py-2.5 text-slate-700 dark:text-slate-300">
+                            {{ actionLabel(history.action) }}
+                          </td>
+
+                          <!-- Campo -->
+                          <td
+                            class="whitespace-nowrap px-3 py-2.5 font-medium text-slate-700 dark:text-slate-300"
+                          >
+                            {{ history.field ?? 'Registro' }}
+                          </td>
+
+                          <!-- Descripción -->
+                          <td class="px-3 py-2.5 text-slate-600 dark:text-slate-400">
+                            <div class="max-w-xs truncate">
+                              {{ formatValue(history.description) }}
+                            </div>
+                          </td>
+
+                          <!-- Si es JSON, fusionar y hacer pivote -->
+                          <td
+                            v-if="isJsonValue(history.old_value) || isJsonValue(history.new_value)"
+                            colspan="2"
+                            class="px-3 py-2.5"
+                          >
+                            <div class="overflow-x-auto">
+                              <table class="min-w-full text-xs">
+                                <thead>
+                                  <tr>
+                                    <th
+                                      class="border-b border-slate-200 px-2 py-1 text-left font-medium text-slate-500 dark:border-slate-700 dark:text-slate-400"
+                                    ></th>
+                                    <th
+                                      v-for="key in getMergedKeys(
+                                        history.old_value,
+                                        history.new_value,
+                                      )"
+                                      :key="'header-' + key"
+                                      class="border-b border-slate-200 px-2 py-1 text-left font-medium text-slate-500 dark:border-slate-700 dark:text-slate-400"
+                                    >
+                                      {{ prettify(key) }}
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <!-- Fila: Valor anterior -->
+                                  <tr>
+                                    <td
+                                      class="px-2 py-1 font-medium text-red-600 dark:text-red-400"
+                                    >
+                                      Anterior
+                                    </td>
+                                    <td
+                                      v-for="key in getMergedKeys(
+                                        history.old_value,
+                                        history.new_value,
+                                      )"
+                                      :key="'old-' + key"
+                                      class="px-2 py-1 text-red-600 dark:text-red-400"
+                                    >
+                                      {{ formatValue(getValueFromObject(history.old_value, key)) }}
+                                    </td>
+                                  </tr>
+                                  <!-- Fila: Valor nuevo -->
+                                  <tr>
+                                    <td
+                                      class="px-2 py-1 font-medium text-green-600 dark:text-green-400"
+                                    >
+                                      Nuevo
+                                    </td>
+                                    <td
+                                      v-for="key in getMergedKeys(
+                                        history.old_value,
+                                        history.new_value,
+                                      )"
+                                      :key="'new-' + key"
+                                      class="px-2 py-1 text-green-600 dark:text-green-400"
+                                    >
+                                      {{ formatValue(getValueFromObject(history.new_value, key)) }}
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </td>
+
+                          <!-- Si NO es JSON, mostrar en dos columnas separadas -->
+                          <template v-else>
+                            <td class="px-3 py-2.5 text-red-600 dark:text-red-400">
+                              {{ formatValue(history.old_value) }}
+                            </td>
+                            <td class="px-3 py-2.5 text-green-600 dark:text-green-400">
+                              {{ formatValue(history.new_value) }}
+                            </td>
+                          </template>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <!-- Tabla -->
-            <div class="table-wrapper">
-              <table class="history-table">
-                <thead>
-                  <tr>
-                    <th style="width: 100px">Hora</th>
-                    <th style="width: 130px">Entidad</th>
-                    <th style="width: 100px">Acción</th>
-                    <th style="width: 130px">Campo</th>
-                    <th>Descripción</th>
-                    <th>Valor anterior</th>
-                    <th>Valor nuevo</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    v-for="history in batch.histories"
-                    :key="history.id"
-                  >
-                    <!-- Hora -->
-                    <td class="text-nowrap text-muted small">{{
-                      formatDateTime(history.created_at)
-                    }}</td>
-
-                    <!-- Entidad -->
-                    <td class="text-nowrap">
-                      <span class="fw-medium">{{ formatEntity(history.entity_type) }}</span>
-                    </td>
-
-                    <!-- Acción -->
-                    <td>{{ actionLabel(history.action) }}</td>
-
-                    <!-- Campo -->
-                    <td class="text-nowrap fw-medium">{{ history.field ?? 'Registro' }}</td>
-                    <td class="value-cell">
-                      <div class="simple-value">
-                        {{ formatValue(history.description) }}
-                      </div>
-                    </td>
-
-                    <!-- Si es JSON, fusionar y hacer pivote -->
-                    <td
-                      v-if="isJsonValue(history.old_value) || isJsonValue(history.new_value)"
-                      colspan="2"
-                      class="value-cell-json"
-                    >
-                      <div class="json-pivot-wrapper">
-                        <table class="json-pivot-table">
-                          <thead>
-                            <tr>
-                              <th class="pivot-row-header"></th>
-                              <th
-                                v-for="key in getMergedKeys(history.old_value, history.new_value)"
-                                :key="'header-' + key"
-                                class="pivot-field-header"
-                              >
-                                {{ prettify(key) }}
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <!-- Fila: Valor anterior -->
-                            <tr>
-                              <td class="pivot-row-label old-label">Anterior</td>
-                              <td
-                                v-for="key in getMergedKeys(history.old_value, history.new_value)"
-                                :key="'old-' + key"
-                                class="pivot-cell old-value"
-                              >
-                                {{ formatValue(getValueFromObject(history.old_value, key)) }}
-                              </td>
-                            </tr>
-                            <!-- Fila: Valor nuevo -->
-                            <tr>
-                              <td class="pivot-row-label new-label">Nuevo</td>
-                              <td
-                                v-for="key in getMergedKeys(history.old_value, history.new_value)"
-                                :key="'new-' + key"
-                                class="pivot-cell new-value"
-                              >
-                                {{ formatValue(getValueFromObject(history.new_value, key)) }}
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </td>
-
-                    <!-- Si NO es JSON, mostrar en dos columnas separadas -->
-                    <template v-else>
-                      <td class="value-cell-simple">
-                        <div class="simple-value">
-                          {{ formatValue(history.old_value) }}
-                        </div>
-                      </td>
-                      <td class="value-cell-simple">
-                        <div class="simple-value">
-                          {{ formatValue(history.new_value) }}
-                        </div>
-                      </td>
-                    </template>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            <!-- FOOTER -->
+            <footer
+              class="flex flex-col-reverse gap-3 border-t border-slate-200 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-950/50 sm:flex-row sm:justify-end sm:px-6"
+            >
+              <button
+                type="button"
+                class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+                @click="emit('close')"
+              >
+                Cerrar
+              </button>
+            </footer>
           </div>
         </div>
       </div>
-
-      <!-- Footer -->
-      <div class="modal-footer">
-        <button
-          class="btn-secondary"
-          @click="emit('close')"
-        >
-          Cerrar
-        </button>
-      </div>
-    </div>
-  </div>
+    </Transition>
+  </Teleport>
 </template>
-
-<style scoped>
-/* ============================================================
-   MODAL OVERLAY - Fondo oscuro
-   ============================================================ */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  padding: 20px;
-  overflow: auto;
-}
-
-/* ============================================================
-   MODAL CONTAINER
-   ============================================================ */
-.modal-container {
-  background: white;
-  border-radius: 12px;
-  width: 100%;
-  max-width: 1400px;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  overflow: hidden;
-}
-
-/* ============================================================
-   HEADER
-   ============================================================ */
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid #e9ecef;
-  flex-shrink: 0;
-}
-
-.modal-title {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-}
-
-.text-muted {
-  color: #6c757d;
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 28px;
-  cursor: pointer;
-  color: #6c757d;
-  padding: 0 8px;
-  line-height: 1;
-}
-
-.close-btn:hover {
-  color: #212529;
-}
-
-/* ============================================================
-   BODY
-   ============================================================ */
-.modal-body {
-  padding: 24px;
-  overflow-y: auto;
-  flex: 1;
-}
-
-/* ============================================================
-   LOADING
-   ============================================================ */
-.spinner {
-  display: inline-block;
-  width: 40px;
-  height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #007bff;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-/* ============================================================
-   HISTORY CARDS
-   ============================================================ */
-.history-card {
-  border: 1px solid #e9ecef;
-  border-radius: 12px;
-  margin-bottom: 24px;
-  overflow: hidden;
-}
-
-.card-header {
-  background: #f8f9fa;
-  padding: 16px 20px;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.header-content {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-}
-
-.card-title {
-  margin: 0;
-  font-weight: 600;
-  font-size: 1rem;
-}
-
-.badge {
-  background: #f8f9fa;
-  border: 1px solid #dee2e6;
-  padding: 6px 16px;
-  border-radius: 20px;
-  font-size: 0.875rem;
-}
-
-/* ============================================================
-   TABLA PRINCIPAL
-   ============================================================ */
-.table-wrapper {
-  overflow-x: auto;
-  padding: 0;
-}
-
-.history-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9rem;
-}
-
-.history-table thead {
-  background: #f8f9fa;
-}
-
-.history-table th {
-  padding: 12px 16px;
-  text-align: left;
-  font-weight: 600;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  color: #6c757d;
-  border-bottom: 2px solid #dee2e6;
-  white-space: nowrap;
-}
-
-.history-table td {
-  padding: 12px 16px;
-  border-bottom: 1px solid #f1f3f5;
-  vertical-align: middle;
-}
-
-.history-table tbody tr:hover {
-  background: #f8f9fa;
-}
-
-.text-nowrap {
-  white-space: nowrap;
-}
-
-.fw-medium {
-  font-weight: 500;
-}
-
-.small {
-  font-size: 0.875rem;
-}
-
-/* ============================================================
-   BADGE ACCIÓN
-   ============================================================ */
-.badge-action {
-  display: inline-block;
-  padding: 4px 14px;
-  border-radius: 20px;
-  border: 1px solid #dee2e6;
-  font-size: 0.8rem;
-  background: transparent;
-  color: inherit;
-}
-
-/* ============================================================
-   VALUE CELL - JSON (colspan 2)
-   ============================================================ */
-.value-cell-json {
-  padding: 8px 16px !important;
-}
-
-/* ============================================================
-   TABLA PIVOTE PARA JSON
-   ============================================================ */
-.json-pivot-wrapper {
-  overflow-x: auto;
-  max-width: 100%;
-}
-
-.json-pivot-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.85rem;
-  min-width: 200px;
-}
-
-.json-pivot-table thead th {
-  padding: 6px 12px;
-  text-align: center;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  color: #6c757d;
-  font-weight: 600;
-  border-bottom: 2px solid #dee2e6;
-  background: #f8f9fa;
-  white-space: nowrap;
-}
-
-.pivot-field-header {
-  min-width: 80px;
-  padding: 6px 12px !important;
-}
-
-.pivot-row-header {
-  min-width: 70px;
-  width: 70px;
-  background: #f8f9fa;
-  font-weight: 600;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  color: #6c757d;
-  border-bottom: 1px solid #f1f3f5;
-}
-
-.pivot-row-label {
-  padding: 6px 12px !important;
-  text-align: center;
-  font-weight: 600;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.old-label {
-  color: #6c757d;
-  background: #fff8f0;
-}
-
-.new-label {
-  color: #212529;
-  background: #f0f8ff;
-}
-
-.pivot-cell {
-  padding: 6px 12px !important;
-  text-align: center;
-  word-break: break-word;
-  border-bottom: 1px solid #f1f3f5;
-}
-
-.old-value {
-  background: #fff8f0;
-  color: #6c757d;
-}
-
-.new-value {
-  background: #f0f8ff;
-  color: #212529;
-  font-weight: 500;
-}
-
-/* ============================================================
-   VALUE CELL - Simple (dos columnas separadas)
-   ============================================================ */
-.value-cell-simple {
-  max-width: 300px;
-  min-width: 150px;
-  word-break: break-word;
-}
-
-.simple-value {
-  padding: 4px 0;
-  color: #212529;
-}
-
-/* ============================================================
-   FOOTER
-   ============================================================ */
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  padding: 16px 24px;
-  border-top: 1px solid #e9ecef;
-  flex-shrink: 0;
-}
-
-.btn-secondary {
-  background: #f8f9fa;
-  border: 1px solid #dee2e6;
-  padding: 8px 24px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  color: #212529;
-  transition: all 0.2s;
-}
-
-.btn-secondary:hover {
-  background: #e9ecef;
-}
-
-/* ============================================================
-   SCROLLBAR
-   ============================================================ */
-.json-pivot-wrapper::-webkit-scrollbar {
-  height: 6px;
-}
-
-.json-pivot-wrapper::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
-}
-
-.json-pivot-wrapper::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 3px;
-}
-
-/* ============================================================
-   RESPONSIVE
-   ============================================================ */
-@media (max-width: 768px) {
-  .modal-overlay {
-    padding: 10px;
-  }
-
-  .modal-container {
-    max-height: 95vh;
-  }
-
-  .modal-header {
-    padding: 16px;
-  }
-
-  .modal-body {
-    padding: 16px;
-  }
-
-  .history-table td,
-  .history-table th {
-    padding: 8px 10px;
-    font-size: 0.8rem;
-  }
-
-  .json-pivot-table thead th,
-  .json-pivot-table tbody td {
-    font-size: 0.75rem;
-    padding: 4px 8px !important;
-  }
-
-  .pivot-field-header {
-    min-width: 60px;
-  }
-
-  .pivot-row-header {
-    min-width: 50px;
-    width: 50px;
-  }
-}
-</style>
 
 <script setup>
 import { onMounted, computed } from 'vue'
-
+import { X } from 'lucide-vue-next'
 import { useQuotationHistoryStore } from '../stores/quotation-history.store'
 
 const props = defineProps({

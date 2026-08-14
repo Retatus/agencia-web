@@ -101,6 +101,8 @@ export const useQuotationStore = defineStore('quotation', {
     */
 
     selectedItineraryUuid: null,
+
+    changedPassengers: new Map(),
   }),
 
   /*
@@ -214,6 +216,20 @@ export const useQuotationStore = defineStore('quotation', {
     tax: (state) => Number(state.quotation.tax ?? 0),
 
     total: (state) => Number(state.quotation.total ?? 0),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Pasajeros
+    |--------------------------------------------------------------------------
+    */
+
+    hasPassengerChanges(state) {
+      return state.changedPassengers.size > 0
+    },
+
+    passengerChangedCount(state) {
+      return state.changedPassengers.size
+    },
   },
 
   /*

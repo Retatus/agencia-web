@@ -1,116 +1,177 @@
 <template>
-  <div class="container-fluid">
-    <!-- HEADER -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+  <section>
+    <!-- ============================================================
+         ENCABEZADO
+    ============================================================= -->
+
+    <div class="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
       <div>
-        <h2 class="mb-0"> Cotizaciones </h2>
-        <small class="text-muted"> Gestión de Cotizaciones </small>
+        <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+          Cotizaciones
+        </h2>
+
+        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400"> Gestión de cotizaciones </p>
       </div>
+
       <router-link
         :to="{ name: 'quotations.create' }"
-        class="btn btn-primary"
+        class="inline-flex items-center justify-center rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-slate-950"
       >
-        Nueva Cotización
+        Nueva cotización
       </router-link>
     </div>
-    <div class="card">
-      <div class="card-body p-0">
-        <BaseTable
-          :items="store.items"
-          :loading="store.loading"
-          :columns="9"
+
+    <!-- ============================================================
+         TABLA
+    ============================================================= -->
+
+    <BaseTable
+      :items="store.items"
+      :loading="store.loading"
+      :columns="9"
+      empty-text="No existen cotizaciones registradas."
+    >
+      <template #header>
+        <tr>
+          <th> Código </th>
+
+          <th> Cliente </th>
+
+          <th> Viaje </th>
+
+          <th> Válida hasta </th>
+
+          <th> Notas </th>
+
+          <th> Moneda </th>
+
+          <th class="text-right!"> Total </th>
+
+          <th> Estado </th>
+
+          <th class="text-right!"> Acciones </th>
+        </tr>
+      </template>
+      <template #body="{ items }"
+        ><tr
+          v-for="quotation in items"
+          :key="quotation.uuid"
         >
-          <template #header>
-            <tr>
-              <th>Código</th>
-              <th>Cliente</th>
-              <th>Viaje</th>
-              <th>Válida Hasta</th>
-              <th>Notas</th>
-              <th>Moneda</th>
-              <th class="text-end"> Total </th>
-              <th>Estado</th>
-              <th width="230"> Acciones </th>
-            </tr>
-          </template>
-          <template #body="{ items }">
-            <tr
-              v-for="quotation in items"
-              :key="quotation.uuid"
+          <td class="whitespace-nowrap">
+            <span class="font-semibold text-teal-700 dark:text-teal-300">
+              {{ quotation.code }}
+            </span>
+          </td>
+          <td class="min-w-44 font-medium text-slate-900! dark:text-white!">
+            {{
+              [quotation.customer?.first_name, quotation.customer?.last_name]
+                .filter(Boolean)
+                .join(' ') || 'Sin cliente'
+            }}
+          </td>
+          <td class="whitespace-nowrap">
+            {{ quotation.travel_date || 'Sin fecha' }}
+          </td>
+          <td class="whitespace-nowrap">
+            {{ quotation.valid_until || 'Sin fecha' }}
+          </td>
+          <td>
+            <p
+              class="max-w-52 truncate text-slate-500 dark:text-slate-400"
+              :title="quotation.notes || ''"
             >
-              <td>
-                {{ quotation.code }}
-              </td>
-              <td>
-                {{ quotation.customer?.first_name }}
-                {{ quotation.customer?.last_name }}
-              </td>
-              <td>
-                {{ quotation.travel_date }}
-              </td>
-              <td>
-                {{ quotation.valid_until }}
-              </td>
-              <td>
-                {{ quotation.notes }}
-              </td>
-              <td>
-                {{ quotation.currency?.code }}
-              </td>
-              <td class="text-end">
-                {{ money(quotation.total) }}
-              </td>
-              <td>
-                <span
-                  class="badge"
-                  :class="statusClass(quotation.status?.code)"
-                >
-                  {{ quotation.status?.name }}
-                </span>
-              </td>
-              <td>
-                <button
-                  type="button"
-                  class="btn btn-warning btn-sm me-2"
-                  @click="edit(quotation.uuid)"
-                >
-                  Editar
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-info btn-sm me-2"
-                  @click="viewHistory(quotation)"
-                >
-                  Historial
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-danger btn-sm"
-                  @click="remove(quotation.uuid)"
-                >
-                  Eliminar
-                </button>
-              </td>
-            </tr>
-          </template>
-        </BaseTable>
-      </div>
-    </div>
+              {{ quotation.notes || 'Sin notas' }}
+            </p>
+          </td>
+          <td class="whitespace-nowrap">
+            <span
+              class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+            >
+              {{ quotation.currency?.code || '—' }}
+            </span>
+            {{ money(quotation.total) }}
+          </td>
+          <td class="whitespace-nowrap">
+            <span
+              class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold"
+              :class="statusClass(quotation.status?.code)"
+            >
+              {{ quotation.status?.name || 'Sin estado' }}
+            </span>
+          </td>
+
+          <td>
+            <BaseBadge :variant="quotation.active ? 'success' : 'danger'">
+              {{ quotation.active ? 'Activo' : 'Inactivo' }}
+            </BaseBadge>
+          </td>
+
+          <td class="whitespace-nowrap">
+            <div class="flex justify-end gap-1">
+              <button
+                type="button"
+                class="rounded-lg px-2.5 py-2 text-sm font-medium text-slate-500 transition hover:bg-teal-50 hover:text-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500/30 dark:text-slate-400 dark:hover:bg-teal-950/60 dark:hover:text-teal-300"
+                @click="edit(quotation.uuid)"
+              >
+                <Pencil class="h-4 w-4" />
+                <span class="hidden xl:inline"> Editar </span>
+              </button>
+
+              <button
+                type="button"
+                class="rounded-lg px-2.5 py-2 text-sm font-medium text-slate-500 transition hover:bg-blue-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:text-slate-400 dark:hover:bg-blue-950/60 dark:hover:text-blue-300"
+                @click="viewHistory(quotation)"
+              >
+                <Eye class="h-4 w-4" />
+                <span class="hidden xl:inline"> Historial </span>
+              </button>
+
+              <button
+                type="button"
+                class="rounded-lg px-2.5 py-2 text-sm font-medium text-slate-500 transition hover:bg-red-50 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/30 dark:text-slate-400 dark:hover:bg-red-950/60 dark:hover:text-red-300"
+                @click="remove(quotation.uuid)"
+              >
+                <Trash2 class="h-4 w-4" />
+                <span class="hidden xl:inline"> Eliminar </span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </template>
+      <template #footer>
+        <BasePagination
+          :current-page="currentPage"
+          :last-page="lastPage"
+          :total="store.items.length"
+          :per-page="perPage"
+          @change="currentPage = $event"
+        />
+      </template>
+    </BaseTable>
+
+    <!-- ============================================================
+         MODAL DE HISTORIAL
+    ============================================================= -->
+
     <QuotationHistoryModal
       v-if="showHistory"
       :quotation="selectedQuotation"
       @close="closeHistory"
     />
-  </div>
+  </section>
 </template>
 
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import BaseTable from '@/shared/components/BaseTable.vue'
+//import BaseTable from '@/shared/components/BaseTable.vue'
 import { useQuotationStore } from '../stores/quotation.store'
 import QuotationHistoryModal from '../components/QuotationHistoryModal.vue'
 import quotationService from '../services/quotation.service.js'
+
+import { BriefcaseBusiness, Pencil, Eye, Trash2 } from 'lucide-vue-next'
+import { BaseBadge, BasePagination, BaseTable } from '@/components/ui'
+
 const router = useRouter()
 const store = useQuotationStore()
 
@@ -162,18 +223,23 @@ function money(value) {
   return Number(value || 0).toFixed(2)
 }
 
-function statusClass(code) {
-  switch (code) {
-    case 'DRAFT':
-      return 'bg-secondary'
-    case 'SENT':
-      return 'bg-primary'
-    case 'APPROVED':
-      return 'bg-success'
-    case 'REJECTED':
-      return 'bg-danger'
-    default:
-      return 'bg-light text-dark'
+function statusClass(statusCode) {
+  const classes = {
+    DRAFT: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+
+    PENDING: 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300',
+
+    SENT: 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300',
+
+    APPROVED: 'bg-green-100 text-green-700 dark:bg-green-950/60 dark:text-green-300',
+
+    CONFIRMED: 'bg-green-100 text-green-700 dark:bg-green-950/60 dark:text-green-300',
+
+    REJECTED: 'bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300',
+
+    CANCELLED: 'bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300',
   }
+
+  return classes[statusCode] || 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
 }
 </script>

@@ -1,156 +1,247 @@
 <template>
-  <div class="card shadow-sm mb-4">
-    <div class="card-header">
-      <h5 class="mb-0"> Datos Generales </h5>
+  <form
+    class="space-y-7"
+    @submit.prevent="submitForm"
+  >
+    <!-- Datos Generales -->
+    <div
+      class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
+    >
+      <div class="border-b border-slate-200 px-5 py-4 dark:border-slate-800 sm:px-6">
+        <h3 class="font-semibold text-slate-900 dark:text-white"> Datos Generales </h3>
+        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+          Los campos marcados con <span class="text-red-500">*</span> son obligatorios.
+        </p>
+      </div>
+
+      <div class="space-y-6 p-5 sm:p-6">
+        <div class="grid gap-5 md:grid-cols-12">
+          <!-- Código -->
+          <div class="md:col-span-3">
+            <label
+              for="quotation-code"
+              class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+            >
+              Código
+            </label>
+            <input
+              id="quotation-code"
+              v-model="store.quotation.code"
+              readonly
+              class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 shadow-sm outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+            />
+          </div>
+
+          <!-- Cliente -->
+          <div class="md:col-span-9">
+            <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+              Cliente <span class="text-red-500">*</span>
+            </label>
+
+            <div class="flex gap-2">
+              <select
+                v-model="store.quotation.customer_id"
+                required
+                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+              >
+                <option :value="null">Seleccione...</option>
+                <option
+                  v-for="customer in customers"
+                  :key="customer.id"
+                  :value="customer.id"
+                >
+                  {{ customer.first_name }} {{ customer.last_name }}
+                </option>
+              </select>
+
+              <button
+                type="button"
+                class="inline-flex shrink-0 items-center justify-center gap-1 rounded-lg border border-teal-600 bg-white px-4 py-2.5 text-sm font-medium text-teal-600 shadow-sm transition hover:bg-teal-50 hover:border-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500/30 dark:border-teal-500 dark:text-teal-400 dark:hover:bg-teal-950/30"
+                @click="$emit('create-customer')"
+              >
+                <Plus class="h-4 w-4" />
+                Nuevo
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid gap-5 md:grid-cols-3">
+          <!-- Lista de Precios -->
+          <div>
+            <label
+              for="quotation-price-list"
+              class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+            >
+              Lista de Precios
+            </label>
+            <select
+              id="quotation-price-list"
+              v-model="store.quotation.price_list_id"
+              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+            >
+              <option :value="null">Seleccione...</option>
+              <option
+                v-for="item in priceLists"
+                :key="item.id"
+                :value="item.id"
+              >
+                {{ item.name }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Moneda -->
+          <div>
+            <label
+              for="quotation-currency"
+              class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+            >
+              Moneda <span class="text-red-500">*</span>
+            </label>
+            <select
+              id="quotation-currency"
+              v-model="store.quotation.currency_id"
+              required
+              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+            >
+              <option
+                v-for="currency in currencies"
+                :key="currency.id"
+                :value="currency.id"
+              >
+                {{ currency.code }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Tipo Cambio -->
+          <div>
+            <label
+              for="quotation-exchange-rate"
+              class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+            >
+              T/C
+            </label>
+            <input
+              id="quotation-exchange-rate"
+              v-model.number="store.quotation.exchange_rate"
+              type="number"
+              step="0.0001"
+              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-600"
+            />
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="card-body">
-      <div class="row g-3">
-        <!-- Código -->
+    <!-- Estado y Fechas -->
+    <div
+      class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
+    >
+      <div class="border-b border-slate-200 px-5 py-4 dark:border-slate-800 sm:px-6">
+        <h3 class="font-semibold text-slate-900 dark:text-white"> Estado y Fechas </h3>
+        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+          Configure el estado y las fechas de la cotización.
+        </p>
+      </div>
 
-        <div class="col-md-3">
-          <label class="form-label"> Código </label>
-
-          <input
-            class="form-control"
-            v-model="store.quotation.code"
-            readonly
-          />
-        </div>
-
-        <!-- Cliente -->
-
-        <div class="col-md-9">
-          <label class="form-label"> Cliente </label>
-
-          <select
-            class="form-select"
-            v-model="store.quotation.customer_id"
-          >
-            <option :value="null"> Seleccione... </option>
-
-            <option
-              v-for="customer in customers"
-              :key="customer.id"
-              :value="customer.id"
+      <div class="space-y-6 p-5 sm:p-6">
+        <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+          <!-- Estado -->
+          <div>
+            <label
+              for="quotation-status"
+              class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
             >
-              {{ customer.first_name }}
-              {{ customer.last_name }}
-            </option>
-          </select>
-        </div>
-
-        <!-- Lista -->
-
-        <div class="col-md-4">
-          <label class="form-label"> Lista de Precios </label>
-
-          <select
-            class="form-select"
-            v-model="store.quotation.price_list_id"
-          >
-            <option :value="null"> Seleccione... </option>
-
-            <option
-              v-for="item in priceLists"
-              :key="item.id"
-              :value="item.id"
+              Estado <span class="text-red-500">*</span>
+            </label>
+            <select
+              id="quotation-status"
+              v-model="store.quotation.quotation_status_id"
+              required
+              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
             >
-              {{ item.name }}
-            </option>
-          </select>
-        </div>
+              <option :value="null">Seleccione...</option>
+              <option
+                v-for="status in statuses"
+                :key="status.id"
+                :value="status.id"
+              >
+                {{ status.name }}
+              </option>
+            </select>
+          </div>
 
-        <!-- Moneda -->
-
-        <div class="col-md-2">
-          <label class="form-label"> Moneda </label>
-
-          <select
-            class="form-select"
-            v-model="store.quotation.currency_id"
-          >
-            <option
-              v-for="currency in currencies"
-              :key="currency.id"
-              :value="currency.id"
+          <!-- Fecha Viaje -->
+          <div>
+            <label
+              for="quotation-travel-date"
+              class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
             >
-              {{ currency.code }}
-            </option>
-          </select>
-        </div>
+              Fecha Viaje
+            </label>
+            <input
+              id="quotation-travel-date"
+              v-model="store.quotation.travel_date"
+              type="date"
+              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:scheme-dark"
+            />
+          </div>
 
-        <!-- Tipo Cambio -->
-
-        <div class="col-md-2">
-          <label class="form-label"> T/C </label>
-
-          <input
-            type="number"
-            step="0.0001"
-            class="form-control"
-            v-model.number="store.quotation.exchange_rate"
-          />
-        </div>
-
-        <!-- Estado -->
-
-        <div class="col-md-4">
-          <label class="form-label"> Estado </label>
-
-          <select
-            class="form-select"
-            v-model="store.quotation.quotation_status_id"
-          >
-            <option :value="null"> Seleccione... </option>
-            <option
-              v-for="status in statuses"
-              :key="status.id"
-              :value="status.id"
+          <!-- Válido Hasta -->
+          <div>
+            <label
+              for="quotation-valid-until"
+              class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
             >
-              {{ status.name }}
-            </option>
-          </select>
+              Válido Hasta
+            </label>
+            <input
+              id="quotation-valid-until"
+              v-model="store.quotation.valid_until"
+              type="date"
+              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:scheme-dark"
+            />
+          </div>
+
+          <!-- Observaciones (columna extra) -->
+          <div>
+            <label
+              for="quotation-notes"
+              class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+            >
+              Observaciones
+            </label>
+            <input
+              id="quotation-notes"
+              v-model="store.quotation.notes"
+              type="text"
+              placeholder="Notas rápidas..."
+              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-600"
+            />
+          </div>
         </div>
 
-        <!-- Fecha -->
-
-        <div class="col-md-3">
-          <label class="form-label"> Fecha Viaje </label>
-
-          <input
-            type="date"
-            class="form-control"
-            v-model="store.quotation.travel_date"
-          />
-        </div>
-
-        <!-- Vigencia -->
-
-        <div class="col-md-3">
-          <label class="form-label"> Válido Hasta </label>
-
-          <input
-            type="date"
-            class="form-control"
-            v-model="store.quotation.valid_until"
-          />
-        </div>
-
-        <!-- Observaciones -->
-
-        <div class="col-md-12">
-          <label class="form-label"> Observaciones </label>
-
+        <!-- Observaciones (textarea completo) -->
+        <div>
+          <label
+            for="quotation-notes-full"
+            class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+          >
+            Observaciones detalladas
+          </label>
           <textarea
-            rows="3"
-            class="form-control"
+            id="quotation-notes-full"
             v-model="store.quotation.notes"
+            rows="3"
+            placeholder="Notas adicionales..."
+            class="w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-600"
           />
         </div>
       </div>
     </div>
-  </div>
+  </form>
 </template>
 
 <script setup>

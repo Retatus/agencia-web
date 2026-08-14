@@ -1,49 +1,42 @@
 <template>
-  <div class="mb-4">
-    <ul class="nav nav-pills itinerary-tabs">
-      <li
-        v-for="itinerary in itineraries"
-        :key="itinerary.uuid"
-        class="nav-item me-2 mb-2"
+  <div class="flex flex-wrap items-center gap-2">
+    <button
+      v-for="itinerary in itineraries"
+      :key="itinerary.uuid"
+      type="button"
+      class="inline-flex flex-col items-start rounded-lg px-4 py-2.5 text-sm transition"
+      :class="
+        selectedUuid === itinerary.uuid
+          ? 'bg-teal-600 text-white shadow-sm'
+          : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
+      "
+      @click="select(itinerary.uuid)"
+    >
+      <span class="font-semibold"> Día {{ itinerary.day_number }} </span>
+      <span
+        class="text-xs"
+        :class="
+          selectedUuid === itinerary.uuid ? 'text-teal-100' : 'text-slate-500 dark:text-slate-400'
+        "
       >
-        <button
-          type="button"
-          class="nav-link px-4"
-          :class="{
-            active: selectedUuid === itinerary.uuid,
-          }"
-          @click="select(itinerary.uuid)"
-        >
-          <div class="fw-bold"> Día {{ itinerary.day_number }} </div>
+        <span v-if="itinerary.travel_date">
+          {{ formatDate(itinerary.travel_date) }}
+        </span>
+        <span v-else>Sin fecha</span>
+        · {{ itinerary.items?.length || 0 }} servicios
+      </span>
+    </button>
 
-          <small
-            v-if="itinerary.travel_date"
-            class="d-block"
-          >
-            {{ formatDate(itinerary.travel_date) }}
-          </small>
-          &nbsp;
-          <small class="d-block">
-            {{ itinerary.items?.length || 0 }}
-          </small>
-          servicios
-        </button>
-      </li>
-
-      <li class="nav-item">
-        <button
-          type="button"
-          class="btn btn-outline-primary"
-          @click="add"
-        >
-          <i class="bi bi-plus-lg me-1"></i>
-          Agregar Día
-        </button>
-      </li>
-    </ul>
+    <button
+      type="button"
+      class="inline-flex items-center rounded-lg border border-dashed border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-600 transition hover:border-teal-500 hover:text-teal-600 hover:bg-teal-50 dark:border-slate-700 dark:text-slate-400 dark:hover:border-teal-500 dark:hover:text-teal-400 dark:hover:bg-teal-950/30"
+      @click="add"
+    >
+      <span class="mr-1 text-lg leading-none">+</span>
+      Agregar Día
+    </button>
   </div>
 </template>
-
 <script setup>
 const props = defineProps({
   itineraries: {

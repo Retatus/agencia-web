@@ -6,6 +6,7 @@ import {
   BriefcaseBusiness,
   Building2,
   BadgeDollarSign,
+  ListChecks,
 } from 'lucide-vue-next'
 
 export const navigationItems = [
@@ -16,6 +17,12 @@ export const navigationItems = [
   { label: 'Proveedores', route: 'providers', icon: Building2 },
   { label: 'Precios', route: 'pricing.prices', icon: BadgeDollarSign },
   { label: 'Precios base', route: 'pricing.base-prices', icon: BadgeDollarSign },
+  {
+    label: 'Reglas de precios',
+    route: 'pricing.price-list-items',
+    icon: ListChecks,
+  },
+
   {
     label: 'Componentes UI',
     route: 'ui.components',

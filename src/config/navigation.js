@@ -15,6 +15,7 @@ export const navigationItems = [
   { label: 'Servicios', route: 'services', icon: BriefcaseBusiness },
   { label: 'Proveedores', route: 'providers', icon: Building2 },
   { label: 'Precios', route: 'pricing.prices', icon: BadgeDollarSign },
+  { label: 'Precios base', route: 'pricing.base-prices', icon: BadgeDollarSign },
   {
     label: 'Componentes UI',
     route: 'ui.components',

@@ -7,6 +7,7 @@ import providerRoutes from '@/modules/catalog/providers/router/provider.routes.j
 import serviceRoutes from '@/modules/catalog/services/router/service.routes.js'
 import quotationRoutes from '@/modules/quotation/router/quotation.routes.js'
 import PriceManagementPage from '@/modules/pricing/prices/PriceManagementPage.vue'
+import pricingRoutes from '@/modules/pricing/router/pricing.routes'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -43,6 +44,7 @@ const router = createRouter({
             },
           ],
         },
+        ...pricingRoutes,
       ],
     },
     // Las rutas públicas, como login, van fuera de AppLayout.

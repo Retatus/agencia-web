@@ -66,31 +66,7 @@
           </div>
         </div>
 
-        <div class="grid gap-5 md:grid-cols-3">
-          <!-- Lista de Precios -->
-          <div>
-            <label
-              for="quotation-price-list"
-              class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-            >
-              Lista de Precios
-            </label>
-            <select
-              id="quotation-price-list"
-              v-model="store.quotation.price_list_id"
-              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-            >
-              <option :value="null">Seleccione...</option>
-              <option
-                v-for="item in priceLists"
-                :key="item.id"
-                :value="item.id"
-              >
-                {{ item.name }}
-              </option>
-            </select>
-          </div>
-
+        <div class="grid gap-5 md:grid-cols-2">
           <!-- Moneda -->
           <div>
             <label
@@ -250,7 +226,6 @@ import { useQuotationStore } from '../stores/quotation.store'
 
 defineProps({
   customers: { type: Array, default: () => [] },
-  priceLists: { type: Array, default: () => [] },
   currencies: { type: Array, default: () => [] },
   statuses: { type: Array, default: () => [] },
 })

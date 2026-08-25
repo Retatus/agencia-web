@@ -60,10 +60,7 @@
          FORMULARIO
     ============================================================= -->
 
-    <form
-      class="space-y-7"
-      @submit.prevent="save"
-    >
+    <form class="space-y-7" @submit.prevent="save">
       <!-- Datos generales -->
       <fieldset class="space-y-5 border-t border-slate-200 pt-6 dark:border-slate-800">
         <QuotationHeader
@@ -71,7 +68,6 @@
           :customers="customers"
           :currencies="currencies"
           :statuses="statuses"
-          :price-lists="priceLists"
           @create-customer="openCustomerModal"
         />
       </fieldset>
@@ -109,7 +105,7 @@
         class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
       >
         <div class="border-b border-slate-200 px-5 py-4 dark:border-slate-800 sm:px-6">
-          <h3 class="font-semibold text-slate-900 dark:text-white"> Totales y Acciones </h3>
+          <h3 class="font-semibold text-slate-900 dark:text-white">Totales y Acciones</h3>
           <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
             Resumen de la cotización y acciones disponibles.
           </p>
@@ -209,7 +205,10 @@
     <ServiceSelectorModal
       v-if="showServiceModal"
       :item="editingItem"
-      :price-list-id="store.quotation.price_list_id"
+      :currency-id="store.quotation.currency_id"
+      :travel-date="store.quotation.travel_date"
+      :itinerary-day-number="store.selectedItinerary?.day_number"
+      :itinerary-travel-date="store.selectedItinerary?.travel_date"
       :passengers="store.quotation.passengers"
       @close="closeServiceModal"
       @save="handleItemSave"
@@ -233,53 +232,24 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-
 import { useRoute, useRouter } from 'vue-router'
-
 import { Copy, Printer, Mail, FileText, Save } from 'lucide-vue-next'
-
-/*
-|--------------------------------------------------------------------------
-| STORES
-|--------------------------------------------------------------------------
-*/
 
 import { useQuotationStore } from '../stores/quotation.store'
 
-import { useQuotationCalculationStore } from '../stores/quotation-calculation.store'
-
-/*
-|--------------------------------------------------------------------------
-| COMPONENTS
-|--------------------------------------------------------------------------
-*/
-
 import QuotationHeader from '../components/QuotationHeader.vue'
-
 import QuotationItineraryManager from '../components/QuotationItineraryManager.vue'
-
 import QuotationTotals from '../components/QuotationTotals.vue'
-
 import QuotationActions from '../components/QuotationActions.vue'
-
 import QuotationPassengerManager from '../components/QuotationPassengerManager.vue'
-
 import ServiceSelectorModal from '../components/ServiceSelectorModal.vue'
-
 import CustomItemModal from '../components/CustomItemModal.vue'
 
 import CustomerQuickCreateModal from '../../crm/components/CustomerQuickCreateModal.vue'
-//import { useCustomerStore } from '@/modules/crm/components/CustomerQuickCreateModal.vue'
 import { useCustomerStore } from '../../crm/stores/customer.store'
 
-import DocumentTypeService from '@/modules/catalog/service/document-type.service'
-
-import PriceListService from '@/modules/pricing/services/price-list.service'
-
 import CurrencyService from '@/modules/catalog/service/currency.service'
-
 import PassengerTypeService from '@/modules/catalog/service/passenger-type.service'
-
 import QuotationStatusService from '@/modules/catalog/service/quotation-status.service'
 
 /*
@@ -300,22 +270,14 @@ const router = useRouter()
 
 const store = useQuotationStore()
 
-const calculationStore = useQuotationCalculationStore()
+const customerStore = useCustomerStore()
 
 /*
 |--------------------------------------------------------------------------
-| STATE
-|--------------------------------------------------------------------------
-*/
-
-/*
-|--------------------------------------------------------------------------
-| Item o grupo actualmente en edición.
+| ITEM EN EDICIÓN
 |--------------------------------------------------------------------------
 |
-| Puede contener:
-|
-| ITEM NORMAL
+| Puede representar un ítem individual:
 |
 | {
 |   id,
@@ -324,7 +286,7 @@ const calculationStore = useQuotationCalculationStore()
 |   ...
 | }
 |
-| GRUPO
+| O un grupo:
 |
 | {
 |   type: 'group',
@@ -349,6 +311,8 @@ const showServiceModal = ref(false)
 
 const showPassengerModal = ref(false)
 
+const showCustomerModal = ref(false)
+
 /*
 |--------------------------------------------------------------------------
 | COMPUTED
@@ -356,7 +320,7 @@ const showPassengerModal = ref(false)
 */
 
 const isEdit = computed(() => {
-  return !!route.params.uuid
+  return Boolean(route.params.uuid)
 })
 
 const pageTitle = computed(() => {
@@ -365,13 +329,13 @@ const pageTitle = computed(() => {
 
 /*
 |--------------------------------------------------------------------------
-| AUXILIARY DATA
+| DATOS AUXILIARES
 |--------------------------------------------------------------------------
 */
 
-const customers = computed(() => customerStore.customers)
-
-const priceLists = ref([])
+const customers = computed(() => {
+  return customerStore.customers
+})
 
 const currencies = ref([])
 
@@ -396,35 +360,30 @@ async function loadCustomers() {
 
 /*
 |--------------------------------------------------------------------------
-| AUXILIARY DATA
+| DATOS AUXILIARES
 |--------------------------------------------------------------------------
+|
+| PriceList ya no forma parte de la cabecera de Quotation.
+|
 */
 
 async function loadAuxiliaryData() {
   loadingCatalogs.value = true
 
   try {
-    const [priceListsResponse, currenciesResponse, statusesResponse, passengerTypesResponse] =
-      await Promise.all([
-        PriceListService.getAll({
-          active: 1,
-          per_page: 100,
-        }),
+    const [currenciesResponse, statusesResponse, passengerTypesResponse] = await Promise.all([
+      CurrencyService.getAll({
+        active: 1,
+      }),
 
-        CurrencyService.getAll({
-          active: 1,
-        }),
+      QuotationStatusService.getAll({
+        active: 1,
+      }),
 
-        QuotationStatusService.getAll({
-          active: 1,
-        }),
-
-        PassengerTypeService.getAll({
-          active: 1,
-        }),
-      ])
-
-    priceLists.value = priceListsResponse.data.data ?? []
+      PassengerTypeService.getAll({
+        active: 1,
+      }),
+    ])
 
     currencies.value = currenciesResponse.data.data ?? []
 
@@ -468,15 +427,13 @@ async function save() {
 
     /*
     |--------------------------------------------------------------------------
-    | Opcional
+    | La redirección puede habilitarse cuando se defina
+    | el nombre definitivo de la ruta de listado.
     |--------------------------------------------------------------------------
-    |
-    | Puedes redirigir después de guardar.
-    |
     */
 
     // router.push({
-    //   name: 'quotations',
+    //   name: 'quotations.index',
     // })
   } catch (error) {
     console.error('Error guardando cotización:', error)
@@ -491,22 +448,18 @@ async function save() {
 
 function cancel() {
   router.push({
-    name: 'quotations',
+    name: 'quotations.index',
   })
 }
 
 /*
 |--------------------------------------------------------------------------
-| DUPLICATE QUOTATION
+| DUPLICATE
 |--------------------------------------------------------------------------
 */
 
 function duplicateQuotation() {
   store.duplicate()
-
-  router.push({
-    name: 'quotations.create',
-  })
 }
 
 /*
@@ -516,24 +469,22 @@ function duplicateQuotation() {
 */
 
 function printQuotation() {
-  console.log('PDF')
+  window.print()
 }
 
 /*
 |--------------------------------------------------------------------------
-| EMAIL
+| SEND
 |--------------------------------------------------------------------------
 */
 
 function sendQuotation() {
-  console.log('Email')
+  console.info('Envío de cotización pendiente de implementar.')
 }
 
 /*
 |--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
 | CUSTOM ITEM
-|--------------------------------------------------------------------------
 |--------------------------------------------------------------------------
 */
 
@@ -551,9 +502,7 @@ function openCustomModal() {
 
 /*
 |--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
 | CATALOG ITEM
-|--------------------------------------------------------------------------
 |--------------------------------------------------------------------------
 */
 
@@ -571,9 +520,7 @@ function openCatalogModal() {
 
 /*
 |--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
 | EDIT ITEM / GROUP
-|--------------------------------------------------------------------------
 |--------------------------------------------------------------------------
 */
 
@@ -588,7 +535,7 @@ function editItem(item) {
   |--------------------------------------------------------------------------
   |
   | Si la fila pertenece a un group_uuid,
-  | recuperamos TODAS las filas reales.
+  | recuperamos todas las filas reales del grupo.
   |
   */
 
@@ -603,7 +550,7 @@ function editItem(item) {
 
     /*
     |--------------------------------------------------------------------------
-    | El modal recibe el agregado lógico.
+    | El modal recibe el agregado lógico
     |--------------------------------------------------------------------------
     */
 
@@ -617,13 +564,6 @@ function editItem(item) {
       items: JSON.parse(JSON.stringify(groupItems)),
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Los grupos actuales son de catálogo:
-    | accommodation / transport.
-    |--------------------------------------------------------------------------
-    */
-
     showServiceModal.value = true
 
     return
@@ -631,7 +571,7 @@ function editItem(item) {
 
   /*
   |--------------------------------------------------------------------------
-  | ITEM NORMAL
+  | ITEM INDIVIDUAL
   |--------------------------------------------------------------------------
   */
 
@@ -661,33 +601,26 @@ function editItem(item) {
     return
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Tipo desconocido
-  |--------------------------------------------------------------------------
-  */
-
   console.warn('Tipo de item no soportado para edición:', item.item_type)
 }
 
 /*
 |--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
 | HANDLE ITEM SAVE
-|--------------------------------------------------------------------------
 |--------------------------------------------------------------------------
 |
 | El modal puede devolver:
 |
-| 1. QuotationItem normal
+| 1. QuotationItem individual.
 |
 | {
 |   uuid,
 |   service_variant_id,
+|   price_id,
 |   ...
 | }
 |
-| 2. Grupo
+| 2. Grupo de alojamiento o transporte.
 |
 | {
 |   type: 'group',
@@ -699,22 +632,20 @@ function editItem(item) {
 */
 
 function handleItemSave(payload) {
-  console.log('handleItemSave:', payload)
-
   if (!payload) {
     return
   }
 
   /*
   |--------------------------------------------------------------------------
-  | GROUP
+  | GRUPO
   |--------------------------------------------------------------------------
   */
 
   if (payload.type === 'group') {
     /*
     |--------------------------------------------------------------------------
-    | EDITAR GRUPO
+    | Editar grupo
     |--------------------------------------------------------------------------
     */
 
@@ -723,7 +654,7 @@ function handleItemSave(payload) {
     } else {
       /*
       |--------------------------------------------------------------------------
-      | CREAR GRUPO
+      | Crear grupo
       |--------------------------------------------------------------------------
       */
 
@@ -737,22 +668,22 @@ function handleItemSave(payload) {
 
   /*
   |--------------------------------------------------------------------------
-  | ITEM NORMAL
-  |--------------------------------------------------------------------------
-  */
-
-  /*
-  |--------------------------------------------------------------------------
-  | EDITAR
+  | ITEM INDIVIDUAL
   |--------------------------------------------------------------------------
   */
 
   if (editingItem.value?.uuid) {
+    /*
+    |--------------------------------------------------------------------------
+    | Actualizar
+    |--------------------------------------------------------------------------
+    */
+
     store.updateItem(editingItem.value.uuid, payload)
   } else {
     /*
     |--------------------------------------------------------------------------
-    | CREAR
+    | Crear
     |--------------------------------------------------------------------------
     */
 
@@ -764,9 +695,7 @@ function handleItemSave(payload) {
 
 /*
 |--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
 | REMOVE ITEM / GROUP
-|--------------------------------------------------------------------------
 |--------------------------------------------------------------------------
 */
 
@@ -775,32 +704,18 @@ function removeItem(item) {
     return
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | GROUP
-  |--------------------------------------------------------------------------
-  */
-
   if (item.group_uuid) {
     store.removeItemGroup(item.group_uuid)
 
     return
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | NORMAL
-  |--------------------------------------------------------------------------
-  */
-
   store.removeItem(item.uuid)
 }
 
 /*
 |--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
 | DUPLICATE ITEM / GROUP
-|--------------------------------------------------------------------------
 |--------------------------------------------------------------------------
 */
 
@@ -809,32 +724,18 @@ function duplicateItem(item) {
     return
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | GROUP
-  |--------------------------------------------------------------------------
-  */
-
   if (item.group_uuid) {
     store.duplicateItemGroup(item.group_uuid)
 
     return
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | NORMAL
-  |--------------------------------------------------------------------------
-  */
-
   store.duplicateItem(item.uuid)
 }
 
 /*
 |--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
-| CLOSE ITEM MODAL
-|--------------------------------------------------------------------------
+| CLOSE ITEM MODALS
 |--------------------------------------------------------------------------
 */
 
@@ -846,21 +747,9 @@ function closeItemModal() {
   showServiceModal.value = false
 }
 
-/*
-|--------------------------------------------------------------------------
-| CLOSE CUSTOM MODAL
-|--------------------------------------------------------------------------
-*/
-
 function closeCustomModal() {
   closeItemModal()
 }
-
-/*
-|--------------------------------------------------------------------------
-| CLOSE SERVICE MODAL
-|--------------------------------------------------------------------------
-*/
 
 function closeServiceModal() {
   closeItemModal()
@@ -868,9 +757,7 @@ function closeServiceModal() {
 
 /*
 |--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
 | PASSENGER MODAL
-|--------------------------------------------------------------------------
 |--------------------------------------------------------------------------
 */
 
@@ -884,15 +771,9 @@ function closePassengerModal() {
 
 /*
 |--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
-| CLIENT MODAL
-|--------------------------------------------------------------------------
+| CUSTOMER MODAL
 |--------------------------------------------------------------------------
 */
-
-const customerStore = useCustomerStore()
-
-const showCustomerModal = ref(false)
 
 function openCustomerModal() {
   showCustomerModal.value = true
@@ -908,11 +789,9 @@ async function handleCustomerSave(payload) {
 
     /*
     |--------------------------------------------------------------------------
-    | El store ya agregó customer a customerStore.customers
+    | customerStore ya incorpora el cliente creado
+    | a su colección reactiva.
     |--------------------------------------------------------------------------
-    |
-    | Por tanto `customers` se actualiza automáticamente.
-    |
     */
 
     store.quotation.customer_id = customer.id

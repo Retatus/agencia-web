@@ -59,7 +59,7 @@ export const usePricingManagementStore = defineStore('pricing-management', {
 
       page: 1,
 
-      per_page: 50,
+      per_page: 15,
     },
 
     priceFilters: {

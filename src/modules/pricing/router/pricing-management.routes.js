@@ -1,5 +1,4 @@
-//const PricingManagementPage = () => import('../prices/PricingManagementPage.vue')
-import PricingCorePage from '../prices/PricingCorePage.vue'
+import PricingCorePage from '../prices/PricingManagementPage.vue'
 
 const pricingManagementRoutes = [
   {

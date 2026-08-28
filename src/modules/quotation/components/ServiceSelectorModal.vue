@@ -91,7 +91,7 @@
                       v-model="filters.category"
                       class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
                     >
-                      <option value=""> Todas las categorías </option>
+                      <option value="">Todas las categorías</option>
                       <option
                         v-for="category in categories"
                         :key="category.id"
@@ -116,23 +116,17 @@
               </div>
 
               <!-- LOADING SERVICIOS -->
-              <div
-                v-if="loading"
-                class="py-8 text-center"
-              >
+              <div v-if="loading" class="py-8 text-center">
                 <div
                   class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-teal-600 border-t-transparent"
                 ></div>
-                <div class="mt-2 text-sm text-slate-500 dark:text-slate-400"
-                  >Cargando servicios...</div
-                >
+                <div class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                  Cargando servicios...
+                </div>
               </div>
 
               <!-- CONTENIDO -->
-              <div
-                v-else
-                class="grid gap-6 lg:grid-cols-12"
-              >
+              <div v-else class="grid gap-6 lg:grid-cols-12">
                 <!-- LISTA DE SERVICIOS -->
                 <div class="lg:col-span-7">
                   <div
@@ -159,20 +153,24 @@
                           <tr>
                             <th
                               class="px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
-                              >Servicio</th
                             >
+                              Servicio
+                            </th>
                             <th
                               class="px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
-                              >Proveedor</th
                             >
+                              Proveedor
+                            </th>
                             <th
                               class="px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
-                              >Categoría</th
                             >
+                              Categoría
+                            </th>
                             <th
                               class="px-3 py-2.5 text-center text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
-                              >Variantes</th
                             >
+                              Variantes
+                            </th>
                             <th
                               class="px-3 py-2.5 text-center text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
                             ></th>
@@ -285,23 +283,17 @@
                       </div>
 
                       <!-- LOADING DETALLE -->
-                      <div
-                        v-else-if="loadingDetail"
-                        class="py-8 text-center"
-                      >
+                      <div v-else-if="loadingDetail" class="py-8 text-center">
                         <div
                           class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-teal-600 border-t-transparent"
                         ></div>
-                        <div class="mt-2 text-sm text-slate-500 dark:text-slate-400"
-                          >Cargando información del servicio...</div
-                        >
+                        <div class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                          Cargando información del servicio...
+                        </div>
                       </div>
 
                       <!-- SERVICIO SELECCIONADO -->
-                      <div
-                        v-else
-                        class="space-y-4"
-                      >
+                      <div v-else class="space-y-4">
                         <!-- Servicio -->
                         <div>
                           <label
@@ -389,9 +381,9 @@
                               {{ selectedVariant.name }}
                             </div>
                             <div class="text-xs text-blue-700 dark:text-blue-400 space-y-0.5">
-                              <div v-if="selectedVariant.code"
-                                >Código: {{ selectedVariant.code }}</div
-                              >
+                              <div v-if="selectedVariant.code">
+                                Código: {{ selectedVariant.code }}
+                              </div>
                               <div
                                 v-if="
                                   selectedVariant.min_capacity !== null &&
@@ -401,9 +393,9 @@
                                 Capacidad: {{ selectedVariant.min_capacity }} -
                                 {{ selectedVariant.max_capacity }}
                               </div>
-                              <div v-if="selectedVariant.unit_type"
-                                >Unidad: {{ selectedVariant.unit_type }}</div
-                              >
+                              <div v-if="selectedVariant.unit_type">
+                                Unidad: {{ selectedVariant.unit_type }}
+                              </div>
                             </div>
                           </div>
 
@@ -435,11 +427,7 @@
                                     : 'No hay tarifas disponibles'
                                 }}
                               </option>
-                              <option
-                                v-for="price in prices"
-                                :key="price.id"
-                                :value="price.id"
-                              >
+                              <option v-for="price in prices" :key="price.id" :value="price.id">
                                 {{ price.name ?? 'Tarifa' }} - {{ price.sale_price }}
                                 {{ price.currency?.code ?? '' }}
                               </option>
@@ -451,16 +439,16 @@
                             v-if="selectedPrice"
                             class="rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-950/30"
                           >
-                            <div class="font-medium text-sm text-green-800 dark:text-green-300"
-                              >Tarifa seleccionada</div
-                            >
+                            <div class="font-medium text-sm text-green-800 dark:text-green-300">
+                              Tarifa seleccionada
+                            </div>
                             <div
                               class="text-xs text-green-700 dark:text-green-400 mt-1 space-y-0.5"
                             >
-                              <div
-                                >Precio: {{ selectedPrice.sale_price }}
-                                {{ selectedPrice.currency?.code ?? '' }}</div
-                              >
+                              <div>
+                                Precio: {{ selectedPrice.sale_price }}
+                                {{ selectedPrice.currency?.code ?? '' }}
+                              </div>
                               <div v-if="selectedPrice.name">Tarifa: {{ selectedPrice.name }}</div>
                             </div>
                           </div>
@@ -516,10 +504,7 @@
                           </div>
 
                           <!-- DISTRIBUCIÓN ACTUAL - EDICIÓN -->
-                          <div
-                            v-if="isGroupEdit && !recommendations.length"
-                            class="space-y-3"
-                          >
+                          <div v-if="isGroupEdit && !recommendations.length" class="space-y-3">
                             <label
                               class="block text-sm font-medium text-slate-700 dark:text-slate-300"
                               >Distribución actual</label
@@ -536,9 +521,9 @@
                                   <strong>{{ item.quantity }} ×</strong>
                                   {{ item.variant_name }}
                                 </div>
-                                <div class="text-slate-500 dark:text-slate-400">{{
-                                  money(item.subtotal)
-                                }}</div>
+                                <div class="text-slate-500 dark:text-slate-400">
+                                  {{ money(item.subtotal) }}
+                                </div>
                               </div>
                               <hr class="my-2 border-slate-200 dark:border-slate-700" />
                               <div class="flex items-center justify-between text-xs">
@@ -595,16 +580,13 @@
                           </div>
 
                           <!-- Loading -->
-                          <div
-                            v-if="loadingRecommendations"
-                            class="py-4 text-center"
-                          >
+                          <div v-if="loadingRecommendations" class="py-4 text-center">
                             <div
                               class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-teal-600 border-t-transparent"
                             ></div>
-                            <div class="mt-2 text-sm text-slate-500 dark:text-slate-400"
-                              >Calculando recomendaciones...</div
-                            >
+                            <div class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                              Calculando recomendaciones...
+                            </div>
                           </div>
 
                           <!-- Sin resultados -->
@@ -617,10 +599,7 @@
                           </div>
 
                           <!-- RECOMENDACIONES -->
-                          <div
-                            v-if="recommendations.length"
-                            class="space-y-3"
-                          >
+                          <div v-if="recommendations.length" class="space-y-3">
                             <div class="flex items-center justify-between">
                               <label class="text-sm font-medium text-slate-700 dark:text-slate-300">
                                 {{
@@ -718,15 +697,15 @@
                                 >
                                   <div>
                                     <span class="text-slate-500 dark:text-slate-400">Costo</span>
-                                    <div class="font-semibold text-slate-900 dark:text-white">{{
-                                      money(recommendation.total_cost)
-                                    }}</div>
+                                    <div class="font-semibold text-slate-900 dark:text-white">
+                                      {{ money(recommendation.total_cost) }}
+                                    </div>
                                   </div>
                                   <div>
                                     <span class="text-slate-500 dark:text-slate-400">Venta</span>
-                                    <div class="font-semibold text-slate-900 dark:text-white">{{
-                                      money(recommendation.total_sale)
-                                    }}</div>
+                                    <div class="font-semibold text-slate-900 dark:text-white">
+                                      {{ money(recommendation.total_sale) }}
+                                    </div>
                                   </div>
                                 </div>
                               </div>
@@ -771,14 +750,8 @@
                 :disabled="!canSave"
                 @click="save"
               >
-                <Pencil
-                  v-if="isEdit"
-                  class="mr-1 h-4 w-4"
-                />
-                <Plus
-                  v-else
-                  class="mr-1 h-4 w-4"
-                />
+                <Pencil v-if="isEdit" class="mr-1 h-4 w-4" />
+                <Plus v-else class="mr-1 h-4 w-4" />
                 {{ isEdit ? 'Actualizar' : 'Agregar servicio' }}
               </button>
             </footer>
@@ -789,7 +762,8 @@
   </Teleport>
 </template>
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+//import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 
 import ServiceService from '../../catalog/services/services/service.service'
 
@@ -827,7 +801,27 @@ import { useQuotationCalculationStore } from '../stores/quotation-calculation.st
 const props = defineProps({
   priceListId: {
     type: [Number, String],
+    default: null,
+  },
+
+  currencyId: {
+    type: [Number, String],
     required: true,
+  },
+
+  travelDate: {
+    type: String,
+    default: null,
+  },
+
+  itineraryDayNumber: {
+    type: [Number, String],
+    default: 1,
+  },
+
+  itineraryTravelDate: {
+    type: String,
+    default: null,
   },
 
   passengers: {
@@ -954,6 +948,24 @@ const filters = reactive({
   category: '',
 })
 
+let searchTimeout = null
+let serviceRequestSequence = 0
+
+watch(
+  () => filters.search,
+  () => {
+    window.clearTimeout(searchTimeout)
+
+    searchTimeout = window.setTimeout(() => {
+      loadServices()
+    }, 300)
+  },
+)
+
+onBeforeUnmount(() => {
+  window.clearTimeout(searchTimeout)
+})
+
 /*
 |--------------------------------------------------------------------------
 | FORM
@@ -1023,21 +1035,8 @@ const categories = computed(() => {
 */
 
 const filteredServices = computed(() => {
-  const search = filters.search.trim().toLowerCase()
-
   return services.value.filter((service) => {
-    const matchesName = service.name?.toLowerCase().includes(search)
-
-    const matchesCode = service.code?.toLowerCase().includes(search)
-
-    const matchesProvider = service.provider?.business_name?.toLowerCase().includes(search)
-
-    const matchesSearch = !search || matchesName || matchesCode || matchesProvider
-
-    const matchesCategory =
-      !filters.category || Number(service.service_category?.id) === Number(filters.category)
-
-    return matchesSearch && matchesCategory
+    return !filters.category || Number(service.service_category?.id) === Number(filters.category)
   })
 })
 
@@ -1226,23 +1225,31 @@ const canSave = computed(() => {
 */
 
 async function loadServices() {
-  loading.value = true
+  const requestSequence = ++serviceRequestSequence
 
+  loading.value = true
   error.value = null
 
   try {
     const response = await ServiceService.getAll({
       active: 1,
-      per_page: 15,
+      search: filters.search.trim() || undefined,
+      per_page: 50,
     })
 
-    services.value = response.data.data ?? []
+    if (requestSequence === serviceRequestSequence) {
+      services.value = response.data.data ?? []
+    }
   } catch (err) {
     console.error('Error cargando servicios:', err)
 
-    error.value = 'No fue posible cargar los servicios.'
+    if (requestSequence === serviceRequestSequence) {
+      error.value = 'No fue posible cargar los servicios.'
+    }
   } finally {
-    loading.value = false
+    if (requestSequence === serviceRequestSequence) {
+      loading.value = false
+    }
   }
 }
 
@@ -1467,45 +1474,23 @@ async function loadAllVariantPrices() {
 */
 
 function buildVariantOptions() {
-  return variants.value
-    .map((variant) => {
-      const price = variantPrices.value[variant.id]
+  return variants.value.map((variant) => ({
+    id: Number(variant.id),
 
-      if (!price) {
-        return null
-      }
+    service_variant_id: Number(variant.id),
 
-      return {
-        id: variant.id,
+    name: variant.name,
 
-        service_variant_id: variant.id,
+    code: variant.code ?? null,
 
-        name: variant.name,
+    min_capacity: Number(variant.min_capacity ?? 1),
 
-        min_capacity: Number(variant.min_capacity ?? 1),
+    max_capacity: Number(variant.max_capacity ?? 1),
 
-        max_capacity: Number(variant.max_capacity ?? 1),
+    optimal_capacity: Number(variant.optimal_capacity ?? variant.max_capacity ?? 1),
 
-        unit_cost: Number(price.cost ?? 0),
-
-        unit_price: Number(price.sale_price ?? 0),
-
-        /*
-        |--------------------------------------------------------------------------
-        | Importante
-        |--------------------------------------------------------------------------
-        |
-        | El algoritmo puede no devolver price_id.
-        |
-        | Lo conservamos aquí para recuperarlo al crear
-        | cada QuotationItem.
-        |
-        */
-
-        price_id: price.id,
-      }
-    })
-    .filter(Boolean)
+    unit_type: variant.unit_type ?? null,
+  }))
 }
 
 /*
@@ -1536,20 +1521,12 @@ async function loadRecommendations() {
   error.value = null
 
   try {
-    /*
-    |--------------------------------------------------------------------------
-    | Precios
-    |--------------------------------------------------------------------------
-    */
-
-    await loadAllVariantPrices()
-
     const options = buildVariantOptions()
 
     if (!options.length) {
       recommendations.value = []
 
-      error.value = 'No existen variantes con tarifas disponibles.'
+      error.value = 'El servicio no tiene variantes disponibles.'
 
       return
     }
@@ -1599,9 +1576,19 @@ async function loadRecommendations() {
     */
 
     const result = await calculationStore.calculate({
+      travel_date: props.itineraryTravelDate ?? props.travelDate,
+
+      currency_id: Number(props.currencyId),
+
+      pricing_currency_id: Number(props.currencyId),
+
+      passengers: props.passengers,
+
       itineraries: [
         {
-          day_number: 1,
+          day_number: Number(props.itineraryDayNumber ?? 1),
+
+          travel_date: props.itineraryTravelDate ?? props.travelDate,
 
           items: [item],
         },

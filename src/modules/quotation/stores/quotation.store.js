@@ -22,6 +22,23 @@ function clonePlain(value) {
 */
 
 function createQuotation() {
+  // Obtener fechas actuales
+  const today = new Date()
+  const tomorrow = new Date(today)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+
+  // Fecha para valid_until (30 días después por defecto)
+  const validUntil = new Date(today)
+  validUntil.setDate(validUntil.getDate() + 30)
+
+  // Formatear fechas a YYYY-MM-DD para inputs type="date"
+  const formatDate = (date) => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
   return {
     id: null,
     uuid: null,
@@ -38,9 +55,10 @@ function createQuotation() {
 
     exchange_rate: 1,
 
-    travel_date: null,
+    // Fechas inicializadas
+    travel_date: formatDate(tomorrow), // Viaje comienza mañana por defecto
 
-    valid_until: null,
+    valid_until: formatDate(validUntil), // Válido por 30 días
 
     notes: '',
 

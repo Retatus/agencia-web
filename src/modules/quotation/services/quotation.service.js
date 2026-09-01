@@ -1,6 +1,6 @@
 import api from '@/services/api'
 
-const RESOURCE = '/quotations'
+const RESOURCE = '/quotations/quotations'
 
 export default {
   /**

@@ -1,14 +1,11 @@
 <template>
-  <form
-    class="space-y-7"
-    @submit.prevent="submitForm"
-  >
+  <form class="space-y-7" @submit.prevent="submitForm">
     <!-- Datos Generales -->
     <div
       class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
     >
       <div class="border-b border-slate-200 px-5 py-4 dark:border-slate-800 sm:px-6">
-        <h3 class="font-semibold text-slate-900 dark:text-white"> Datos Generales </h3>
+        <h3 class="font-semibold text-slate-900 dark:text-white">Datos Generales</h3>
         <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
           Los campos marcados con <span class="text-red-500">*</span> son obligatorios.
         </p>
@@ -45,11 +42,7 @@
                 class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
               >
                 <option :value="null">Seleccione...</option>
-                <option
-                  v-for="customer in customers"
-                  :key="customer.id"
-                  :value="customer.id"
-                >
+                <option v-for="customer in customers" :key="customer.id" :value="customer.id">
                   {{ customer.first_name }} {{ customer.last_name }}
                 </option>
               </select>
@@ -81,11 +74,7 @@
               required
               class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
             >
-              <option
-                v-for="currency in currencies"
-                :key="currency.id"
-                :value="currency.id"
-              >
+              <option v-for="currency in currencies" :key="currency.id" :value="currency.id">
                 {{ currency.code }}
               </option>
             </select>
@@ -116,7 +105,7 @@
       class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
     >
       <div class="border-b border-slate-200 px-5 py-4 dark:border-slate-800 sm:px-6">
-        <h3 class="font-semibold text-slate-900 dark:text-white"> Estado y Fechas </h3>
+        <h3 class="font-semibold text-slate-900 dark:text-white">Estado y Fechas</h3>
         <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
           Configure el estado y las fechas de la cotización.
         </p>
@@ -139,11 +128,7 @@
               class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
             >
               <option :value="null">Seleccione...</option>
-              <option
-                v-for="status in statuses"
-                :key="status.id"
-                :value="status.id"
-              >
+              <option v-for="status in statuses" :key="status.id" :value="status.id">
                 {{ status.name }}
               </option>
             </select>
@@ -182,7 +167,7 @@
           </div>
 
           <!-- Observaciones (columna extra) -->
-          <div>
+          <!-- <div>
             <label
               for="quotation-notes"
               class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
@@ -196,7 +181,7 @@
               placeholder="Notas rápidas..."
               class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-600"
             />
-          </div>
+          </div> -->
         </div>
 
         <!-- Observaciones (textarea completo) -->

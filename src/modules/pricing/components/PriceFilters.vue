@@ -11,16 +11,13 @@
           <Filter class="h-5 w-5 text-slate-400 dark:text-slate-500" />
           Filtros
         </h2>
-        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400"
-          >Filtra las tarifas disponibles</p
-        >
+        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          Filtra las tarifas disponibles
+        </p>
       </div>
 
       <div class="flex items-center gap-2">
-        <span
-          v-if="activeFiltersCount > 0"
-          class="text-xs text-slate-400 dark:text-slate-500"
-        >
+        <span v-if="activeFiltersCount > 0" class="text-xs text-slate-400 dark:text-slate-500">
           {{ activeFiltersCount }} filtro{{ activeFiltersCount > 1 ? 's' : '' }} activo{{
             activeFiltersCount > 1 ? 's' : ''
           }}
@@ -82,11 +79,7 @@
               @change="apply"
             >
               <option value="">Todas</option>
-              <option
-                v-for="item in priceLists"
-                :key="item.id"
-                :value="item.id"
-              >
+              <option v-for="item in priceLists" :key="item.id" :value="item.id">
                 {{ item.name }}
               </option>
             </select>
@@ -107,11 +100,7 @@
               @change="apply"
             >
               <option value="">Todos</option>
-              <option
-                v-for="item in priceTypes"
-                :key="item.id"
-                :value="item.id"
-              >
+              <option v-for="item in priceTypes" :key="item.id" :value="item.id">
                 {{ item.name }}
               </option>
             </select>
@@ -132,11 +121,7 @@
               @change="apply"
             >
               <option value="">Todos</option>
-              <option
-                v-for="service in services"
-                :key="service.uuid"
-                :value="service.uuid"
-              >
+              <option v-for="service in services" :key="service.uuid" :value="service.uuid">
                 {{ service.name }}
               </option>
             </select>
@@ -157,11 +142,7 @@
               @change="apply"
             >
               <option value="">Todos</option>
-              <option
-                v-for="item in passengerTypes"
-                :key="item.id"
-                :value="item.id"
-              >
+              <option v-for="item in passengerTypes" :key="item.id" :value="item.id">
                 {{ item.name }}
               </option>
             </select>
@@ -216,6 +197,7 @@
 
 <script setup>
 import { reactive, watch } from 'vue'
+import { Filter, RotateCcw, Search } from 'lucide-vue-next'
 
 const props = defineProps({
   modelValue: {

@@ -466,7 +466,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { usePriceStore } from '../stores/price.store'
-import { Pencil, Trash2 } from 'lucide-vue-next'
+import { Pencil, Trash2, RefreshCw, Plus, Save } from 'lucide-vue-next'
 
 import PriceFormModal from '../components/PriceFormModal.vue'
 

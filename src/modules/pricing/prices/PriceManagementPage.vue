@@ -68,10 +68,7 @@
             v-if="store.saving"
             class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
           />
-          <Save
-            v-else
-            class="h-4 w-4"
-          />
+          <Save v-else class="h-4 w-4" />
           {{ store.saving ? 'Guardando...' : `Guardar ${store.changedCount || ''} cambios` }}
         </button>
       </div>
@@ -86,7 +83,7 @@
       class="flex items-start justify-between rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-400"
     >
       <div>
-        <div class="font-semibold"> No se pudo completar la operación </div>
+        <div class="font-semibold">No se pudo completar la operación</div>
         <div class="mt-1">{{ store.error }}</div>
       </div>
       <button
@@ -128,9 +125,9 @@
       >
         <div>
           <h2 class="font-semibold text-slate-900 dark:text-white">Tarifas</h2>
-          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400"
-            >Edita directamente costo, venta y estado.</p
-          >
+          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Edita directamente costo, venta y estado.
+          </p>
         </div>
         <div class="flex items-center gap-2">
           <label class="text-sm text-slate-500 dark:text-slate-400">Mostrar</label>
@@ -175,62 +172,69 @@
           <DollarSign class="h-6 w-6" />
         </div>
         <div class="font-semibold text-slate-900 dark:text-white">No se encontraron precios</div>
-        <div class="mt-1 text-sm text-slate-500 dark:text-slate-400"
-          >Prueba modificando los filtros de búsqueda.</div
-        >
+        <div class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          Prueba modificando los filtros de búsqueda.
+        </div>
       </div>
 
       <!-- ======================================================== -->
       <!-- TABLE -->
       <!-- ======================================================== -->
 
-      <div
-        v-else
-        class="overflow-x-auto"
-      >
+      <div v-else class="overflow-x-auto">
         <table class="min-w-full text-sm">
           <thead class="bg-slate-50 dark:bg-slate-800/50">
             <tr class="border-b border-slate-200 dark:border-slate-700">
               <th
                 class="px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
-                >Servicio</th
               >
+                Servicio
+              </th>
               <th
                 class="px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
-                >Variante</th
               >
+                Variante
+              </th>
               <th
                 class="px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
-                >Lista</th
               >
+                Lista
+              </th>
               <th
                 class="px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
-                >Tipo</th
               >
+                Tipo
+              </th>
               <th
                 class="px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
-                >Pasajero</th
               >
+                Pasajero
+              </th>
               <th
                 class="px-3 py-2.5 text-center text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
-                >Rango</th
               >
+                Rango
+              </th>
               <th
                 class="px-3 py-2.5 text-right text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
-                >Costo</th
               >
+                Costo
+              </th>
               <th
                 class="px-3 py-2.5 text-right text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
-                >Venta</th
               >
+                Venta
+              </th>
               <th
                 class="px-3 py-2.5 text-center text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
-                >Estado</th
               >
+                Estado
+              </th>
               <th
                 class="px-3 py-2.5 text-right text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
-                >Acciones</th
               >
+                Acciones
+              </th>
             </tr>
           </thead>
 
@@ -462,7 +466,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { usePriceStore } from '../stores/price.store'
-import { Pencil, Trash2 } from 'lucide-vue-next'
+import { Pencil, Trash2, RefreshCw, Plus } from 'lucide-vue-next'
 
 import PriceFormModal from '../components/PriceFormModal.vue'
 

@@ -399,8 +399,8 @@
                             </div>
                           </div>
 
-                          <!-- Tarifa -->
-                          <div v-if="selectedVariant">
+                          <!-- Tarifa manual -->
+                          <div v-if="selectedVariant && !isAutomaticGroupPricing">
                             <label
                               class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
                               >Tarifa *</label
@@ -434,9 +434,9 @@
                             </select>
                           </div>
 
-                          <!-- Precio seleccionado -->
+                          <!-- Precio seleccionado manualmente -->
                           <div
-                            v-if="selectedPrice"
+                            v-if="selectedPrice && !isAutomaticGroupPricing"
                             class="rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-950/30"
                           >
                             <div class="font-medium text-sm text-green-800 dark:text-green-300">
@@ -453,8 +453,8 @@
                             </div>
                           </div>
 
-                          <!-- Cantidad -->
-                          <div>
+                          <!-- Cantidad manual -->
+                          <div v-if="!isAutomaticGroupPricing">
                             <label
                               class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
                               >Cantidad *</label
@@ -466,6 +466,38 @@
                               step="1"
                               class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
                             />
+                          </div>
+
+                          <!-- Tarifa grupal resuelta por pasajeros -->
+                          <div
+                            v-else-if="selectedVariant"
+                            class="rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-950/30"
+                          >
+                            <div class="font-medium text-sm text-green-800 dark:text-green-300">
+                              Tarifa grupal automática
+                            </div>
+
+                            <div
+                              v-if="loadingAutomaticPrice"
+                              class="mt-2 text-xs text-green-700 dark:text-green-400"
+                            >
+                              Resolviendo tarifa...
+                            </div>
+
+                            <div
+                              v-else-if="resolvedGenericPrice"
+                              class="mt-2 space-y-1 text-xs text-green-700 dark:text-green-400"
+                            >
+                              <div>Pasajeros: {{ props.passengers.length }}</div>
+                              <div>
+                                Pasajeros usados para la tarifa:
+                                {{ resolvedGenericPrice.metadata.pricing_quantity }}
+                              </div>
+                              <div>Cantidad facturada: 1 grupo</div>
+                              <div>
+                                Precio: {{ money(resolvedGenericPrice.unit_price) }}
+                              </div>
+                            </div>
                           </div>
                         </template>
 
@@ -915,6 +947,8 @@ const loadingVariants = ref(false)
 
 const loadingPrices = ref(false)
 
+const loadingAutomaticPrice = ref(false)
+
 const loadingRecommendations = ref(false)
 
 const recommendationsLoaded = ref(false)
@@ -928,6 +962,8 @@ const selectedService = ref(null)
 const variants = ref([])
 
 const prices = ref([])
+
+const resolvedGenericPrice = ref(null)
 
 const variantPrices = ref({})
 
@@ -1142,6 +1178,33 @@ const selectedPrice = computed(() => {
   return prices.value.find((price) => Number(price.id) === Number(form.price_id)) ?? null
 })
 
+const isAutomaticGroupPricing = computed(() => {
+  if (!prices.value.length) {
+    return false
+  }
+
+  return prices.value.every((price) => {
+    return (
+      price.price_type?.code === 'GROUP' &&
+      price.price_type?.quantity_basis === 'PASSENGERS'
+    )
+  })
+})
+
+watch(
+  [
+    () => props.passengers.length,
+    () => props.currencyId,
+    () => props.travelDate,
+    () => props.itineraryTravelDate,
+  ],
+  async () => {
+    if (isAutomaticGroupPricing.value && selectedVariant.value) {
+      await loadAutomaticGroupPrice()
+    }
+  },
+)
+
 /*
 |--------------------------------------------------------------------------
 | CURRENT GROUP SUMMARY
@@ -1214,6 +1277,10 @@ const canSave = computed(() => {
   | Generic
   |--------------------------------------------------------------------------
   */
+
+  if (isAutomaticGroupPricing.value) {
+    return Boolean(selectedVariant.value && resolvedGenericPrice.value)
+  }
 
   return Boolean(selectedVariant.value && selectedPrice.value && Number(form.quantity) > 0)
 })
@@ -1375,6 +1442,8 @@ async function onVariantChange() {
 
   prices.value = []
 
+  resolvedGenericPrice.value = null
+
   if (!selectedVariant.value) {
     return
   }
@@ -1409,6 +1478,10 @@ async function loadPrices() {
     )
 
     prices.value = response.data.data ?? []
+
+    if (isAutomaticGroupPricing.value) {
+      await loadAutomaticGroupPrice()
+    }
   } catch (err) {
     console.error('Error cargando precios:', err)
 
@@ -1417,6 +1490,74 @@ async function loadPrices() {
     error.value = 'No fue posible cargar las tarifas disponibles.'
   } finally {
     loadingPrices.value = false
+  }
+}
+
+async function loadAutomaticGroupPrice() {
+  if (
+    !selectedService.value ||
+    !selectedVariant.value ||
+    !isAutomaticGroupPricing.value
+  ) {
+    resolvedGenericPrice.value = null
+    return
+  }
+
+  const serviceDate = props.itineraryTravelDate ?? props.travelDate
+
+  if (!serviceDate) {
+    resolvedGenericPrice.value = null
+    error.value = 'Defina la fecha del servicio para resolver la tarifa grupal.'
+    return
+  }
+
+  if (!props.passengers.length) {
+    resolvedGenericPrice.value = null
+    error.value = 'La cotización debe tener al menos un pasajero.'
+    return
+  }
+
+  loadingAutomaticPrice.value = true
+  resolvedGenericPrice.value = null
+  error.value = null
+
+  try {
+    const result = await calculationStore.calculate({
+      travel_date: serviceDate,
+      currency_id: Number(props.currencyId),
+      passengers: props.passengers,
+      itineraries: [
+        {
+          day_number: Number(props.itineraryDayNumber ?? 1),
+          travel_date: serviceDate,
+          items: [
+            {
+              service_id: selectedService.value.id,
+              service_variant_id: selectedVariant.value.id,
+              item_type: 'CATALOG',
+              calculation_type: 'generic',
+              pricing_mode: 'AUTO_GROUP',
+              name: selectedService.value.name,
+              variant_name: selectedVariant.value.name,
+              passengers: props.passengers,
+            },
+          ],
+        },
+      ],
+    })
+
+    resolvedGenericPrice.value = result.items?.[0] ?? null
+
+    if (!resolvedGenericPrice.value) {
+      error.value = 'No se obtuvo una tarifa para el número actual de pasajeros.'
+    }
+  } catch (err) {
+    console.error('Error resolviendo tarifa grupal:', err)
+    error.value =
+      err.response?.data?.message ??
+      'No existe una tarifa grupal aplicable al número actual de pasajeros.'
+  } finally {
+    loadingAutomaticPrice.value = false
   }
 }
 
@@ -1797,6 +1938,22 @@ function save() {
 */
 
 function saveGenericItem() {
+  const automaticItem = isAutomaticGroupPricing.value
+    ? resolvedGenericPrice.value?.item
+    : null
+
+  const quantity = automaticItem
+    ? Number(automaticItem.quantity)
+    : Number(form.quantity)
+
+  const unitCost = automaticItem
+    ? Number(automaticItem.unit_cost)
+    : Number(selectedPrice.value?.cost ?? 0)
+
+  const unitPrice = automaticItem
+    ? Number(automaticItem.unit_price)
+    : Number(selectedPrice.value?.sale_price ?? 0)
+
   const item = {
     /*
     |--------------------------------------------------------------------------
@@ -1828,15 +1985,25 @@ function saveGenericItem() {
 
     duration: selectedVariant.value.duration ?? 1,
 
-    quantity: Number(form.quantity),
+    quantity,
 
-    price_id: selectedPrice.value.id,
+    price_id: automaticItem?.price_id ?? selectedPrice.value?.id ?? null,
 
-    unit_cost: Number(selectedPrice.value.cost ?? 0),
+    base_cost: Number(automaticItem?.base_cost ?? unitCost),
 
-    unit_price: Number(selectedPrice.value.sale_price ?? 0),
+    base_price: Number(automaticItem?.base_price ?? unitPrice),
 
-    subtotal: Number(form.quantity) * Number(selectedPrice.value.sale_price ?? 0),
+    unit_cost: unitCost,
+
+    unit_price: unitPrice,
+
+    subtotal: quantity * unitPrice,
+
+    subtotal_cost: quantity * unitCost,
+
+    subtotal_sale: quantity * unitPrice,
+
+    pricing_mode: automaticItem ? 'AUTO_GROUP' : undefined,
 
     sort_order: editBaseItem.value?.sort_order ?? 1,
 

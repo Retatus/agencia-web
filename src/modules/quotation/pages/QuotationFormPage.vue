@@ -68,6 +68,7 @@
           :customers="customers"
           :currencies="currencies"
           :statuses="statuses"
+          :price-lists="priceLists"
           @create-customer="openCustomerModal"
         />
       </fieldset>
@@ -210,6 +211,7 @@
       :itinerary-day-number="store.selectedItinerary?.day_number"
       :itinerary-travel-date="store.selectedItinerary?.travel_date"
       :passengers="store.quotation.passengers"
+      :price-list-id="store.quotation.commercial_policy_id"
       @close="closeServiceModal"
       @save="handleItemSave"
     />
@@ -251,6 +253,7 @@ import { useCustomerStore } from '../../crm/stores/customer.store'
 import CurrencyService from '@/modules/catalog/service/currency.service'
 import PassengerTypeService from '@/modules/catalog/service/passenger-type.service'
 import QuotationStatusService from '@/modules/catalog/service/quotation-status.service'
+import PriceListService from '@/modules/pricing/services/price-list.service'
 
 /*
 |--------------------------------------------------------------------------
@@ -343,6 +346,8 @@ const statuses = ref([])
 
 const passengerTypes = ref([])
 
+const priceLists = ref([])
+
 const loadingCatalogs = ref(false)
 
 /*
@@ -371,7 +376,7 @@ async function loadAuxiliaryData() {
   loadingCatalogs.value = true
 
   try {
-    const [currenciesResponse, statusesResponse, passengerTypesResponse] = await Promise.all([
+    const [currenciesResponse, statusesResponse, passengerTypesResponse, priceListsResponse] = await Promise.all([
       CurrencyService.getAll({
         active: 1,
       }),
@@ -383,6 +388,11 @@ async function loadAuxiliaryData() {
       PassengerTypeService.getAll({
         active: 1,
       }),
+
+      PriceListService.getAll({
+        active: 1,
+        per_page: 100,
+      }),
     ])
 
     currencies.value = currenciesResponse.data.data ?? []
@@ -390,6 +400,8 @@ async function loadAuxiliaryData() {
     statuses.value = statusesResponse.data.data ?? []
 
     passengerTypes.value = passengerTypesResponse.data.data ?? []
+
+    priceLists.value = priceListsResponse.data.data ?? []
   } finally {
     loadingCatalogs.value = false
   }

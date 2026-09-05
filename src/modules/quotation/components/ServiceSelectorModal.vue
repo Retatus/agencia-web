@@ -1525,6 +1525,7 @@ async function loadAutomaticGroupPrice() {
     const result = await calculationStore.calculate({
       travel_date: serviceDate,
       currency_id: Number(props.currencyId),
+      commercial_policy_id: props.priceListId ? Number(props.priceListId) : null,
       passengers: props.passengers,
       itineraries: [
         {
@@ -1720,6 +1721,8 @@ async function loadRecommendations() {
       travel_date: props.itineraryTravelDate ?? props.travelDate,
 
       currency_id: Number(props.currencyId),
+
+      commercial_policy_id: props.priceListId ? Number(props.priceListId) : null,
 
       pricing_currency_id: Number(props.currencyId),
 
@@ -1989,6 +1992,10 @@ function saveGenericItem() {
 
     price_id: automaticItem?.price_id ?? selectedPrice.value?.id ?? null,
 
+    price_list_id: automaticItem?.price_list_id ?? null,
+
+    price_list_item_id: automaticItem?.price_list_item_id ?? null,
+
     base_cost: Number(automaticItem?.base_cost ?? unitCost),
 
     base_price: Number(automaticItem?.base_price ?? unitPrice),
@@ -2174,7 +2181,24 @@ function saveRecommendedGroup() {
 
       service_variant_id: variantId,
 
-      price_id: price?.id ?? existing?.price_id ?? null,
+      price_id:
+        part.price_id ??
+        part.price_ids?.[0] ??
+        price?.id ??
+        existing?.price_id ??
+        null,
+
+      price_list_id:
+        part.price_list_id ??
+        part.price_list_ids?.find((id) => id != null) ??
+        existing?.price_list_id ??
+        null,
+
+      price_list_item_id:
+        part.price_list_item_id ??
+        part.price_list_item_ids?.find((id) => id != null) ??
+        existing?.price_list_item_id ??
+        null,
 
       /*
           |--------------------------------------------------------------------------
@@ -2199,6 +2223,10 @@ function saveRecommendedGroup() {
       duration,
 
       quantity,
+
+      base_cost: Number(part.base_cost ?? unitCost),
+
+      base_price: Number(part.base_price ?? unitPrice),
 
       unit_cost: unitCost,
 

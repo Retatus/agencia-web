@@ -47,7 +47,7 @@ function createQuotation() {
 
     customer_id: 3, // customer_id: null,
 
-    price_list_id: 1, // price_list_id: null,
+    commercial_policy_id: null,
 
     currency_id: 1,
 
@@ -872,7 +872,7 @@ export const useQuotationStore = defineStore('quotation', {
     },
 
     updatePriceList(priceListId) {
-      this.quotation.price_list_id = priceListId
+      this.quotation.commercial_policy_id = priceListId
     },
 
     updateStatus(statusId) {

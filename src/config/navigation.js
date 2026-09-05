@@ -6,6 +6,7 @@ import {
   FileText,
   LayoutDashboard,
   ListChecks,
+  Tags,
   Users,
 } from 'lucide-vue-next'
 
@@ -44,6 +45,11 @@ export const navigationItems = [
     label: 'Gestión de precios',
     route: 'pricing.management',
     icon: ListChecks,
+  },
+  {
+    label: 'Temporadas y promociones',
+    route: 'pricing.commercial',
+    icon: Tags,
   },
   {
     label: 'Componentes UI',

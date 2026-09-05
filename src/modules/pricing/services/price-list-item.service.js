@@ -1,16 +1,10 @@
 import api from '@/services/api'
 
-const BASE_URL = '/pricing/price-lists'
+const BASE_URL = '/pricing/price-list-items'
 
-const PriceListService = {
+const PriceListItemService = {
   getAll(params = {}) {
-    return api.get(BASE_URL, {
-      params,
-    })
-  },
-
-  get(id) {
-    return api.get(`${BASE_URL}/${id}`)
+    return api.get(BASE_URL, { params })
   },
 
   create(payload) {
@@ -26,4 +20,4 @@ const PriceListService = {
   },
 }
 
-export default PriceListService
+export default PriceListItemService

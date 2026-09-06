@@ -60,9 +60,9 @@
          FORMULARIO
     ============================================================= -->
 
-    <form class="space-y-7" @submit.prevent="save">
+    <form class="min-w-0 space-y-7" @submit.prevent="save">
       <!-- Datos generales -->
-      <fieldset class="space-y-5 border-t border-slate-200 pt-6 dark:border-slate-800">
+      <fieldset class="min-w-0 space-y-5 border-t border-slate-200 pt-6 dark:border-slate-800">
         <QuotationHeader
           :quotation="store.quotation"
           :customers="customers"
@@ -74,7 +74,7 @@
       </fieldset>
 
       <!-- Pasajeros -->
-      <fieldset class="space-y-5 border-t border-slate-200 pt-6 dark:border-slate-800">
+      <fieldset class="min-w-0 space-y-5 border-t border-slate-200 pt-6 dark:border-slate-800">
         <QuotationPassengerManager
           :passengers="store.quotation.passengers"
           :passenger-types="passengerTypes"
@@ -84,7 +84,7 @@
       </fieldset>
 
       <!-- Itinerario -->
-      <fieldset class="space-y-5 border-t border-slate-200 pt-6 dark:border-slate-800">
+      <fieldset class="min-w-0 space-y-5 border-t border-slate-200 pt-6 dark:border-slate-800">
         <QuotationItineraryManager
           :itineraries="store.quotation.itineraries"
           :selected-itinerary="store.selectedItinerary"
@@ -376,24 +376,25 @@ async function loadAuxiliaryData() {
   loadingCatalogs.value = true
 
   try {
-    const [currenciesResponse, statusesResponse, passengerTypesResponse, priceListsResponse] = await Promise.all([
-      CurrencyService.getAll({
-        active: 1,
-      }),
+    const [currenciesResponse, statusesResponse, passengerTypesResponse, priceListsResponse] =
+      await Promise.all([
+        CurrencyService.getAll({
+          active: 1,
+        }),
 
-      QuotationStatusService.getAll({
-        active: 1,
-      }),
+        QuotationStatusService.getAll({
+          active: 1,
+        }),
 
-      PassengerTypeService.getAll({
-        active: 1,
-      }),
+        PassengerTypeService.getAll({
+          active: 1,
+        }),
 
-      PriceListService.getAll({
-        active: 1,
-        per_page: 100,
-      }),
-    ])
+        PriceListService.getAll({
+          active: 1,
+          per_page: 100,
+        }),
+      ])
 
     currencies.value = currenciesResponse.data.data ?? []
 

@@ -28,23 +28,17 @@
           <!-- Estado de carga -->
 
           <tr v-if="loading">
-            <td
-              colspan="7"
-              class="px-5 py-14 text-center"
-            >
+            <td colspan="7" class="px-5 py-14 text-center">
               <RefreshCw class="mx-auto mb-3 h-6 w-6 animate-spin text-teal-600" />
 
-              <p class="text-sm text-slate-500 dark:text-slate-400"> Cargando servicios... </p>
+              <p class="text-sm text-slate-500 dark:text-slate-400">Cargando servicios...</p>
             </td>
           </tr>
 
           <!-- Estado vacío -->
 
           <tr v-else-if="items.length === 0">
-            <td
-              colspan="7"
-              class="px-5 py-14 text-center"
-            >
+            <td colspan="7" class="px-5 py-14 text-center">
               <BriefcaseBusiness
                 class="mx-auto mb-3 h-10 w-10 text-slate-300 dark:text-slate-600"
               />
@@ -92,10 +86,7 @@
               </td>
 
               <td class="max-w-xs px-5 py-4 text-slate-500 dark:text-slate-400">
-                <p
-                  class="truncate"
-                  :title="service.description || ''"
-                >
+                <p class="truncate" :title="service.description || ''">
                   {{ service.description || 'Sin descripción' }}
                 </p>
               </td>
@@ -116,27 +107,18 @@
               <td class="whitespace-nowrap px-5 py-4">
                 <div class="flex justify-end gap-1">
                   <button
-                    type="button"
-                    :aria-label="`Editar ${service.name}`"
-                    title="Editar servicio"
-                    class="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm font-medium text-slate-500 transition hover:bg-teal-50 hover:text-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500/30 dark:text-slate-400 dark:hover:bg-teal-950/60 dark:hover:text-teal-300"
+                    class="inline-flex items-center rounded-lg border border-blue-300 px-2.5 py-1 text-xs font-medium text-blue-600 transition hover:bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-950/30"
                     @click="$emit('edit', service.uuid)"
                   >
-                    <Pencil class="h-4 w-4" />
-
-                    <span class="hidden xl:inline"> Editar </span>
+                    <Pencil class="mr-1 h-3 w-3" />
+                    Editar
                   </button>
-
                   <button
-                    type="button"
-                    :aria-label="`Eliminar ${service.name}`"
-                    title="Eliminar servicio"
-                    class="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm font-medium text-slate-500 transition hover:bg-red-50 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/30 dark:text-slate-400 dark:hover:bg-red-950/60 dark:hover:text-red-300"
+                    class="inline-flex items-center rounded-lg border border-red-300 px-2.5 py-1 text-xs font-medium text-red-600 transition hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950/30"
                     @click="$emit('delete', service.uuid)"
                   >
-                    <Trash2 class="h-4 w-4" />
-
-                    <span class="hidden xl:inline"> Eliminar </span>
+                    <Trash2 class="mr-1 h-3 w-3" />
+                    Eliminar
                   </button>
                 </div>
               </td>

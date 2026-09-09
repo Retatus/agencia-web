@@ -20,10 +20,7 @@
     </div>
 
     <!-- Loading -->
-    <div
-      v-if="store.loading"
-      class="flex items-center justify-center py-12"
-    >
+    <div v-if="store.loading" class="flex items-center justify-center py-12">
       <div
         class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-teal-600 border-t-transparent"
       ></div>
@@ -117,7 +114,7 @@
                   : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
               "
             >
-              {{ provider.active ? 'Sí' : 'No' }}
+              {{ provider.active ? 'Activo' : 'Inactivo' }}
             </span>
           </td>
           <td class="px-3 py-2.5 text-center">
@@ -159,7 +156,7 @@
       v-else
       class="rounded-lg border border-slate-200 bg-slate-50 py-12 text-center dark:border-slate-700 dark:bg-slate-900/50"
     >
-      <p class="text-sm text-slate-500 dark:text-slate-400"> No hay proveedores registrados. </p>
+      <p class="text-sm text-slate-500 dark:text-slate-400">No hay proveedores registrados.</p>
     </div>
   </section>
 </template>
@@ -167,6 +164,7 @@
 import { onMounted } from 'vue'
 import { useProviderStore } from '../stores/provider.store'
 import { BaseBadge, BasePagination, BaseTable } from '@/components/ui'
+import { Pencil, Plus, Trash2 } from 'lucide-vue-next'
 
 const store = useProviderStore()
 const load = () => store.fetchProviders()

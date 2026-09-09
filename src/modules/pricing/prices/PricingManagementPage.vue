@@ -256,10 +256,10 @@
                   {{ price.service_variant?.service.description }}
                 </div>
                 <div
-                  v-if="price.provider?.business_name"
+                  v-if="price.service_variant?.service?.provider?.business_name"
                   class="mt-0.5 text-xs text-slate-500 dark:text-slate-400"
                 >
-                  {{ price.provider.business_name }}
+                  {{ price.service_variant?.service.provider.business_name }}
                 </div>
               </td>
 

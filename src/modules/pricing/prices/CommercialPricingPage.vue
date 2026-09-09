@@ -475,6 +475,12 @@
             >
               <td class="px-4 py-3 text-slate-700 dark:text-slate-300">
                 {{ priceLabel(item.price) }}
+                <div
+                  v-if="item.price?.service_variant?.service?.provider?.business_name"
+                  class="mt-0.5 text-xs text-slate-500 dark:text-slate-400"
+                >
+                  {{ item.price?.service_variant?.service?.provider?.business_name }}
+                </div>
               </td>
               <td class="px-4 py-3 text-slate-600 dark:text-slate-400">
                 {{ item.price?.price_type?.name }} · {{ rangeLabel(item.price) }}

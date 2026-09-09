@@ -3,7 +3,7 @@
     <!-- Encabezado -->
     <div class="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
       <div>
-        <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white"> Clientes </h2>
+        <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Clientes</h2>
         <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Administre los clientes del sistema.
         </p>
@@ -27,10 +27,7 @@
     </div>
 
     <!-- Loading -->
-    <div
-      v-if="store.loading"
-      class="flex items-center justify-center py-12"
-    >
+    <div v-if="store.loading" class="flex items-center justify-center py-12">
       <div
         class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-teal-600 border-t-transparent"
       ></div>
@@ -144,7 +141,7 @@
       v-else
       class="rounded-lg border border-slate-200 bg-slate-50 py-12 text-center dark:border-slate-700 dark:bg-slate-900/50"
     >
-      <p class="text-sm text-slate-500 dark:text-slate-400"> No hay clientes registrados. </p>
+      <p class="text-sm text-slate-500 dark:text-slate-400">No hay clientes registrados.</p>
     </div>
   </section>
 </template>
@@ -154,6 +151,7 @@ import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCustomerStore } from '../stores/customer.store'
 import { BaseTable, BasePagination } from '@/components/ui'
+import { Pencil, Trash2 } from 'lucide-vue-next'
 
 const store = useCustomerStore()
 const router = useRouter()

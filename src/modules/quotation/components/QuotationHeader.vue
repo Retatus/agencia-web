@@ -59,7 +59,7 @@
           </div>
         </div>
 
-        <div class="grid gap-5 md:grid-cols-3">
+        <div class="grid gap-5 md:grid-cols-2">
           <!-- Moneda -->
           <div>
             <label
@@ -78,33 +78,6 @@
                 {{ currency.code }}
               </option>
             </select>
-          </div>
-
-          <!-- Política comercial opcional -->
-          <div>
-            <label
-              for="quotation-commercial-policy"
-              class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-            >
-              Temporada o promoción
-            </label>
-            <select
-              id="quotation-commercial-policy"
-              v-model="store.quotation.commercial_policy_id"
-              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-            >
-              <option :value="null">Precio base</option>
-              <option
-                v-for="priceList in availablePriceLists"
-                :key="priceList.id"
-                :value="priceList.id"
-              >
-                {{ priceList.name }}
-              </option>
-            </select>
-            <p class="mt-1 text-xs text-slate-500">
-              Solo afecta servicios incluidos en la lista.
-            </p>
           </div>
 
           <!-- Tipo Cambio -->
@@ -233,51 +206,16 @@
 </template>
 
 <script setup>
-import { computed, watch } from 'vue'
+import { watch } from 'vue'
 import { useQuotationStore } from '../stores/quotation.store'
 
-const props = defineProps({
+defineProps({
   customers: { type: Array, default: () => [] },
   currencies: { type: Array, default: () => [] },
   statuses: { type: Array, default: () => [] },
-  priceLists: { type: Array, default: () => [] },
 })
 
 const store = useQuotationStore()
-
-const availablePriceLists = computed(() => {
-  const currencyId = Number(store.quotation.currency_id)
-  const travelDate = store.quotation.travel_date
-
-  return props.priceLists.filter((priceList) => {
-    if (!priceList.active || Number(priceList.currency_id) !== currencyId) {
-      return false
-    }
-
-    if (!travelDate) {
-      return true
-    }
-
-    const from = String(priceList.valid_from).slice(0, 10)
-    const to = String(priceList.valid_to).slice(0, 10)
-
-    return from <= travelDate && to >= travelDate
-  })
-})
-
-watch(
-  () => [store.quotation.currency_id, store.quotation.travel_date],
-  () => {
-    const selectedId = Number(store.quotation.commercial_policy_id)
-
-    if (
-      selectedId &&
-      !availablePriceLists.value.some((priceList) => Number(priceList.id) === selectedId)
-    ) {
-      store.quotation.commercial_policy_id = null
-    }
-  },
-)
 
 watch(
   () => store.quotation.travel_date,

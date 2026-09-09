@@ -831,11 +831,6 @@ import { useQuotationCalculationStore } from '../stores/quotation-calculation.st
 */
 
 const props = defineProps({
-  priceListId: {
-    type: [Number, String],
-    default: null,
-  },
-
   currencyId: {
     type: [Number, String],
     required: true,
@@ -1469,12 +1464,7 @@ async function loadPrices() {
   try {
     const response = await ServiceService.getPrices(
       selectedService.value.uuid,
-
       selectedVariant.value.id,
-
-      {
-        price_list_id: props.priceListId,
-      },
     )
 
     prices.value = response.data.data ?? []
@@ -1525,7 +1515,6 @@ async function loadAutomaticGroupPrice() {
     const result = await calculationStore.calculate({
       travel_date: serviceDate,
       currency_id: Number(props.currencyId),
-      commercial_policy_id: props.priceListId ? Number(props.priceListId) : null,
       passengers: props.passengers,
       itineraries: [
         {
@@ -1579,12 +1568,7 @@ async function loadAllVariantPrices() {
     try {
       const response = await ServiceService.getPrices(
         selectedService.value.uuid,
-
         variant.id,
-
-        {
-          price_list_id: props.priceListId,
-        },
       )
 
       const list = response.data.data ?? []
@@ -1721,8 +1705,6 @@ async function loadRecommendations() {
       travel_date: props.itineraryTravelDate ?? props.travelDate,
 
       currency_id: Number(props.currencyId),
-
-      commercial_policy_id: props.priceListId ? Number(props.priceListId) : null,
 
       pricing_currency_id: Number(props.currencyId),
 

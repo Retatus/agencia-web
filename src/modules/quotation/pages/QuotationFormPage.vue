@@ -43,6 +43,26 @@
       </router-link>
     </div>
 
+    <!-- Resultado del guardado -->
+
+    <BaseAlert
+      v-if="saveFeedback"
+      ref="saveFeedbackElement"
+      class="mb-5"
+      :type="saveFeedback.type"
+      :title="saveFeedback.title"
+      dismissible
+      @close="clearSaveFeedback"
+    >
+      <p>{{ saveFeedback.message }}</p>
+
+      <ul v-if="saveFeedback.details.length" class="mt-2 list-disc space-y-1 pl-5">
+        <li v-for="(detail, index) in saveFeedback.details" :key="`${index}-${detail}`">
+          {{ detail }}
+        </li>
+      </ul>
+    </BaseAlert>
+
     <!-- Indicador de guardado -->
 
     <div
@@ -68,7 +88,6 @@
           :customers="customers"
           :currencies="currencies"
           :statuses="statuses"
-          :price-lists="priceLists"
           @create-customer="openCustomerModal"
         />
       </fieldset>
@@ -211,7 +230,6 @@
       :itinerary-day-number="store.selectedItinerary?.day_number"
       :itinerary-travel-date="store.selectedItinerary?.travel_date"
       :passengers="store.quotation.passengers"
-      :price-list-id="store.quotation.commercial_policy_id"
       @close="closeServiceModal"
       @save="handleItemSave"
     />
@@ -233,9 +251,11 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Copy, Printer, Mail, FileText, Save } from 'lucide-vue-next'
+
+import BaseAlert from '@/components/ui/BaseAlert.vue'
 
 import { useQuotationStore } from '../stores/quotation.store'
 
@@ -253,7 +273,6 @@ import { useCustomerStore } from '../../crm/stores/customer.store'
 import CurrencyService from '@/modules/catalog/service/currency.service'
 import PassengerTypeService from '@/modules/catalog/service/passenger-type.service'
 import QuotationStatusService from '@/modules/catalog/service/quotation-status.service'
-import PriceListService from '@/modules/pricing/services/price-list.service'
 
 /*
 |--------------------------------------------------------------------------
@@ -316,6 +335,10 @@ const showPassengerModal = ref(false)
 
 const showCustomerModal = ref(false)
 
+const saveFeedback = ref(null)
+
+const saveFeedbackElement = ref(null)
+
 /*
 |--------------------------------------------------------------------------
 | COMPUTED
@@ -346,8 +369,6 @@ const statuses = ref([])
 
 const passengerTypes = ref([])
 
-const priceLists = ref([])
-
 const loadingCatalogs = ref(false)
 
 /*
@@ -376,33 +397,25 @@ async function loadAuxiliaryData() {
   loadingCatalogs.value = true
 
   try {
-    const [currenciesResponse, statusesResponse, passengerTypesResponse, priceListsResponse] =
-      await Promise.all([
-        CurrencyService.getAll({
-          active: 1,
-        }),
+    const [currenciesResponse, statusesResponse, passengerTypesResponse] = await Promise.all([
+      CurrencyService.getAll({
+        active: 1,
+      }),
 
-        QuotationStatusService.getAll({
-          active: 1,
-        }),
+      QuotationStatusService.getAll({
+        active: 1,
+      }),
 
-        PassengerTypeService.getAll({
-          active: 1,
-        }),
-
-        PriceListService.getAll({
-          active: 1,
-          per_page: 100,
-        }),
-      ])
+      PassengerTypeService.getAll({
+        active: 1,
+      }),
+    ])
 
     currencies.value = currenciesResponse.data.data ?? []
 
     statuses.value = statusesResponse.data.data ?? []
 
     passengerTypes.value = passengerTypesResponse.data.data ?? []
-
-    priceLists.value = priceListsResponse.data.data ?? []
   } finally {
     loadingCatalogs.value = false
   }
@@ -435,8 +448,23 @@ onMounted(async () => {
 */
 
 async function save() {
+  clearSaveFeedback()
+
+  const wasNew = store.isNew
+
   try {
-    await store.save()
+    const response = await store.save()
+
+    showSaveFeedback({
+      type: 'success',
+      title: wasNew ? 'Cotización creada' : 'Cotización actualizada',
+      message:
+        response?.data?.message ??
+        (wasNew
+          ? 'La cotización fue creada correctamente.'
+          : 'La cotización fue actualizada correctamente.'),
+      details: [],
+    })
 
     /*
     |--------------------------------------------------------------------------
@@ -450,7 +478,45 @@ async function save() {
     // })
   } catch (error) {
     console.error('Error guardando cotización:', error)
+
+    const responseData = error?.response?.data
+
+    showSaveFeedback({
+      type: 'danger',
+      title: 'No fue posible guardar la cotización',
+      message:
+        responseData?.message ??
+        error?.message ??
+        'Ocurrió un error inesperado al comunicarse con el servidor.',
+      details: validationMessages(responseData?.errors),
+    })
   }
+}
+
+function validationMessages(errors) {
+  if (!errors || typeof errors !== 'object') {
+    return []
+  }
+
+  return Object.values(errors)
+    .flatMap((messages) => (Array.isArray(messages) ? messages : [messages]))
+    .filter(Boolean)
+    .map(String)
+}
+
+function clearSaveFeedback() {
+  saveFeedback.value = null
+}
+
+async function showSaveFeedback(feedback) {
+  saveFeedback.value = feedback
+
+  await nextTick()
+
+  saveFeedbackElement.value?.$el?.scrollIntoView({
+    behavior: 'smooth',
+    block: 'center',
+  })
 }
 
 /*

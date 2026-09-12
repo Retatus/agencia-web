@@ -17,6 +17,7 @@
         :to="{ name: 'quotations.create' }"
         class="inline-flex items-center justify-center rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-slate-950"
       >
+        <Plus class="mr-1.5 h-4 w-4" />
         Nueva cotización
       </router-link>
     </div>
@@ -161,7 +162,7 @@ import { useQuotationStore } from '../stores/quotation.store'
 import QuotationHistoryModal from '../components/QuotationHistoryModal.vue'
 import quotationService from '../services/quotation.service.js'
 
-import { BriefcaseBusiness, Pencil, Eye, Trash2 } from 'lucide-vue-next'
+import { Plus, Pencil, Eye, Trash2 } from 'lucide-vue-next'
 import { BaseBadge, BasePagination, BaseTable } from '@/components/ui'
 
 const router = useRouter()

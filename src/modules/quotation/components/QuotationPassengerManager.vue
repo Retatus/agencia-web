@@ -10,7 +10,7 @@
       class="flex flex-col gap-3 border-b border-slate-200 px-5 py-4 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between sm:px-6"
     >
       <div>
-        <h3 class="font-semibold text-slate-900 dark:text-white"> Pasajeros </h3>
+        <h3 class="font-semibold text-slate-900 dark:text-white">Pasajeros</h3>
 
         <div class="mt-1 flex flex-wrap gap-3 text-xs text-slate-500 dark:text-slate-400">
           <span>
@@ -23,10 +23,7 @@
             completos
           </span>
 
-          <span
-            v-if="pendingCount"
-            class="text-amber-600 dark:text-amber-400"
-          >
+          <span v-if="pendingCount" class="text-amber-600 dark:text-amber-400">
             {{ pendingCount }}
             pendientes
           </span>
@@ -161,35 +158,35 @@
 
                 <!-- NUMBER -->
 
-                <th class="table-header"> # </th>
+                <th class="table-header">#</th>
 
                 <!-- NAME -->
 
-                <th class="table-header"> Pasajero </th>
+                <th class="table-header">Pasajero</th>
 
                 <!-- TYPE -->
 
-                <th class="table-header"> Tipo </th>
+                <th class="table-header">Tipo</th>
 
                 <!-- NATIONALITY -->
 
-                <th class="table-header"> Nacionalidad </th>
+                <th class="table-header">Nacionalidad</th>
 
                 <!-- DOCUMENT -->
 
-                <th class="table-header"> Documento </th>
+                <th class="table-header">Documento</th>
 
                 <!-- COMPLETION -->
 
-                <th class="table-header"> Datos </th>
+                <th class="table-header">Datos</th>
 
                 <!-- ACTIVE -->
 
-                <th class="table-header text-center"> Activo </th>
+                <th class="table-header text-center">Activo</th>
 
                 <!-- ACTIONS -->
 
-                <th class="table-header text-right"> Acciones </th>
+                <th class="table-header text-right">Acciones</th>
               </tr>
             </thead>
 
@@ -235,10 +232,7 @@
                     {{ passengerName(passenger) }}
                   </div>
 
-                  <div
-                    v-if="passenger.email"
-                    class="mt-0.5 text-xs text-slate-500"
-                  >
+                  <div v-if="passenger.email" class="mt-0.5 text-xs text-slate-500">
                     {{ passenger.email }}
                   </div>
                 </td>
@@ -256,11 +250,7 @@
                     "
                   >
                     <option :value="null">Seleccione...</option>
-                    <option
-                      v-for="type in passengerTypes"
-                      :key="type.id"
-                      :value="type.id"
-                    >
+                    <option v-for="type in passengerTypes" :key="type.id" :value="type.id">
                       {{ type.name }}
                     </option>
                   </select>
@@ -278,6 +268,7 @@
                     placeholder="-"
                     @change="changeField(passenger, 'nationality', $event.target.value)"
                   />
+                  <CountryBadge :iso="passenger.nationality" :name="passenger.nationality" />
                 </td>
 
                 <!-- ================================================= -->
@@ -391,6 +382,8 @@ import PassengerModal from './PassengerModal.vue'
 import GeneratePassengersModal from './passengers/GeneratePassengersModal.vue'
 
 import PassengerBulkActions from './passengers/PassengerBulkActions.vue'
+
+import CountryBadge from '@/shared/components/CountryBadge.vue'
 
 /*
 |--------------------------------------------------------------------------

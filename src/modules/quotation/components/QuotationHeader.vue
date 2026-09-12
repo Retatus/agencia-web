@@ -46,13 +46,11 @@
                   {{ customer.first_name }} {{ customer.last_name }}
                 </option>
               </select>
-
               <button
-                type="button"
-                class="inline-flex shrink-0 items-center justify-center gap-1 rounded-lg border border-teal-600 bg-white px-4 py-2.5 text-sm font-medium text-teal-600 shadow-sm transition hover:bg-teal-50 hover:border-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500/30 dark:border-teal-500 dark:text-teal-400 dark:hover:bg-teal-950/30"
+                class="inline-flex items-center justify-center rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 @click="$emit('create-customer')"
               >
-                <Plus class="h-4 w-4" />
+                <Plus class="mr-1.5 h-4 w-4" />
                 Nuevo
               </button>
             </div>
@@ -208,6 +206,7 @@
 <script setup>
 import { watch } from 'vue'
 import { useQuotationStore } from '../stores/quotation.store'
+import { Plus } from 'lucide-vue-next'
 
 defineProps({
   customers: { type: Array, default: () => [] },

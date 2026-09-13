@@ -1,23 +1,37 @@
 <script setup>
-defineProps({
+import { computed } from 'vue'
+import 'flag-icons/css/flag-icons.min.css'
+
+const props = defineProps({
   iso: {
-    type: String,
-    required: true,
+    type: [String, null],
+    default: null,
   },
 
   name: {
-    type: String,
-    default: '',
+    type: [String, null],
+    default: null,
   },
+})
+
+const normalizedIso = computed(() => {
+  const value = props.iso?.trim().toLowerCase()
+
+  return /^[a-z]{2}$/.test(value ?? '') ? value : ''
 })
 </script>
 
 <template>
   <div class="flex items-center gap-2">
-    <span :class="`fi fi-${iso?.toLowerCase()}`" class="shrink-0" />
+    <span
+      v-if="normalizedIso"
+      :class="['fi', `fi-${normalizedIso}`]"
+      class="shrink-0"
+      aria-hidden="true"
+    />
 
     <span>
-      {{ name }}
+      {{ name || '-' }}
     </span>
   </div>
 </template>

@@ -261,13 +261,6 @@
                 <!-- ================================================= -->
 
                 <td class="min-w-40 px-3 py-2.5">
-                  <input
-                    :value="passenger.nationality"
-                    type="text"
-                    class="inline-control"
-                    placeholder="-"
-                    @change="changeField(passenger, 'nationality', $event.target.value)"
-                  />
                   <CountryBadge :iso="passenger.nationality" :name="passenger.nationality" />
                 </td>
 
@@ -373,7 +366,7 @@
 <script setup>
 import { computed, ref, toRaw } from 'vue'
 
-import { Pencil, Plus, Trash2, UsersRound } from 'lucide-vue-next'
+import { Pencil, Plus, Trash2, UsersRound, X } from 'lucide-vue-next'
 
 import { useQuotationStore } from '../stores/quotation.store'
 

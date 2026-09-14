@@ -196,7 +196,7 @@
 </template>
 
 <script setup>
-import { reactive, watch } from 'vue'
+import { reactive, watch, computed } from 'vue'
 import { Filter, RotateCcw, Search } from 'lucide-vue-next'
 
 const props = defineProps({
@@ -224,6 +224,20 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+})
+
+const activeFiltersCount = computed(() => {
+  const filters = props.modelValue ?? {}
+
+  return [
+    filters.search,
+    filters.price_list_id,
+    filters.price_type_id,
+    filters.service_uuid,
+    filters.passenger_type_id,
+    filters.currency_id,
+    filters.active,
+  ].filter((value) => value !== null && value !== undefined && value !== '').length
 })
 
 const emit = defineEmits(['update:modelValue', 'apply', 'reset'])

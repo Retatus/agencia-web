@@ -796,6 +796,7 @@
 <script setup>
 //import { computed, onMounted, reactive, ref } from 'vue'
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { Pencil, Plus, X } from 'lucide-vue-next'
 
 import ServiceService from '../../catalog/services/services/service.service'
 

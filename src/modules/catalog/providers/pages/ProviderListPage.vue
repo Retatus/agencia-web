@@ -144,9 +144,9 @@
         <BasePagination
           :current-page="currentPage"
           :last-page="lastPage"
-          :total="store.providers.length"
+          :total="total"
           :per-page="perPage"
-          @change="currentPage = $event"
+          @change="changePage"
         />
       </template>
     </BaseTable>
@@ -161,13 +161,18 @@
   </section>
 </template>
 <script setup>
-import { onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useProviderStore } from '../stores/provider.store'
 import { BaseBadge, BasePagination, BaseTable } from '@/components/ui'
 import { Pencil, Plus, Trash2 } from 'lucide-vue-next'
 
 const store = useProviderStore()
-const load = () => store.fetchProviders()
+const currentPage = computed(() => Number(store.meta?.current_page ?? 1))
+const lastPage = computed(() => Number(store.meta?.last_page ?? 1))
+const perPage = computed(() => Number(store.meta?.per_page ?? 10))
+const total = computed(() => Number(store.meta?.total ?? store.providers.length))
+const load = (page = currentPage.value) => store.fetchProviders({ page, per_page: perPage.value })
+const changePage = (page) => load(page)
 const remove = async (id) => {
   if (confirm('¿Desea eliminar este proveedor?')) {
     try {

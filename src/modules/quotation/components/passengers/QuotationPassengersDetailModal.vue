@@ -96,10 +96,7 @@
             <!-- BODY -->
             <div class="flex-1 overflow-y-auto p-5 sm:p-6">
               <!-- LOADING -->
-              <div
-                v-if="loading"
-                class="flex min-h-48 items-center justify-center"
-              >
+              <div v-if="loading" class="flex min-h-48 items-center justify-center">
                 <div class="flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
                   <div
                     class="h-5 w-5 animate-spin rounded-full border-2 border-teal-600 border-t-transparent"
@@ -204,7 +201,11 @@
 
                         <!-- NATIONALITY -->
                         <td class="px-3 py-2.5 text-sm text-slate-700 dark:text-slate-300">
-                          {{ passenger.nationality || '-' }}
+                          {{ passenger }}
+                          <CountryBadge
+                            :iso="passenger.nationality"
+                            :name="passenger.country?.name"
+                          />
                         </td>
 
                         <!-- DOCUMENT -->
@@ -268,10 +269,12 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import { Users, X } from 'lucide-vue-next'
 
 import { useRouter } from 'vue-router'
 
 import QuotationPassengerService from '../../services/quotation-passenger.service'
+import CountryBadge from '@/shared/components/CountryBadge.vue'
 
 /*
 |--------------------------------------------------------------------------

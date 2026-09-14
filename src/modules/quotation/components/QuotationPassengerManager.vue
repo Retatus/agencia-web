@@ -261,7 +261,7 @@
                 <!-- ================================================= -->
 
                 <td class="min-w-40 px-3 py-2.5">
-                  <CountryBadge :iso="passenger.nationality" :name="passenger.nationality" />
+                  <CountryBadge :iso="passenger.nationality" :name="passenger.country.name" />
                 </td>
 
                 <!-- ================================================= -->

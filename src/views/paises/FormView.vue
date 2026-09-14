@@ -14,7 +14,7 @@
 
         Nombre
 
-        <input v-model="form.nombre">
+        <input v-model="form.nombre" />
 
       </div>
 
@@ -22,7 +22,7 @@
 
         ISO
 
-        <input v-model="form.codigo_iso">
+        <input v-model="form.codigo_iso" />
 
       </div>
 

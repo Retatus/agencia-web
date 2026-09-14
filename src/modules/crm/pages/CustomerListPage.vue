@@ -97,7 +97,7 @@
             {{ customer.last_name }}
           </td>
           <td class="px-3 py-2.5 text-sm text-slate-600 dark:text-slate-400">
-            {{ customer.nationality || '-' }}
+            <CountryBadge :iso="customer.nationality" :name="customer.country.name" />
           </td>
           <td class="px-3 py-2.5 text-sm text-slate-700 dark:text-slate-300">
             {{ customer.phone || '-' }}
@@ -129,9 +129,9 @@
         <BasePagination
           :current-page="currentPage"
           :last-page="lastPage"
-          :total="store.customers.length"
+          :total="total"
           :per-page="perPage"
-          @change="currentPage = $event"
+          @change="changePage"
         />
       </template>
     </BaseTable>
@@ -147,16 +147,22 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCustomerStore } from '../stores/customer.store'
 import { BaseTable, BasePagination } from '@/components/ui'
-import { Pencil, Trash2 } from 'lucide-vue-next'
+import { Pencil, Plus, RefreshCw, Trash2 } from 'lucide-vue-next'
+import CountryBadge from '@/shared/components/CountryBadge.vue'
 
 const store = useCustomerStore()
 const router = useRouter()
+const currentPage = computed(() => Number(store.meta?.current_page ?? 1))
+const lastPage = computed(() => Number(store.meta?.last_page ?? 1))
+const perPage = computed(() => Number(store.meta?.per_page ?? 10))
+const total = computed(() => Number(store.meta?.total ?? store.customers.length))
 
-const load = () => store.fetchCustomers()
+const load = (page = currentPage.value) => store.fetchCustomers({ page, per_page: perPage.value })
+const changePage = (page) => load(page)
 
 const add = () => router.push('/crm/customers/create')
 

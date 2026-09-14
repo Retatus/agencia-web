@@ -135,9 +135,9 @@
         <BasePagination
           :current-page="currentPage"
           :last-page="lastPage"
-          :total="store.items.length"
+          :total="total"
           :per-page="perPage"
-          @change="currentPage = $event"
+          @change="changePage"
         />
       </template>
     </BaseTable>
@@ -155,7 +155,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 //import BaseTable from '@/shared/components/BaseTable.vue'
 import { useQuotationStore } from '../stores/quotation.store'
@@ -167,6 +167,10 @@ import { BaseBadge, BasePagination, BaseTable } from '@/components/ui'
 
 const router = useRouter()
 const store = useQuotationStore()
+const currentPage = computed(() => Number(store.listMeta?.current_page ?? 1))
+const lastPage = computed(() => Number(store.listMeta?.last_page ?? 1))
+const perPage = computed(() => Number(store.listMeta?.per_page ?? 10))
+const total = computed(() => Number(store.listMeta?.total ?? store.items.length))
 
 /*
 |--------------------------------------------------------------------------
@@ -189,8 +193,12 @@ function closeHistory() {
 
 onMounted(load)
 
-async function load() {
-  await store.fetchQuotations()
+async function load(page = currentPage.value) {
+  await store.fetchQuotations({ page, per_page: perPage.value })
+}
+
+async function changePage(page) {
+  await load(page)
 }
 function edit(uuid) {
   router.push({

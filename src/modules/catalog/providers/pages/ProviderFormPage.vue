@@ -28,7 +28,7 @@
       >
         <!-- Título de la sección -->
         <div class="border-b border-slate-200 px-5 py-4 dark:border-slate-800 sm:px-6">
-          <h3 class="font-semibold text-slate-900 dark:text-white"> Información del Proveedor </h3>
+          <h3 class="font-semibold text-slate-900 dark:text-white">Información del Proveedor</h3>
           <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
             Los campos marcados con <span class="text-red-500">*</span> son obligatorios.
           </p>
@@ -103,11 +103,7 @@
                 class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
               >
                 <option value="">Seleccione...</option>
-                <option
-                  v-for="item in documentTypeStore.items"
-                  :key="item.id"
-                  :value="item.id"
-                >
+                <option v-for="item in documentTypeStore.items" :key="item.id" :value="item.id">
                   {{ item.name }}
                 </option>
               </select>
@@ -155,13 +151,7 @@
               >
                 Email
               </label>
-              <input
-                id="provider-email"
-                v-model="form.email"
-                type="email"
-                placeholder="proveedor@ejemplo.com"
-                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-600"
-              />
+              <EmailInput v-model="form.email" />
             </div>
             <div>
               <label
@@ -170,13 +160,7 @@
               >
                 Teléfono
               </label>
-              <input
-                id="provider-phone"
-                v-model="form.phone"
-                type="text"
-                placeholder="+34 600 000 000"
-                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-600"
-              />
+              <PhoneInput v-model="form.phone" :country-iso="form.nationality" />
             </div>
             <div>
               <label
@@ -259,6 +243,8 @@ import { reactive, ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useProviderStore } from '../stores/provider.store'
 import { useDocumentTypeStore } from '@/modules/catalog/stores/documentType.store'
+import PhoneInput from '@/shared/components/PhoneInput.vue'
+import EmailInput from '@/shared/components/EmailInput.vue'
 const providerStore = useProviderStore()
 const route = useRoute()
 const router = useRouter()

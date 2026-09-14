@@ -539,7 +539,7 @@
 </template>
 
 <script setup>
-import { Plus, Save, Pencil, Trash2 } from 'lucide-vue-next'
+import { ChevronLeft, ChevronRight, Plus, Save, Pencil, Trash2 } from 'lucide-vue-next'
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import CurrencyService from '../../catalog/service/currency.service'
 import ServiceService from '../../catalog/services/services/service.service'

@@ -102,6 +102,13 @@ export const useQuotationStore = defineStore('quotation', {
 
     items: [],
 
+    listMeta: {
+      current_page: 1,
+      last_page: 1,
+      per_page: 10,
+      total: 0,
+    },
+
     /*
     |--------------------------------------------------------------------------
     | Cotización actual
@@ -349,13 +356,17 @@ export const useQuotationStore = defineStore('quotation', {
     |--------------------------------------------------------------------------
     */
 
-    async fetchQuotations() {
+    async fetchQuotations(params = {}) {
       this.loading = true
 
       try {
-        const response = await QuotationService.getAll()
+        const response = await QuotationService.getAll(params)
 
-        this.items = response.data.data
+        this.items = response.data.data ?? []
+        this.listMeta = {
+          ...this.listMeta,
+          ...(response.data.meta ?? {}),
+        }
       } finally {
         this.loading = false
       }

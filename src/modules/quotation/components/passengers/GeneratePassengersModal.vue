@@ -128,7 +128,7 @@
 import { computed, reactive, ref } from 'vue'
 
 import QuotationPassengerFormModal from '../PassengerModal.vue'
-import { Users } from 'lucide-vue-next'
+import { Users, X } from 'lucide-vue-next'
 import CountrySelect from '@/shared/components/CountrySelect.vue'
 
 const props = defineProps({

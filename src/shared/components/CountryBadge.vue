@@ -1,6 +1,5 @@
 <script setup>
 import { computed } from 'vue'
-import 'flag-icons/css/flag-icons.min.css'
 
 const props = defineProps({
   iso: {

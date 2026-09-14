@@ -358,7 +358,7 @@
 </template>
 
 <script setup>
-import { Plus, Pencil, Trash2 } from 'lucide-vue-next'
+import { ChevronLeft, ChevronRight, Plus, Pencil, Trash2 } from 'lucide-vue-next'
 import { onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import PricingCoreFormModal from '../components/PricingCoreFormModal.vue'
 import PricingCatalogService from '../services/pricing-catalog.service'

@@ -22,9 +22,7 @@
               class="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4 dark:border-slate-800 sm:px-6"
             >
               <div>
-                <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
-                  Nuevo cliente
-                </h2>
+                <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Nuevo cliente</h2>
                 <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
                   Registra rápidamente un cliente para utilizarlo en la cotización.
                 </p>
@@ -65,11 +63,7 @@
                       {{ loadingDocumentTypes ? 'Cargando...' : 'Seleccione...' }}
                     </option>
 
-                    <option
-                      v-for="type in documentTypes"
-                      :key="type.id"
-                      :value="type.id"
-                    >
+                    <option v-for="type in documentTypes" :key="type.id" :value="type.id">
                       {{ type.code }} - {{ type.name }}
                     </option>
                   </select>
@@ -119,12 +113,7 @@
                   <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                     Nacionalidad
                   </label>
-                  <input
-                    v-model.trim="form.nationality"
-                    type="text"
-                    placeholder="Nacionalidad"
-                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-600"
-                  />
+                  <CountrySelect v-model="form.nationality" />
                 </div>
 
                 <!-- PHONE -->
@@ -132,12 +121,7 @@
                   <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                     Teléfono
                   </label>
-                  <input
-                    v-model.trim="form.phone"
-                    type="text"
-                    placeholder="+34 600 000 000"
-                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-600"
-                  />
+                  <PhoneInput v-model="form.phone" :country-iso="form.nationality" />
                 </div>
 
                 <!-- EMAIL -->
@@ -145,12 +129,7 @@
                   <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                     Email
                   </label>
-                  <input
-                    v-model.trim="form.email"
-                    type="email"
-                    placeholder="cliente@ejemplo.com"
-                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-600"
-                  />
+                  <EmailInput v-model="form.email" />
                 </div>
 
                 <!-- NOTES -->
@@ -202,6 +181,9 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { X, UserPlus } from 'lucide-vue-next'
 
 import DocumentTypeService from '@/modules/catalog/service/document-type.service'
+import EmailInput from '@/shared/components/EmailInput.vue'
+import PhoneInput from '@/shared/components/PhoneInput.vue'
+import CountrySelect from '@/shared/components/CountrySelect.vue'
 
 const props = defineProps({
   saving: {

@@ -148,7 +148,7 @@
             />
           </div>
 
-          <!-- Válido Hasta -->
+          <!-- Fecha final del viaje -->
           <div>
             <label
               for="quotation-valid-until"
@@ -158,9 +158,10 @@
             </label>
             <input
               id="quotation-valid-until"
-              v-model="store.quotation.valid_until"
+              :value="store.quotation.valid_until"
               type="date"
-              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:scheme-dark"
+              readonly
+              class="w-full cursor-not-allowed rounded-lg border border-slate-300 bg-slate-100 px-3 py-2.5 text-sm text-slate-700 shadow-sm outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:scheme-dark"
             />
           </div>
 
@@ -216,10 +217,26 @@ defineProps({
 
 const store = useQuotationStore()
 
-watch(
-  () => store.quotation.travel_date,
-  () => store.updateTravelDates(),
-)
+function changeTravelDate(event) {
+  const newDate = event.target.value
+  const previousDate = store.quotation.travel_date
+
+  if (!newDate || newDate === previousDate) return
+
+  if (store.quotation.itineraries.length) {
+    const confirmed = window.confirm(
+      'La fecha de viaje cambiará. ¿Desea desplazar todo el itinerario manteniendo los intervalos existentes?',
+    )
+
+    if (!confirmed) {
+      event.target.value = previousDate ?? ''
+
+      return
+    }
+  }
+
+  store.updateTravelDate(newDate)
+}
 
 watch(
   () => [store.quotation.exchange_rate, store.quotation.discount, store.quotation.tax],

@@ -15,6 +15,34 @@ function clonePlain(value) {
   return JSON.parse(JSON.stringify(value))
 }
 
+function parseDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value ?? '')) return null
+
+  const [year, month, day] = value.split('-').map(Number)
+  const date = new Date(Date.UTC(year, month - 1, day))
+
+  return Number.isNaN(date.getTime()) ? null : date
+}
+
+function addDays(value, days) {
+  const date = parseDate(value)
+
+  if (!date) return null
+
+  date.setUTCDate(date.getUTCDate() + Number(days))
+
+  return date.toISOString().slice(0, 10)
+}
+
+function differenceInDays(from, to) {
+  const start = parseDate(from)
+  const end = parseDate(to)
+
+  if (!start || !end) return 0
+
+  return Math.round((end.getTime() - start.getTime()) / 86400000)
+}
+
 /*
 |--------------------------------------------------------------------------
 | CREATE QUOTATION
@@ -26,10 +54,6 @@ function createQuotation() {
   const today = new Date()
   const tomorrow = new Date(today)
   tomorrow.setDate(tomorrow.getDate() + 1)
-
-  // Fecha para valid_until (30 días después por defecto)
-  const validUntil = new Date(today)
-  validUntil.setDate(validUntil.getDate() + 30)
 
   // Formatear fechas a YYYY-MM-DD para inputs type="date"
   const formatDate = (date) => {
@@ -56,7 +80,7 @@ function createQuotation() {
     // Fechas inicializadas
     travel_date: formatDate(tomorrow), // Viaje comienza mañana por defecto
 
-    valid_until: formatDate(validUntil), // Válido por 30 días
+    valid_until: formatDate(tomorrow), // Se sincroniza con el último día del itinerario
 
     notes: '',
 
@@ -340,6 +364,8 @@ export const useQuotationStore = defineStore('quotation', {
           this.selectedItineraryUuid = this.quotation.itineraries[0].uuid
         }
 
+        this.syncValidUntilWithLastItinerary()
+
         this.sortItems()
 
         this.refreshCalculations()
@@ -407,6 +433,8 @@ export const useQuotationStore = defineStore('quotation', {
         if (this.quotation.itineraries.length > 0) {
           this.selectedItineraryUuid = this.quotation.itineraries[0].uuid
         }
+
+        this.syncValidUntilWithLastItinerary()
 
         this.sortItems()
 
@@ -528,6 +556,11 @@ export const useQuotationStore = defineStore('quotation', {
     */
 
     addItinerary(data = {}) {
+      const previousItinerary = this.quotation.itineraries.at(-1)
+      const defaultTravelDate = previousItinerary?.travel_date
+        ? addDays(previousItinerary.travel_date, 1)
+        : this.quotation.travel_date || null
+
       const itinerary = {
         id: null,
 
@@ -537,7 +570,7 @@ export const useQuotationStore = defineStore('quotation', {
 
         day_number: this.quotation.itineraries.length + 1,
 
-        travel_date: null,
+        travel_date: defaultTravelDate,
 
         title: '',
 
@@ -558,6 +591,8 @@ export const useQuotationStore = defineStore('quotation', {
 
       this.renumberItineraries()
 
+      this.syncValidUntilWithLastItinerary()
+
       this.refreshCalculations()
 
       return itinerary
@@ -572,7 +607,53 @@ export const useQuotationStore = defineStore('quotation', {
 
       Object.assign(itinerary, values)
 
+      this.syncValidUntilWithLastItinerary()
+
       this.refreshCalculations()
+    },
+
+    updateItineraryTravelDate(uuid, travelDate, shiftFollowing = false) {
+      const index = this.quotation.itineraries.findIndex((itinerary) => itinerary.uuid === uuid)
+
+      if (index < 0 || !parseDate(travelDate)) {
+        return { success: false, message: 'Seleccione una fecha válida.' }
+      }
+
+      const itinerary = this.quotation.itineraries[index]
+      const previous = this.quotation.itineraries[index - 1]
+      const next = this.quotation.itineraries[index + 1]
+
+      if (previous?.travel_date && travelDate <= previous.travel_date) {
+        return {
+          success: false,
+          message: `La fecha debe ser posterior a la del día ${previous.day_number}.`,
+        }
+      }
+
+      if (!shiftFollowing && next?.travel_date && travelDate >= next.travel_date) {
+        return {
+          success: false,
+          message: `La fecha debe ser anterior a la del día ${next.day_number}, o debe desplazar los días posteriores.`,
+        }
+      }
+
+      const difference = differenceInDays(itinerary.travel_date, travelDate)
+
+      itinerary.travel_date = travelDate
+
+      if (shiftFollowing && difference !== 0) {
+        this.quotation.itineraries.slice(index + 1).forEach((followingItinerary) => {
+          if (followingItinerary.travel_date) {
+            followingItinerary.travel_date = addDays(followingItinerary.travel_date, difference)
+          }
+        })
+      }
+
+      this.syncValidUntilWithLastItinerary()
+
+      this.refreshCalculations()
+
+      return { success: true }
     },
 
     removeItinerary(uuid) {
@@ -591,6 +672,8 @@ export const useQuotationStore = defineStore('quotation', {
       } else {
         this.selectedItineraryUuid = null
       }
+
+      this.syncValidUntilWithLastItinerary()
 
       this.refreshCalculations()
     },
@@ -613,6 +696,8 @@ export const useQuotationStore = defineStore('quotation', {
       copy.id = null
 
       copy.uuid = crypto.randomUUID()
+
+      copy.travel_date = itinerary.travel_date ? addDays(itinerary.travel_date, 1) : null
 
       /*
       |--------------------------------------------------------------------------
@@ -648,11 +733,19 @@ export const useQuotationStore = defineStore('quotation', {
 
       const index = this.quotation.itineraries.findIndex((itinerary) => itinerary.uuid === uuid)
 
+      this.quotation.itineraries.slice(index + 1).forEach((followingItinerary) => {
+        if (followingItinerary.travel_date) {
+          followingItinerary.travel_date = addDays(followingItinerary.travel_date, 1)
+        }
+      })
+
       this.quotation.itineraries.splice(index + 1, 0, copy)
 
       this.renumberItineraries()
 
       this.selectedItineraryUuid = copy.uuid
+
+      this.syncValidUntilWithLastItinerary()
 
       this.refreshCalculations()
 
@@ -670,13 +763,23 @@ export const useQuotationStore = defineStore('quotation', {
         return
       }
 
+      const dateSlots = [
+        this.quotation.itineraries[index - 1].travel_date,
+        this.quotation.itineraries[index].travel_date,
+      ]
+
       ;[this.quotation.itineraries[index - 1], this.quotation.itineraries[index]] = [
         this.quotation.itineraries[index],
 
         this.quotation.itineraries[index - 1],
       ]
 
+      this.quotation.itineraries[index - 1].travel_date = dateSlots[0]
+      this.quotation.itineraries[index].travel_date = dateSlots[1]
+
       this.renumberItineraries()
+
+      this.syncValidUntilWithLastItinerary()
 
       this.refreshCalculations()
     },
@@ -688,13 +791,23 @@ export const useQuotationStore = defineStore('quotation', {
         return
       }
 
+      const dateSlots = [
+        this.quotation.itineraries[index].travel_date,
+        this.quotation.itineraries[index + 1].travel_date,
+      ]
+
       ;[this.quotation.itineraries[index], this.quotation.itineraries[index + 1]] = [
         this.quotation.itineraries[index + 1],
 
         this.quotation.itineraries[index],
       ]
 
+      this.quotation.itineraries[index].travel_date = dateSlots[0]
+      this.quotation.itineraries[index + 1].travel_date = dateSlots[1]
+
       this.renumberItineraries()
+
+      this.syncValidUntilWithLastItinerary()
 
       this.refreshCalculations()
     },
@@ -705,6 +818,14 @@ export const useQuotationStore = defineStore('quotation', {
 
         itinerary.sort_order = index + 1
       })
+    },
+
+    syncValidUntilWithLastItinerary() {
+      const lastItinerary = [...this.quotation.itineraries]
+        .reverse()
+        .find((itinerary) => itinerary.travel_date)
+
+      this.quotation.valid_until = lastItinerary?.travel_date ?? this.quotation.travel_date ?? null
     },
 
     /*
@@ -871,9 +992,28 @@ export const useQuotationStore = defineStore('quotation', {
     },
 
     updateTravelDate(date) {
+      if (!parseDate(date)) return false
+
+      const previousDate = this.quotation.travel_date
+      const difference = differenceInDays(previousDate, date)
+
       this.quotation.travel_date = date
 
-      this.updateTravelDates()
+      if (difference !== 0) {
+        this.quotation.itineraries.forEach((itinerary, index) => {
+          itinerary.travel_date = itinerary.travel_date
+            ? addDays(itinerary.travel_date, difference)
+            : addDays(date, index)
+        })
+      } else {
+        this.updateTravelDates()
+      }
+
+      this.syncValidUntilWithLastItinerary()
+
+      this.refreshCalculations()
+
+      return true
     },
 
     updateCustomer(customerId) {

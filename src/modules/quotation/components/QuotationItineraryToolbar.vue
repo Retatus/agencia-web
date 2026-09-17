@@ -10,10 +10,7 @@
           <h4 class="text-sm font-semibold text-slate-900 dark:text-white">
             Día {{ itinerary.day_number }}
           </h4>
-          <span
-            v-if="itinerary.title"
-            class="text-sm text-slate-500 dark:text-slate-400"
-          >
+          <span v-if="itinerary.title" class="text-sm text-slate-500 dark:text-slate-400">
             - {{ itinerary.title }}
           </span>
         </div>
@@ -38,9 +35,10 @@
               Fecha
             </label>
             <input
-              v-model="itinerary.travel_date"
+              :value="itinerary.travel_date"
               type="date"
               class="w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:scheme-dark"
+              @change="changeTravelDate"
             />
           </div>
 
@@ -153,6 +151,30 @@ function remove() {
   }
 
   store.removeItinerary(props.itinerary.uuid)
+}
+
+function changeTravelDate(event) {
+  const newDate = event.target.value
+  const previousDate = props.itinerary.travel_date
+
+  if (!newDate || newDate === previousDate) return
+
+  const itineraryIndex = store.quotation.itineraries.findIndex(
+    (itinerary) => itinerary.uuid === props.itinerary.uuid,
+  )
+  const hasFollowingDays = itineraryIndex < store.quotation.itineraries.length - 1
+  const shiftFollowing = hasFollowingDays
+    ? window.confirm(
+        '¿Desea mover también los días posteriores manteniendo los intervalos existentes?\n\nAceptar: mover este día y los siguientes.\nCancelar: cambiar solamente este día.',
+      )
+    : false
+
+  const result = store.updateItineraryTravelDate(props.itinerary.uuid, newDate, shiftFollowing)
+
+  if (!result.success) {
+    event.target.value = previousDate ?? ''
+    window.alert(result.message)
+  }
 }
 
 function formatDate(date) {

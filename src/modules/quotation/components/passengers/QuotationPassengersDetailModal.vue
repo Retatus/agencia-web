@@ -201,7 +201,6 @@
 
                         <!-- NATIONALITY -->
                         <td class="px-3 py-2.5 text-sm text-slate-700 dark:text-slate-300">
-                          {{ passenger }}
                           <CountryBadge
                             :iso="passenger.nationality"
                             :name="passenger.country?.name"

@@ -143,7 +143,7 @@
                   >
                     Nacionalidad
                   </label>
-                  <CountrySelect v-model="form.nationality" />
+                  <CountrySelect v-model="form.nationality" @country-selected="onCountrySelected" />
                 </div>
 
                 <!-- Email -->
@@ -234,8 +234,10 @@ import { useQuotationStore } from '../stores/quotation.store'
 import { X, Save } from 'lucide-vue-next'
 import CountrySelect from '@/shared/components/CountrySelect.vue'
 import PhoneInput from '@/shared/components/PhoneInput.vue'
+import { useCountryStore } from '@/modules/catalog/stores/country.store'
 
 const store = useQuotationStore()
+const countryStore = useCountryStore()
 
 const props = defineProps({
   passenger: {
@@ -249,7 +251,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'save'])
 
 const isEdit = computed(() => !!props.passenger)
 
@@ -286,13 +288,21 @@ const canSave = computed(() => {
 })
 
 function save() {
-  const data = { ...form }
-
-  if (isEdit.value) {
-    store.updatePassenger(props.passenger.uuid, data)
-  } else {
-    store.addPassenger(data)
+  const values = {
+    ...form,
   }
+
+  const country = countryStore.getCountryByIso(form.nationality)
+
+  emit('save', {
+    values,
+    country: country
+      ? {
+          iso: country.iso,
+          name: country.name,
+        }
+      : null,
+  })
 
   emit('close')
 }

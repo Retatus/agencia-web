@@ -262,7 +262,10 @@
                 <!-- ================================================= -->
 
                 <td class="min-w-40 px-3 py-2.5">
-                  <CountryBadge :iso="passenger.nationality" :name="passenger.country?.name" />
+                  <CountryBadge
+                    :iso="passenger.nationality"
+                    :name="passenger.country?.name ?? passengerCountryName(passenger)"
+                  />
                 </td>
 
                 <!-- ================================================= -->
@@ -349,6 +352,7 @@
       :passenger="editingPassenger"
       :passenger-types="passengerTypes"
       @close="closeModal"
+      @save="handlePassengerSave"
     />
 
     <!-- ============================================================ -->
@@ -712,5 +716,37 @@ async function saveBulkChanges() {
   } catch (error) {
     console.error('Error actualizando pasajeros:', error)
   }
+}
+
+/*
+|--------------------------------------------------------------------------
+| COUNTRIES, getCountries Name
+|--------------------------------------------------------------------------
+*/
+
+const localCountryNames = ref(new Map())
+
+function handlePassengerSave({ values, country }) {
+  if (country?.name) {
+    localCountryNames.value.set(values.uuid, country.name)
+  }
+
+  if (editingPassenger.value) {
+    store.updatePassenger(editingPassenger.value.uuid, values)
+  } else {
+    store.addPassenger(values)
+  }
+
+  closeModal()
+}
+
+function passengerCountryName(passenger) {
+  return (
+    passenger.country_name ??
+    passenger.nationality_name ??
+    localCountryNames.value.get(passenger.uuid) ??
+    passenger.nationality ??
+    '-'
+  )
 }
 </script>

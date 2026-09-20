@@ -92,6 +92,14 @@ function createQuotation() {
 
     total: 0,
 
+    calculation_status: 'CURRENT',
+
+    calculation_dirty_reasons: [],
+
+    pending_calculation_items: [],
+
+    calculated_at: null,
+
     active: true,
 
     passengers: [],
@@ -277,6 +285,11 @@ export const useQuotationStore = defineStore('quotation', {
     passengerChangedCount(state) {
       return state.changedPassengers.size
     },
+
+    calculationDirty: (state) => state.quotation.calculation_status === 'DIRTY',
+
+    pendingCalculationCount: (state) =>
+      (state.quotation.pending_calculation_items ?? []).length,
   },
 
   /*
@@ -286,6 +299,77 @@ export const useQuotationStore = defineStore('quotation', {
   */
 
   actions: {
+    calculationItemKey(item) {
+      return item?.group_uuid ?? item?.uuid ?? null
+    },
+
+    catalogCalculationKeys(itineraryUuid = null) {
+      const keys = new Set()
+
+      this.quotation.itineraries.forEach((itinerary) => {
+        if (itineraryUuid && itinerary.uuid !== itineraryUuid) return
+
+        ;(itinerary.items ?? []).forEach((item) => {
+          if (item.item_type !== 'CATALOG' || item.active === false) return
+
+          const key = this.calculationItemKey(item)
+          if (key) keys.add(key)
+        })
+      })
+
+      return [...keys]
+    },
+
+    markCalculationDirty(reason, itineraryUuid = null) {
+      const affectedKeys = this.catalogCalculationKeys(itineraryUuid)
+
+      if (!affectedKeys.length) return
+
+      this.quotation.pending_calculation_items = [
+        ...new Set([...(this.quotation.pending_calculation_items ?? []), ...affectedKeys]),
+      ]
+      this.quotation.calculation_dirty_reasons = [
+        ...new Set([...(this.quotation.calculation_dirty_reasons ?? []), reason]),
+      ]
+      this.quotation.calculation_status = 'DIRTY'
+      this.quotation.calculated_at = null
+    },
+
+    markItemRecalculated(itemOrKey) {
+      const key =
+        typeof itemOrKey === 'string' ? itemOrKey : this.calculationItemKey(itemOrKey)
+
+      if (!key) return
+
+      this.quotation.pending_calculation_items = (
+        this.quotation.pending_calculation_items ?? []
+      ).filter((pendingKey) => pendingKey !== key)
+
+      if (!this.quotation.pending_calculation_items.length) {
+        this.quotation.calculation_status = 'CURRENT'
+        this.quotation.calculation_dirty_reasons = []
+        this.quotation.calculated_at = new Date().toISOString()
+      }
+    },
+
+    forgetPendingCalculation(itemOrKey) {
+      this.markItemRecalculated(itemOrKey)
+    },
+
+    firstPendingCalculationItem() {
+      const pending = new Set(this.quotation.pending_calculation_items ?? [])
+
+      for (const itinerary of this.quotation.itineraries) {
+        const item = (itinerary.items ?? []).find((current) =>
+          pending.has(this.calculationItemKey(current)),
+        )
+
+        if (item) return { itinerary, item }
+      }
+
+      return null
+    },
+
     /*
     |--------------------------------------------------------------------------
     | LIFECYCLE
@@ -321,6 +405,12 @@ export const useQuotationStore = defineStore('quotation', {
         const response = await QuotationService.show(uuid)
 
         this.quotation = response.data.data
+
+        this.quotation.calculation_status = this.quotation.calculation_status ?? 'CURRENT'
+        this.quotation.calculation_dirty_reasons =
+          this.quotation.calculation_dirty_reasons ?? []
+        this.quotation.pending_calculation_items =
+          this.quotation.pending_calculation_items ?? []
 
         if (!this.quotation.passengers) {
           this.quotation.passengers = []
@@ -639,6 +729,16 @@ export const useQuotationStore = defineStore('quotation', {
 
       const difference = differenceInDays(itinerary.travel_date, travelDate)
 
+      if (difference !== 0) {
+        this.markCalculationDirty('ITINERARY_DATE_CHANGED', uuid)
+
+        if (shiftFollowing) {
+          this.quotation.itineraries.slice(index + 1).forEach((followingItinerary) => {
+            this.markCalculationDirty('ITINERARY_DATE_CHANGED', followingItinerary.uuid)
+          })
+        }
+      }
+
       itinerary.travel_date = travelDate
 
       if (shiftFollowing && difference !== 0) {
@@ -663,6 +763,8 @@ export const useQuotationStore = defineStore('quotation', {
         return
       }
 
+      const removed = this.quotation.itineraries[index]
+      ;(removed.items ?? []).forEach((item) => this.forgetPendingCalculation(item))
       this.quotation.itineraries.splice(index, 1)
 
       this.renumberItineraries()
@@ -988,6 +1090,10 @@ export const useQuotationStore = defineStore('quotation', {
     },
 
     updateCurrency(currencyId) {
+      if (Number(this.quotation.currency_id) !== Number(currencyId)) {
+        this.markCalculationDirty('CURRENCY_CHANGED')
+      }
+
       this.quotation.currency_id = currencyId
     },
 
@@ -996,6 +1102,10 @@ export const useQuotationStore = defineStore('quotation', {
 
       const previousDate = this.quotation.travel_date
       const difference = differenceInDays(previousDate, date)
+
+      if (difference !== 0) {
+        this.markCalculationDirty('TRAVEL_DATE_CHANGED')
+      }
 
       this.quotation.travel_date = date
 

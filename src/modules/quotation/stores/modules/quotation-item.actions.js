@@ -1,5 +1,7 @@
 // quotation-item.actions.js
 
+import { toRaw } from 'vue'
+
 /*
 |--------------------------------------------------------------------------
 | HELPERS LOCALES
@@ -76,6 +78,8 @@ export const itemActions = {
       notes: '',
 
       active: true,
+
+      calculated_at: item.calculated_at ?? new Date().toISOString(),
 
       ...clonePlain(item),
     }
@@ -189,6 +193,8 @@ export const itemActions = {
         notes: item.notes ?? '',
 
         active: item.active ?? true,
+
+        calculated_at: item.calculated_at ?? new Date().toISOString(),
       }
 
       this.calculateItem(newItem)
@@ -361,6 +367,8 @@ export const itemActions = {
       return
     }
 
+    const removed = this.selectedItinerary.items[index]
+    this.forgetPendingCalculation(removed)
     this.selectedItinerary.items.splice(index, 1)
 
     this.renumberItems()
@@ -379,6 +387,7 @@ export const itemActions = {
       return
     }
 
+    this.forgetPendingCalculation(groupUuid)
     this.selectedItinerary.items = this.selectedItems.filter(
       (item) => item.group_uuid !== groupUuid,
     )

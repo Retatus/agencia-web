@@ -63,6 +63,27 @@
       </ul>
     </BaseAlert>
 
+    <BaseAlert
+      v-if="store.calculationDirty"
+      class="mb-5"
+      type="warning"
+      title="La cotización necesita recalcular servicios"
+    >
+      <p>
+        Cambió información que interviene en las recomendaciones o tarifas. Los importes se
+        conservan como referencia, pero no deben enviarse al cliente hasta revisar los
+        {{ store.pendingCalculationCount }} servicios pendientes.
+      </p>
+
+      <button
+        type="button"
+        class="mt-3 rounded-lg bg-amber-600 px-3 py-2 text-sm font-semibold text-white hover:bg-amber-700"
+        @click="reviewNextPendingCalculation"
+      >
+        Revisar siguiente servicio
+      </button>
+    </BaseAlert>
+
     <!-- Indicador de guardado -->
 
     <div
@@ -164,6 +185,7 @@
                       type="button"
                       class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
                       @click="printQuotation"
+                      :disabled="store.calculationDirty"
                     >
                       <Printer class="mr-1.5 h-4 w-4" />
                       Imprimir
@@ -173,6 +195,7 @@
                       type="button"
                       class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
                       @click="sendQuotation"
+                      :disabled="store.calculationDirty"
                     >
                       <Mail class="mr-1.5 h-4 w-4" />
                       Enviar Email
@@ -182,6 +205,7 @@
                       type="button"
                       class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
                       @click="exportPDF"
+                      :disabled="store.calculationDirty"
                     >
                       <FileText class="mr-1.5 h-4 w-4" />
                       PDF
@@ -722,6 +746,10 @@ function handleItemSave(payload) {
   */
 
   if (payload.type === 'group') {
+    payload.items = (payload.items ?? []).map((item) => ({
+      ...item,
+      calculated_at: new Date().toISOString(),
+    }))
     /*
     |--------------------------------------------------------------------------
     | Editar grupo
@@ -730,6 +758,7 @@ function handleItemSave(payload) {
 
     if (editingItem.value?.group_uuid) {
       store.updateItemGroup(payload)
+      store.markItemRecalculated(editingItem.value.group_uuid)
     } else {
       /*
       |--------------------------------------------------------------------------
@@ -758,7 +787,11 @@ function handleItemSave(payload) {
     |--------------------------------------------------------------------------
     */
 
-    store.updateItem(editingItem.value.uuid, payload)
+    store.updateItem(editingItem.value.uuid, {
+      ...payload,
+      calculated_at: new Date().toISOString(),
+    })
+    store.markItemRecalculated(editingItem.value.uuid)
   } else {
     /*
     |--------------------------------------------------------------------------
@@ -770,6 +803,15 @@ function handleItemSave(payload) {
   }
 
   closeItemModal()
+}
+
+function reviewNextPendingCalculation() {
+  const pending = store.firstPendingCalculationItem()
+
+  if (!pending) return
+
+  store.selectItinerary(pending.itinerary.uuid)
+  editItem(pending.item)
 }
 
 /*

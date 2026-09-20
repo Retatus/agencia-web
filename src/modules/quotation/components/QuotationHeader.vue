@@ -68,9 +68,10 @@
             </label>
             <select
               id="quotation-currency"
-              v-model="store.quotation.currency_id"
+              :value="store.quotation.currency_id"
               required
               class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+              @change="store.updateCurrency(Number($event.target.value))"
             >
               <option v-for="currency in currencies" :key="currency.id" :value="currency.id">
                 {{ currency.code }}
@@ -142,9 +143,10 @@
             </label>
             <input
               id="quotation-travel-date"
-              v-model="store.quotation.travel_date"
+              :value="store.quotation.travel_date"
               type="date"
               class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:scheme-dark"
+              @change="changeTravelDate"
             />
           </div>
 

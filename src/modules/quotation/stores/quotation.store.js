@@ -82,6 +82,8 @@ function createQuotation() {
 
     valid_until: formatDate(tomorrow), // Se sincroniza con el último día del itinerario
 
+    commercial_valid_until: formatDate(today),
+
     notes: '',
 
     subtotal: 0,
@@ -99,6 +101,25 @@ function createQuotation() {
     pending_calculation_items: [],
 
     calculated_at: null,
+
+    status: {
+      code: 'DRAFT',
+      name: 'Borrador',
+    },
+
+    allowed_actions: {
+      edit: true,
+      recalculate: true,
+      mark_ready: false,
+      reopen: false,
+      send: false,
+      resend: false,
+      confirm: false,
+      reject: false,
+      cancel: true,
+      print: false,
+      export_pdf: false,
+    },
 
     active: true,
 
@@ -290,6 +311,12 @@ export const useQuotationStore = defineStore('quotation', {
 
     pendingCalculationCount: (state) =>
       (state.quotation.pending_calculation_items ?? []).length,
+
+    statusCode: (state) => state.quotation.status?.code ?? 'DRAFT',
+
+    allowedActions: (state) => state.quotation.allowed_actions ?? {},
+
+    canEdit: (state) => state.quotation.allowed_actions?.edit ?? !state.quotation.uuid,
   },
 
   /*
@@ -536,6 +563,25 @@ export const useQuotationStore = defineStore('quotation', {
       }
     },
 
+    async changeStatus(statusCode, reason = null) {
+      if (this.isNew) {
+        throw new Error('Guarde la cotización antes de cambiar su estado.')
+      }
+
+      const response = await QuotationService.changeStatus(
+        this.quotation.uuid,
+        statusCode,
+        reason,
+      )
+
+      this.quotation = response.data.data
+
+      if (!this.quotation.itineraries) this.quotation.itineraries = []
+      if (!this.quotation.passengers) this.quotation.passengers = []
+
+      return response
+    },
+
     /*
     |--------------------------------------------------------------------------
     | DUPLICATE QUOTATION
@@ -552,6 +598,27 @@ export const useQuotationStore = defineStore('quotation', {
       quotation.code = ''
 
       quotation.quotation_status_id = null
+
+      quotation.status = { code: 'DRAFT', name: 'Borrador' }
+      quotation.allowed_actions = {
+        edit: true,
+        recalculate: true,
+        mark_ready: false,
+        reopen: false,
+        send: false,
+        resend: false,
+        confirm: false,
+        reject: false,
+        cancel: true,
+        print: false,
+        export_pdf: false,
+      }
+      quotation.status_changed_at = null
+      quotation.sent_at = null
+      quotation.confirmed_at = null
+      quotation.rejected_at = null
+      quotation.cancelled_at = null
+      quotation.status_reason = null
 
       /*
       |--------------------------------------------------------------------------

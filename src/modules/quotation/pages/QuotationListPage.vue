@@ -40,7 +40,7 @@
 
           <th>Viaje</th>
 
-          <th>Válida hasta</th>
+          <th>Vigencia comercial</th>
 
           <th>Notas</th>
 
@@ -71,7 +71,7 @@
             {{ quotation.travel_date || 'Sin fecha' }}
           </td>
           <td class="whitespace-nowrap">
-            {{ quotation.valid_until || 'Sin fecha' }}
+            {{ quotation.commercial_valid_until || 'Sin fecha' }}
           </td>
           <td>
             <p
@@ -111,7 +111,7 @@
                 @click="edit(quotation.uuid)"
               >
                 <Pencil class="mr-1 h-3 w-3" />
-                Editar
+                {{ quotation.allowed_actions?.edit ? 'Editar' : 'Ver' }}
               </button>
               <button
                 class="inline-flex items-center rounded-lg border border-blue-300 px-2.5 py-1 text-xs font-medium text-blue-600 transition hover:bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-950/30"
@@ -121,6 +121,7 @@
                 Historial
               </button>
               <button
+                v-if="quotation.allowed_actions?.edit"
                 class="inline-flex items-center rounded-lg border border-red-300 px-2.5 py-1 text-xs font-medium text-red-600 transition hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950/30"
                 @click="remove(quotation.uuid)"
               >
@@ -230,6 +231,8 @@ function statusClass(statusCode) {
 
     PENDING: 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300',
 
+    READY: 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300',
+
     SENT: 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300',
 
     APPROVED: 'bg-green-100 text-green-700 dark:bg-green-950/60 dark:text-green-300',
@@ -239,6 +242,8 @@ function statusClass(statusCode) {
     REJECTED: 'bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300',
 
     CANCELLED: 'bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300',
+
+    EXPIRED: 'bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300',
   }
 
   return classes[statusCode] || 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'

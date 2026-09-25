@@ -48,9 +48,10 @@ export default {
   /**
    * Cambiar estado (Borrador, Enviada, Aprobada, etc.)
    */
-  changeStatus(uuid, quotation_status_id) {
-    return api.patch(`${RESOURCE}/${uuid}/status`, {
-      quotation_status_id,
+  changeStatus(uuid, status_code, reason = null) {
+    return api.patch(`/quotations/${uuid}/status`, {
+      status_code,
+      reason,
     })
   },
 }

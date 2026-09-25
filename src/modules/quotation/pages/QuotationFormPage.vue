@@ -84,6 +84,18 @@
       </button>
     </BaseAlert>
 
+    <BaseAlert
+      v-if="!store.canEdit && !store.isNew"
+      class="mb-5"
+      type="info"
+      title="Cotización bloqueada para edición"
+    >
+      <p>
+        El estado {{ store.quotation.status?.name ?? store.statusCode }} protege los datos
+        comerciales. Utilice una transición permitida para continuar.
+      </p>
+    </BaseAlert>
+
     <!-- Indicador de guardado -->
 
     <div
@@ -103,7 +115,10 @@
 
     <form class="min-w-0 space-y-7" @submit.prevent="save">
       <!-- Datos generales -->
-      <fieldset class="min-w-0 space-y-5 border-t border-slate-200 pt-6 dark:border-slate-800">
+      <fieldset
+        :disabled="!store.canEdit"
+        class="min-w-0 space-y-5 border-t border-slate-200 pt-6 disabled:opacity-75 dark:border-slate-800"
+      >
         <QuotationHeader
           :quotation="store.quotation"
           :customers="customers"
@@ -114,7 +129,10 @@
       </fieldset>
 
       <!-- Pasajeros -->
-      <fieldset class="min-w-0 space-y-5 border-t border-slate-200 pt-6 dark:border-slate-800">
+      <fieldset
+        :disabled="!store.canEdit"
+        class="min-w-0 space-y-5 border-t border-slate-200 pt-6 disabled:opacity-75 dark:border-slate-800"
+      >
         <QuotationPassengerManager
           :passengers="store.quotation.passengers"
           :passenger-types="passengerTypes"
@@ -124,7 +142,10 @@
       </fieldset>
 
       <!-- Itinerario -->
-      <fieldset class="min-w-0 space-y-5 border-t border-slate-200 pt-6 dark:border-slate-800">
+      <fieldset
+        :disabled="!store.canEdit"
+        class="min-w-0 space-y-5 border-t border-slate-200 pt-6 disabled:opacity-75 dark:border-slate-800"
+      >
         <QuotationItineraryManager
           :itineraries="store.quotation.itineraries"
           :selected-itinerary="store.selectedItinerary"
@@ -185,7 +206,7 @@
                       type="button"
                       class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
                       @click="printQuotation"
-                      :disabled="store.calculationDirty"
+                      :disabled="!store.allowedActions.print"
                     >
                       <Printer class="mr-1.5 h-4 w-4" />
                       Imprimir
@@ -195,7 +216,7 @@
                       type="button"
                       class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
                       @click="sendQuotation"
-                      :disabled="store.calculationDirty"
+                      :disabled="!store.allowedActions.send && !store.allowedActions.resend"
                     >
                       <Mail class="mr-1.5 h-4 w-4" />
                       Enviar Email
@@ -205,10 +226,66 @@
                       type="button"
                       class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
                       @click="exportPDF"
-                      :disabled="store.calculationDirty"
+                      :disabled="!store.allowedActions.export_pdf"
                     >
                       <FileText class="mr-1.5 h-4 w-4" />
                       PDF
+                    </button>
+                  </div>
+
+                  <div v-if="!store.isNew" class="grid grid-cols-2 gap-2">
+                    <button
+                      v-if="store.allowedActions.mark_ready"
+                      type="button"
+                      class="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+                      @click="changeWorkflowStatus('READY')"
+                    >
+                      Validar y dejar lista
+                    </button>
+
+                    <button
+                      v-if="store.allowedActions.reopen"
+                      type="button"
+                      class="rounded-lg border border-blue-500 px-3 py-2 text-sm font-semibold text-blue-700 dark:text-blue-300"
+                      @click="changeWorkflowStatus('DRAFT')"
+                    >
+                      Reabrir borrador
+                    </button>
+
+                    <button
+                      v-if="store.allowedActions.send"
+                      type="button"
+                      class="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+                      @click="registerAsSent"
+                    >
+                      Registrar como enviada
+                    </button>
+
+                    <button
+                      v-if="store.allowedActions.confirm"
+                      type="button"
+                      class="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+                      @click="changeWorkflowStatus('CONFIRMED')"
+                    >
+                      Confirmar
+                    </button>
+
+                    <button
+                      v-if="store.allowedActions.reject"
+                      type="button"
+                      class="rounded-lg border border-red-400 px-3 py-2 text-sm font-semibold text-red-700 dark:text-red-300"
+                      @click="changeWorkflowStatusWithReason('REJECTED')"
+                    >
+                      Rechazar
+                    </button>
+
+                    <button
+                      v-if="store.allowedActions.cancel"
+                      type="button"
+                      class="rounded-lg border border-red-400 px-3 py-2 text-sm font-semibold text-red-700 dark:text-red-300"
+                      @click="changeWorkflowStatusWithReason('CANCELLED')"
+                    >
+                      Cancelar cotización
                     </button>
                   </div>
 
@@ -228,7 +305,7 @@
                     <button
                       type="submit"
                       class="inline-flex items-center justify-center rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed"
-                      :disabled="store.saving"
+                      :disabled="store.saving || !store.canEdit"
                     >
                       <Save class="mr-1.5 h-4 w-4" />
                       {{ store.saving ? 'Guardando...' : 'Guardar' }}
@@ -582,7 +659,47 @@ function printQuotation() {
 */
 
 function sendQuotation() {
-  console.info('Envío de cotización pendiente de implementar.')
+  window.alert(
+    'El envío de correo todavía no está conectado. Cuando el correo se envíe correctamente, registre la cotización como enviada.',
+  )
+}
+
+async function changeWorkflowStatus(statusCode, reason = null) {
+  clearSaveFeedback()
+
+  try {
+    const response = await store.changeStatus(statusCode, reason)
+
+    showSaveFeedback({
+      type: 'success',
+      title: 'Estado actualizado',
+      message: response?.data?.message ?? 'El estado fue actualizado correctamente.',
+      details: [],
+    })
+  } catch (error) {
+    showSaveFeedback({
+      type: 'danger',
+      title: 'No fue posible cambiar el estado',
+      message: error?.response?.data?.message ?? error?.message ?? 'Ocurrió un error inesperado.',
+      details: validationMessages(error?.response?.data?.errors),
+    })
+  }
+}
+
+function changeWorkflowStatusWithReason(statusCode) {
+  const reason = window.prompt('Indique el motivo de esta operación:')
+
+  if (!reason?.trim()) return
+
+  changeWorkflowStatus(statusCode, reason.trim())
+}
+
+function registerAsSent() {
+  const confirmed = window.confirm(
+    'Esta acción solo registra que la cotización ya fue enviada por un medio externo. ¿Desea continuar?',
+  )
+
+  if (confirmed) changeWorkflowStatus('SENT')
 }
 
 /*

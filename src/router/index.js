@@ -8,6 +8,7 @@ import serviceRoutes from '@/modules/catalog/services/router/service.routes.js'
 import quotationRoutes from '@/modules/quotation/router/quotation.routes.js'
 import PricingCorePage from '@/modules/pricing/prices/PricingCorePage.vue'
 import pricingManagementRoutes from '@/modules/pricing/router/pricing-management.routes'
+import touristDestinationRoutes from '@/modules/destinations/router/tourist-destination.routes'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -26,6 +27,7 @@ const router = createRouter({
         ...providerRoutes,
         ...serviceRoutes,
         ...quotationRoutes,
+        ...touristDestinationRoutes,
         {
           path: 'ui-components',
           name: 'ui.components',

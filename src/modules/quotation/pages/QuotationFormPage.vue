@@ -35,12 +35,24 @@
         </p>
       </div>
 
-      <router-link
-        :to="{ name: 'quotations' }"
-        class="inline-flex shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-teal-500/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
-      >
-        Volver al listado
-      </router-link>
+      <div class="flex flex-wrap gap-2">
+        <button
+          v-if="store.canEdit"
+          type="button"
+          class="inline-flex shrink-0 items-center justify-center rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-teal-700"
+          @click="showDestinationModal = true"
+        >
+          <MapPinned class="mr-1.5 h-4 w-4" />
+          Usar destino
+        </button>
+
+        <router-link
+          :to="{ name: 'quotations' }"
+          class="inline-flex shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-teal-500/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+        >
+          Volver al listado
+        </router-link>
+      </div>
     </div>
 
     <!-- Resultado del guardado -->
@@ -95,6 +107,71 @@
         comerciales. Utilice una transición permitida para continuar.
       </p>
     </BaseAlert>
+
+    <BaseAlert
+      v-if="store.quotation.tourist_destination_name"
+      class="mb-5"
+      type="info"
+      title="Itinerario iniciado desde una plantilla"
+    >
+      Destino de origen: {{ store.quotation.tourist_destination_name }}. Los textos e importes ya
+      son copias independientes y pueden ajustarse libremente.
+    </BaseAlert>
+
+    <div
+      v-if="store.canEdit"
+      class="mb-5 rounded-xl border border-teal-200 bg-teal-50 p-4 dark:border-teal-900 dark:bg-teal-950/30"
+    >
+      <div class="flex items-start gap-3">
+        <MapPinned class="mt-0.5 h-5 w-5 shrink-0 text-teal-600" />
+        <div class="min-w-0 flex-1">
+          <h3 class="font-semibold text-slate-900 dark:text-white">
+            Crear itinerario desde un destino turístico
+          </h3>
+          <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
+            Copia los títulos, descripciones y servicios aproximados en esta cotización.
+          </p>
+
+          <div class="mt-3 flex flex-col gap-2 sm:flex-row">
+            <select
+              v-model="selectedDestinationUuid"
+              class="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950"
+              :disabled="loadingDestinations"
+            >
+              <option value="">
+                {{
+                  loadingDestinations ? 'Cargando destinos...' : 'Seleccione un destino turístico'
+                }}
+              </option>
+              <option
+                v-for="destination in touristDestinations"
+                :key="destination.uuid"
+                :value="destination.uuid"
+              >
+                {{ destination.code }} · {{ destination.name }} ·
+                {{ destination.duration_days }} días
+              </option>
+            </select>
+
+            <button
+              type="button"
+              class="rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-50"
+              :disabled="!selectedDestinationUuid || applyingDestination"
+              @click="applySelectedDestination"
+            >
+              {{ applyingDestination ? 'Aplicando...' : 'Aplicar plantilla' }}
+            </button>
+          </div>
+
+          <p
+            v-if="!loadingDestinations && !touristDestinations.length"
+            class="mt-2 text-sm text-amber-700"
+          >
+            No existen destinos activos. Créelos desde el módulo Destinos turísticos.
+          </p>
+        </div>
+      </div>
+    </div>
 
     <!-- Indicador de guardado -->
 
@@ -348,13 +425,19 @@
       @close="closeCustomerModal"
       @save="handleCustomerSave"
     />
+
+    <TouristDestinationSelectorModal
+      v-if="showDestinationModal"
+      @close="showDestinationModal = false"
+      @select="applyDestination"
+    />
   </section>
 </template>
 
 <script setup>
 import { computed, nextTick, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Copy, Printer, Mail, FileText, Save } from 'lucide-vue-next'
+import { Copy, Printer, Mail, FileText, Save, MapPinned } from 'lucide-vue-next'
 
 import BaseAlert from '@/components/ui/BaseAlert.vue'
 
@@ -367,6 +450,7 @@ import QuotationActions from '../components/QuotationActions.vue'
 import QuotationPassengerManager from '../components/QuotationPassengerManager.vue'
 import ServiceSelectorModal from '../components/ServiceSelectorModal.vue'
 import CustomItemModal from '../components/CustomItemModal.vue'
+import TouristDestinationSelectorModal from '../components/TouristDestinationSelectorModal.vue'
 
 import CustomerQuickCreateModal from '../../crm/components/CustomerQuickCreateModal.vue'
 import { useCustomerStore } from '../../crm/stores/customer.store'
@@ -374,6 +458,7 @@ import { useCustomerStore } from '../../crm/stores/customer.store'
 import CurrencyService from '@/modules/catalog/service/currency.service'
 import PassengerTypeService from '@/modules/catalog/service/passenger-type.service'
 import QuotationStatusService from '@/modules/catalog/service/quotation-status.service'
+import TouristDestinationService from '@/modules/destinations/services/tourist-destination.service'
 
 /*
 |--------------------------------------------------------------------------
@@ -436,6 +521,8 @@ const showPassengerModal = ref(false)
 
 const showCustomerModal = ref(false)
 
+const showDestinationModal = ref(false)
+
 const saveFeedback = ref(null)
 
 const saveFeedbackElement = ref(null)
@@ -471,6 +558,14 @@ const statuses = ref([])
 const passengerTypes = ref([])
 
 const loadingCatalogs = ref(false)
+
+const touristDestinations = ref([])
+
+const selectedDestinationUuid = ref('')
+
+const loadingDestinations = ref(false)
+
+const applyingDestination = ref(false)
 
 /*
 |--------------------------------------------------------------------------
@@ -522,6 +617,21 @@ async function loadAuxiliaryData() {
   }
 }
 
+async function loadTouristDestinations() {
+  loadingDestinations.value = true
+
+  try {
+    const response = await TouristDestinationService.getAll({
+      active: 1,
+      per_page: 100,
+    })
+
+    touristDestinations.value = response.data.data ?? []
+  } finally {
+    loadingDestinations.value = false
+  }
+}
+
 /*
 |--------------------------------------------------------------------------
 | INIT
@@ -530,7 +640,7 @@ async function loadAuxiliaryData() {
 
 onMounted(async () => {
   try {
-    await Promise.all([loadCustomers(), loadAuxiliaryData()])
+    await Promise.all([loadCustomers(), loadAuxiliaryData(), loadTouristDestinations()])
 
     if (isEdit.value) {
       await store.load(route.params.uuid)
@@ -628,7 +738,7 @@ async function showSaveFeedback(feedback) {
 
 function cancel() {
   router.push({
-    name: 'quotations.index',
+    name: 'quotations',
   })
 }
 
@@ -1019,6 +1129,56 @@ function openCustomerModal() {
 
 function closeCustomerModal() {
   showCustomerModal.value = false
+}
+
+function applyDestination(destination) {
+  const hasContent = store.quotation.itineraries.some(
+    (itinerary) => itinerary.title || itinerary.description || (itinerary.items?.length ?? 0) > 0,
+  )
+
+  if (
+    hasContent &&
+    !window.confirm(
+      'La plantilla reemplazará el itinerario actual. Los pasajeros y datos de cabecera se conservarán. ¿Desea continuar?',
+    )
+  ) {
+    return
+  }
+
+  store.applyTouristDestination(destination)
+  showDestinationModal.value = false
+  selectedDestinationUuid.value = destination.uuid
+
+  showSaveFeedback({
+    type: 'success',
+    title: 'Destino aplicado',
+    message:
+      'Se copiaron los días y servicios aproximados. Revise los importes antes de enviar la cotización.',
+    details: [],
+  })
+}
+
+async function applySelectedDestination() {
+  if (!selectedDestinationUuid.value) return
+
+  applyingDestination.value = true
+
+  try {
+    const response = await TouristDestinationService.show(selectedDestinationUuid.value)
+    applyDestination(response.data.data)
+  } catch (error) {
+    showSaveFeedback({
+      type: 'danger',
+      title: 'No fue posible aplicar el destino',
+      message:
+        error?.response?.data?.message ??
+        error?.message ??
+        'No se pudo recuperar la plantilla seleccionada.',
+      details: [],
+    })
+  } finally {
+    applyingDestination.value = false
+  }
 }
 
 async function handleCustomerSave(payload) {

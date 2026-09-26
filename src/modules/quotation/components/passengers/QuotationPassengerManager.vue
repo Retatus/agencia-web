@@ -358,7 +358,7 @@ async function saveBulkChanges() {
 
 async function handleGenerate(payload) {
   try {
-    await store.generatePassengers(payload.groups, payload.nationality)
+    await store.generatePassengers(payload.groups, payload.nationality, payload.country)
 
     showGenerateModal.value = false
   } catch (error) {

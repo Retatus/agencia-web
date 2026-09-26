@@ -71,6 +71,10 @@ function createQuotation() {
 
     customer_id: 3, // customer_id: null,
 
+    tourist_destination_id: null,
+
+    tourist_destination_name: null,
+
     currency_id: 1,
 
     quotation_status_id: null,
@@ -753,6 +757,81 @@ export const useQuotationStore = defineStore('quotation', {
       this.refreshCalculations()
 
       return itinerary
+    },
+
+    applyTouristDestination(destination) {
+      const startDate = this.quotation.travel_date
+      const now = new Date().toISOString()
+
+      this.quotation.tourist_destination_id = destination.id
+      this.quotation.tourist_destination_name = destination.name
+
+      if (destination.currency_id) {
+        this.quotation.currency_id = destination.currency_id
+        this.quotation.exchange_rate = 1
+      }
+
+      this.quotation.itineraries = (destination.days ?? []).map((day, dayIndex) => {
+        const items = (day.items ?? [])
+          .filter((item) => item.active !== false)
+          .map((item, itemIndex) => {
+            const quantity = Number(item.quantity ?? 1)
+            const unitCost = Number(item.estimated_cost ?? 0)
+            const unitPrice = Number(item.estimated_price ?? 0)
+
+            return {
+              id: null,
+              uuid: crypto.randomUUID(),
+              quotation_itinerary_id: null,
+              service_id: null,
+              service_variant_id: null,
+              item_type: 'CUSTOM',
+              calculation_type: 'generic',
+              group_uuid: null,
+              group_index: null,
+              name: item.name,
+              variant_name: null,
+              description: item.description ?? '',
+              duration: Number(item.duration ?? 1),
+              quantity,
+              price_id: null,
+              price_list_id: null,
+              price_list_item_id: null,
+              base_cost: unitCost,
+              base_price: unitPrice,
+              unit_cost: unitCost,
+              unit_price: unitPrice,
+              subtotal: quantity * unitPrice,
+              subtotal_cost: quantity * unitCost,
+              subtotal_sale: quantity * unitPrice,
+              sort_order: itemIndex + 1,
+              notes: 'Importe aproximado importado desde una plantilla de destino.',
+              active: true,
+              calculated_at: now,
+            }
+          })
+
+        return {
+          id: null,
+          uuid: crypto.randomUUID(),
+          quotation_id: this.quotation.id,
+          day_number: dayIndex + 1,
+          travel_date: startDate ? addDays(startDate, dayIndex) : null,
+          title: day.title,
+          description: day.description ?? '',
+          sort_order: dayIndex + 1,
+          subtotal: items.reduce((sum, item) => sum + Number(item.subtotal ?? 0), 0),
+          items,
+        }
+      })
+
+      this.selectedItineraryUuid = this.quotation.itineraries[0]?.uuid ?? null
+      this.quotation.pending_calculation_items = []
+      this.quotation.calculation_dirty_reasons = []
+      this.quotation.calculation_status = 'CURRENT'
+      this.quotation.calculated_at = now
+      this.syncValidUntilWithLastItinerary()
+      this.refreshCalculations()
     },
 
     updateItinerary(uuid, values) {

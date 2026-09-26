@@ -577,7 +577,7 @@ function closeGenerateModal() {
 
 async function handleGenerate(payload) {
   try {
-    await store.generatePassengers(payload.groups, payload.nationality)
+    await store.generatePassengers(payload.groups, payload.nationality, payload.country)
 
     closeGenerateModal()
   } catch (error) {

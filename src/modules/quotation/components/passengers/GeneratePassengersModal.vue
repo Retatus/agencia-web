@@ -71,7 +71,12 @@
                 <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   Nacionalidad común
                 </label>
-                <CountrySelect v-model="nationality" class="mt-2" placeholder="Seleccionar país" />
+                <CountrySelect
+                  v-model="nationality"
+                  class="mt-2"
+                  placeholder="Seleccionar país"
+                  @country-selected="selectedCountry = $event"
+                />
               </div>
 
               <!-- TOTAL -->
@@ -142,6 +147,8 @@ const emit = defineEmits(['close', 'save'])
 
 const nationality = ref('')
 
+const selectedCountry = ref(null)
+
 const quantities = reactive({})
 
 const showPassengerModal = ref(false)
@@ -197,6 +204,13 @@ function save() {
     groups,
 
     nationality: nationality.value || null,
+
+    country: selectedCountry.value
+      ? {
+          iso: selectedCountry.value.iso,
+          name: selectedCountry.value.name,
+        }
+      : null,
   })
 }
 

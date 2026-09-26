@@ -6,6 +6,7 @@ import {
   FileText,
   LayoutDashboard,
   ListChecks,
+  MapPinned,
   Tags,
   Users,
 } from 'lucide-vue-next'
@@ -45,6 +46,11 @@ export const navigationItems = [
     label: 'Gestión de precios',
     route: 'pricing.management',
     icon: ListChecks,
+  },
+  {
+    label: 'Destinos turísticos',
+    route: 'tourist-destinations',
+    icon: MapPinned,
   },
   {
     label: 'Temporadas y promociones',

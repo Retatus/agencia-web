@@ -65,8 +65,7 @@ export const passengerActions = {
 
     const passengerTypeChanged =
       Number(passenger.passenger_type_id) !== Number(values.passenger_type_id)
-    const activeChanged =
-      Boolean(passenger.active) !== Boolean(values.active ?? passenger.active)
+    const activeChanged = Boolean(passenger.active) !== Boolean(values.active ?? passenger.active)
 
     Object.assign(passenger, clonePlain(values))
 
@@ -195,7 +194,7 @@ export const passengerActions = {
   |--------------------------------------------------------------------------
   */
 
-  async generatePassengers(groups, nationality = null) {
+  async generatePassengers(groups, nationality = null, country = null) {
     /*
   |--------------------------------------------------------------------------
   | COTIZACIÓN NUEVA
@@ -222,6 +221,13 @@ export const passengerActions = {
 
             nationality: nationality ?? '',
 
+            country: country
+              ? {
+                  iso: country.iso,
+                  name: country.name,
+                }
+              : null,
+
             active: true,
           })
 
@@ -247,7 +253,17 @@ export const passengerActions = {
       nationality,
     })
 
-    const passengers = response.data.data ?? []
+    const passengers = (response.data.data ?? []).map((passenger) => ({
+      ...passenger,
+      country:
+        passenger.country ??
+        (country
+          ? {
+              iso: country.iso,
+              name: country.name,
+            }
+          : null),
+    }))
 
     this.quotation.passengers.push(...passengers)
 

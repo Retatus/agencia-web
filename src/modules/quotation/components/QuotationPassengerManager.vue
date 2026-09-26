@@ -10,7 +10,7 @@
       class="flex flex-col gap-3 border-b border-slate-200 px-5 py-4 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between sm:px-6"
     >
       <div>
-        <h3 class="font-semibold text-slate-900 dark:text-white"> Pasajeros </h3>
+        <h3 class="font-semibold text-slate-900 dark:text-white">Pasajeros</h3>
 
         <div class="mt-1 flex flex-wrap gap-3 text-xs text-slate-500 dark:text-slate-400">
           <span>
@@ -23,10 +23,7 @@
             completos
           </span>
 
-          <span
-            v-if="pendingCount"
-            class="text-amber-600 dark:text-amber-400"
-          >
+          <span v-if="pendingCount" class="text-amber-600 dark:text-amber-400">
             {{ pendingCount }}
             pendientes
           </span>
@@ -39,7 +36,6 @@
 
       <div class="flex flex-wrap items-center gap-2">
         <!-- GENERAR -->
-
         <button
           type="button"
           class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
@@ -115,9 +111,11 @@
         <div class="mt-5 flex flex-wrap justify-center gap-2">
           <button
             type="button"
-            class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+            class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
             @click="openGenerateModal"
           >
+            <UsersRound class="mr-1.5 h-4 w-4" />
+
             Generar pasajeros
           </button>
 
@@ -161,35 +159,35 @@
 
                 <!-- NUMBER -->
 
-                <th class="table-header"> # </th>
+                <th class="table-header">#</th>
 
                 <!-- NAME -->
 
-                <th class="table-header"> Pasajero </th>
+                <th class="table-header">Pasajero</th>
 
                 <!-- TYPE -->
 
-                <th class="table-header"> Tipo </th>
+                <th class="table-header">Tipo</th>
 
                 <!-- NATIONALITY -->
 
-                <th class="table-header"> Nacionalidad </th>
+                <th class="table-header">Nacionalidad</th>
 
                 <!-- DOCUMENT -->
 
-                <th class="table-header"> Documento </th>
+                <th class="table-header">Documento</th>
 
                 <!-- COMPLETION -->
 
-                <th class="table-header"> Datos </th>
+                <th class="table-header">Datos</th>
 
                 <!-- ACTIVE -->
 
-                <th class="table-header text-center"> Activo </th>
+                <th class="table-header text-center">Activo</th>
 
                 <!-- ACTIONS -->
 
-                <th class="table-header text-right"> Acciones </th>
+                <th class="table-header text-right">Acciones</th>
               </tr>
             </thead>
 
@@ -235,10 +233,7 @@
                     {{ passengerName(passenger) }}
                   </div>
 
-                  <div
-                    v-if="passenger.email"
-                    class="mt-0.5 text-xs text-slate-500"
-                  >
+                  <div v-if="passenger.email" class="mt-0.5 text-xs text-slate-500">
                     {{ passenger.email }}
                   </div>
                 </td>
@@ -256,11 +251,7 @@
                     "
                   >
                     <option :value="null">Seleccione...</option>
-                    <option
-                      v-for="type in passengerTypes"
-                      :key="type.id"
-                      :value="type.id"
-                    >
+                    <option v-for="type in passengerTypes" :key="type.id" :value="type.id">
                       {{ type.name }}
                     </option>
                   </select>
@@ -271,12 +262,9 @@
                 <!-- ================================================= -->
 
                 <td class="min-w-40 px-3 py-2.5">
-                  <input
-                    :value="passenger.nationality"
-                    type="text"
-                    class="inline-control"
-                    placeholder="-"
-                    @change="changeField(passenger, 'nationality', $event.target.value)"
+                  <CountryBadge
+                    :iso="passenger.nationality"
+                    :name="passenger.country?.name ?? passengerCountryName(passenger)"
                   />
                 </td>
 
@@ -364,6 +352,7 @@
       :passenger="editingPassenger"
       :passenger-types="passengerTypes"
       @close="closeModal"
+      @save="handlePassengerSave"
     />
 
     <!-- ============================================================ -->
@@ -382,7 +371,7 @@
 <script setup>
 import { computed, ref, toRaw } from 'vue'
 
-import { Pencil, Plus, Trash2, UsersRound } from 'lucide-vue-next'
+import { Pencil, Plus, Trash2, UsersRound, X } from 'lucide-vue-next'
 
 import { useQuotationStore } from '../stores/quotation.store'
 
@@ -391,6 +380,8 @@ import PassengerModal from './PassengerModal.vue'
 import GeneratePassengersModal from './passengers/GeneratePassengersModal.vue'
 
 import PassengerBulkActions from './passengers/PassengerBulkActions.vue'
+
+import CountryBadge from '@/shared/components/CountryBadge.vue'
 
 /*
 |--------------------------------------------------------------------------
@@ -586,7 +577,7 @@ function closeGenerateModal() {
 
 async function handleGenerate(payload) {
   try {
-    await store.generatePassengers(payload.groups, payload.nationality)
+    await store.generatePassengers(payload.groups, payload.nationality, payload.country)
 
     closeGenerateModal()
   } catch (error) {
@@ -725,5 +716,37 @@ async function saveBulkChanges() {
   } catch (error) {
     console.error('Error actualizando pasajeros:', error)
   }
+}
+
+/*
+|--------------------------------------------------------------------------
+| COUNTRIES, getCountries Name
+|--------------------------------------------------------------------------
+*/
+
+const localCountryNames = ref(new Map())
+
+function handlePassengerSave({ values, country }) {
+  if (country?.name) {
+    localCountryNames.value.set(values.uuid, country.name)
+  }
+
+  if (editingPassenger.value) {
+    store.updatePassenger(editingPassenger.value.uuid, values)
+  } else {
+    store.addPassenger(values)
+  }
+
+  closeModal()
+}
+
+function passengerCountryName(passenger) {
+  return (
+    passenger.country_name ??
+    passenger.nationality_name ??
+    localCountryNames.value.get(passenger.uuid) ??
+    passenger.nationality ??
+    '-'
+  )
 }
 </script>

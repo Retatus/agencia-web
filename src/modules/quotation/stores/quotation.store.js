@@ -15,6 +15,34 @@ function clonePlain(value) {
   return JSON.parse(JSON.stringify(value))
 }
 
+function parseDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value ?? '')) return null
+
+  const [year, month, day] = value.split('-').map(Number)
+  const date = new Date(Date.UTC(year, month - 1, day))
+
+  return Number.isNaN(date.getTime()) ? null : date
+}
+
+function addDays(value, days) {
+  const date = parseDate(value)
+
+  if (!date) return null
+
+  date.setUTCDate(date.getUTCDate() + Number(days))
+
+  return date.toISOString().slice(0, 10)
+}
+
+function differenceInDays(from, to) {
+  const start = parseDate(from)
+  const end = parseDate(to)
+
+  if (!start || !end) return 0
+
+  return Math.round((end.getTime() - start.getTime()) / 86400000)
+}
+
 /*
 |--------------------------------------------------------------------------
 | CREATE QUOTATION
@@ -22,6 +50,19 @@ function clonePlain(value) {
 */
 
 function createQuotation() {
+  // Obtener fechas actuales
+  const today = new Date()
+  const tomorrow = new Date(today)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+
+  // Formatear fechas a YYYY-MM-DD para inputs type="date"
+  const formatDate = (date) => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
   return {
     id: null,
     uuid: null,
@@ -30,7 +71,9 @@ function createQuotation() {
 
     customer_id: 3, // customer_id: null,
 
-    price_list_id: 1, // price_list_id: null,
+    tourist_destination_id: null,
+
+    tourist_destination_name: null,
 
     currency_id: 1,
 
@@ -38,9 +81,12 @@ function createQuotation() {
 
     exchange_rate: 1,
 
-    travel_date: null,
+    // Fechas inicializadas
+    travel_date: formatDate(tomorrow), // Viaje comienza mañana por defecto
 
-    valid_until: null,
+    valid_until: formatDate(tomorrow), // Se sincroniza con el último día del itinerario
+
+    commercial_valid_until: formatDate(today),
 
     notes: '',
 
@@ -51,6 +97,33 @@ function createQuotation() {
     tax: 0,
 
     total: 0,
+
+    calculation_status: 'CURRENT',
+
+    calculation_dirty_reasons: [],
+
+    pending_calculation_items: [],
+
+    calculated_at: null,
+
+    status: {
+      code: 'DRAFT',
+      name: 'Borrador',
+    },
+
+    allowed_actions: {
+      edit: true,
+      recalculate: true,
+      mark_ready: false,
+      reopen: false,
+      send: false,
+      resend: false,
+      confirm: false,
+      reject: false,
+      cancel: true,
+      print: false,
+      export_pdf: false,
+    },
 
     active: true,
 
@@ -85,6 +158,13 @@ export const useQuotationStore = defineStore('quotation', {
     */
 
     items: [],
+
+    listMeta: {
+      current_page: 1,
+      last_page: 1,
+      per_page: 10,
+      total: 0,
+    },
 
     /*
     |--------------------------------------------------------------------------
@@ -230,6 +310,17 @@ export const useQuotationStore = defineStore('quotation', {
     passengerChangedCount(state) {
       return state.changedPassengers.size
     },
+
+    calculationDirty: (state) => state.quotation.calculation_status === 'DIRTY',
+
+    pendingCalculationCount: (state) =>
+      (state.quotation.pending_calculation_items ?? []).length,
+
+    statusCode: (state) => state.quotation.status?.code ?? 'DRAFT',
+
+    allowedActions: (state) => state.quotation.allowed_actions ?? {},
+
+    canEdit: (state) => state.quotation.allowed_actions?.edit ?? !state.quotation.uuid,
   },
 
   /*
@@ -239,6 +330,77 @@ export const useQuotationStore = defineStore('quotation', {
   */
 
   actions: {
+    calculationItemKey(item) {
+      return item?.group_uuid ?? item?.uuid ?? null
+    },
+
+    catalogCalculationKeys(itineraryUuid = null) {
+      const keys = new Set()
+
+      this.quotation.itineraries.forEach((itinerary) => {
+        if (itineraryUuid && itinerary.uuid !== itineraryUuid) return
+
+        ;(itinerary.items ?? []).forEach((item) => {
+          if (item.item_type !== 'CATALOG' || item.active === false) return
+
+          const key = this.calculationItemKey(item)
+          if (key) keys.add(key)
+        })
+      })
+
+      return [...keys]
+    },
+
+    markCalculationDirty(reason, itineraryUuid = null) {
+      const affectedKeys = this.catalogCalculationKeys(itineraryUuid)
+
+      if (!affectedKeys.length) return
+
+      this.quotation.pending_calculation_items = [
+        ...new Set([...(this.quotation.pending_calculation_items ?? []), ...affectedKeys]),
+      ]
+      this.quotation.calculation_dirty_reasons = [
+        ...new Set([...(this.quotation.calculation_dirty_reasons ?? []), reason]),
+      ]
+      this.quotation.calculation_status = 'DIRTY'
+      this.quotation.calculated_at = null
+    },
+
+    markItemRecalculated(itemOrKey) {
+      const key =
+        typeof itemOrKey === 'string' ? itemOrKey : this.calculationItemKey(itemOrKey)
+
+      if (!key) return
+
+      this.quotation.pending_calculation_items = (
+        this.quotation.pending_calculation_items ?? []
+      ).filter((pendingKey) => pendingKey !== key)
+
+      if (!this.quotation.pending_calculation_items.length) {
+        this.quotation.calculation_status = 'CURRENT'
+        this.quotation.calculation_dirty_reasons = []
+        this.quotation.calculated_at = new Date().toISOString()
+      }
+    },
+
+    forgetPendingCalculation(itemOrKey) {
+      this.markItemRecalculated(itemOrKey)
+    },
+
+    firstPendingCalculationItem() {
+      const pending = new Set(this.quotation.pending_calculation_items ?? [])
+
+      for (const itinerary of this.quotation.itineraries) {
+        const item = (itinerary.items ?? []).find((current) =>
+          pending.has(this.calculationItemKey(current)),
+        )
+
+        if (item) return { itinerary, item }
+      }
+
+      return null
+    },
+
     /*
     |--------------------------------------------------------------------------
     | LIFECYCLE
@@ -274,6 +436,12 @@ export const useQuotationStore = defineStore('quotation', {
         const response = await QuotationService.show(uuid)
 
         this.quotation = response.data.data
+
+        this.quotation.calculation_status = this.quotation.calculation_status ?? 'CURRENT'
+        this.quotation.calculation_dirty_reasons =
+          this.quotation.calculation_dirty_reasons ?? []
+        this.quotation.pending_calculation_items =
+          this.quotation.pending_calculation_items ?? []
 
         if (!this.quotation.passengers) {
           this.quotation.passengers = []
@@ -317,6 +485,8 @@ export const useQuotationStore = defineStore('quotation', {
           this.selectedItineraryUuid = this.quotation.itineraries[0].uuid
         }
 
+        this.syncValidUntilWithLastItinerary()
+
         this.sortItems()
 
         this.refreshCalculations()
@@ -333,13 +503,17 @@ export const useQuotationStore = defineStore('quotation', {
     |--------------------------------------------------------------------------
     */
 
-    async fetchQuotations() {
+    async fetchQuotations(params = {}) {
       this.loading = true
 
       try {
-        const response = await QuotationService.getAll()
+        const response = await QuotationService.getAll(params)
 
-        this.items = response.data.data
+        this.items = response.data.data ?? []
+        this.listMeta = {
+          ...this.listMeta,
+          ...(response.data.meta ?? {}),
+        }
       } finally {
         this.loading = false
       }
@@ -381,6 +555,8 @@ export const useQuotationStore = defineStore('quotation', {
           this.selectedItineraryUuid = this.quotation.itineraries[0].uuid
         }
 
+        this.syncValidUntilWithLastItinerary()
+
         this.sortItems()
 
         this.refreshCalculations()
@@ -389,6 +565,25 @@ export const useQuotationStore = defineStore('quotation', {
       } finally {
         this.saving = false
       }
+    },
+
+    async changeStatus(statusCode, reason = null) {
+      if (this.isNew) {
+        throw new Error('Guarde la cotización antes de cambiar su estado.')
+      }
+
+      const response = await QuotationService.changeStatus(
+        this.quotation.uuid,
+        statusCode,
+        reason,
+      )
+
+      this.quotation = response.data.data
+
+      if (!this.quotation.itineraries) this.quotation.itineraries = []
+      if (!this.quotation.passengers) this.quotation.passengers = []
+
+      return response
     },
 
     /*
@@ -407,6 +602,27 @@ export const useQuotationStore = defineStore('quotation', {
       quotation.code = ''
 
       quotation.quotation_status_id = null
+
+      quotation.status = { code: 'DRAFT', name: 'Borrador' }
+      quotation.allowed_actions = {
+        edit: true,
+        recalculate: true,
+        mark_ready: false,
+        reopen: false,
+        send: false,
+        resend: false,
+        confirm: false,
+        reject: false,
+        cancel: true,
+        print: false,
+        export_pdf: false,
+      }
+      quotation.status_changed_at = null
+      quotation.sent_at = null
+      quotation.confirmed_at = null
+      quotation.rejected_at = null
+      quotation.cancelled_at = null
+      quotation.status_reason = null
 
       /*
       |--------------------------------------------------------------------------
@@ -501,6 +717,11 @@ export const useQuotationStore = defineStore('quotation', {
     */
 
     addItinerary(data = {}) {
+      const previousItinerary = this.quotation.itineraries.at(-1)
+      const defaultTravelDate = previousItinerary?.travel_date
+        ? addDays(previousItinerary.travel_date, 1)
+        : this.quotation.travel_date || null
+
       const itinerary = {
         id: null,
 
@@ -510,7 +731,7 @@ export const useQuotationStore = defineStore('quotation', {
 
         day_number: this.quotation.itineraries.length + 1,
 
-        travel_date: null,
+        travel_date: defaultTravelDate,
 
         title: '',
 
@@ -531,9 +752,86 @@ export const useQuotationStore = defineStore('quotation', {
 
       this.renumberItineraries()
 
+      this.syncValidUntilWithLastItinerary()
+
       this.refreshCalculations()
 
       return itinerary
+    },
+
+    applyTouristDestination(destination) {
+      const startDate = this.quotation.travel_date
+      const now = new Date().toISOString()
+
+      this.quotation.tourist_destination_id = destination.id
+      this.quotation.tourist_destination_name = destination.name
+
+      if (destination.currency_id) {
+        this.quotation.currency_id = destination.currency_id
+        this.quotation.exchange_rate = 1
+      }
+
+      this.quotation.itineraries = (destination.days ?? []).map((day, dayIndex) => {
+        const items = (day.items ?? [])
+          .filter((item) => item.active !== false)
+          .map((item, itemIndex) => {
+            const quantity = Number(item.quantity ?? 1)
+            const unitCost = Number(item.estimated_cost ?? 0)
+            const unitPrice = Number(item.estimated_price ?? 0)
+
+            return {
+              id: null,
+              uuid: crypto.randomUUID(),
+              quotation_itinerary_id: null,
+              service_id: null,
+              service_variant_id: null,
+              item_type: 'CUSTOM',
+              calculation_type: 'generic',
+              group_uuid: null,
+              group_index: null,
+              name: item.name,
+              variant_name: null,
+              description: item.description ?? '',
+              duration: Number(item.duration ?? 1),
+              quantity,
+              price_id: null,
+              price_list_id: null,
+              price_list_item_id: null,
+              base_cost: unitCost,
+              base_price: unitPrice,
+              unit_cost: unitCost,
+              unit_price: unitPrice,
+              subtotal: quantity * unitPrice,
+              subtotal_cost: quantity * unitCost,
+              subtotal_sale: quantity * unitPrice,
+              sort_order: itemIndex + 1,
+              notes: 'Importe aproximado importado desde una plantilla de destino.',
+              active: true,
+              calculated_at: now,
+            }
+          })
+
+        return {
+          id: null,
+          uuid: crypto.randomUUID(),
+          quotation_id: this.quotation.id,
+          day_number: dayIndex + 1,
+          travel_date: startDate ? addDays(startDate, dayIndex) : null,
+          title: day.title,
+          description: day.description ?? '',
+          sort_order: dayIndex + 1,
+          subtotal: items.reduce((sum, item) => sum + Number(item.subtotal ?? 0), 0),
+          items,
+        }
+      })
+
+      this.selectedItineraryUuid = this.quotation.itineraries[0]?.uuid ?? null
+      this.quotation.pending_calculation_items = []
+      this.quotation.calculation_dirty_reasons = []
+      this.quotation.calculation_status = 'CURRENT'
+      this.quotation.calculated_at = now
+      this.syncValidUntilWithLastItinerary()
+      this.refreshCalculations()
     },
 
     updateItinerary(uuid, values) {
@@ -545,7 +843,63 @@ export const useQuotationStore = defineStore('quotation', {
 
       Object.assign(itinerary, values)
 
+      this.syncValidUntilWithLastItinerary()
+
       this.refreshCalculations()
+    },
+
+    updateItineraryTravelDate(uuid, travelDate, shiftFollowing = false) {
+      const index = this.quotation.itineraries.findIndex((itinerary) => itinerary.uuid === uuid)
+
+      if (index < 0 || !parseDate(travelDate)) {
+        return { success: false, message: 'Seleccione una fecha válida.' }
+      }
+
+      const itinerary = this.quotation.itineraries[index]
+      const previous = this.quotation.itineraries[index - 1]
+      const next = this.quotation.itineraries[index + 1]
+
+      if (previous?.travel_date && travelDate <= previous.travel_date) {
+        return {
+          success: false,
+          message: `La fecha debe ser posterior a la del día ${previous.day_number}.`,
+        }
+      }
+
+      if (!shiftFollowing && next?.travel_date && travelDate >= next.travel_date) {
+        return {
+          success: false,
+          message: `La fecha debe ser anterior a la del día ${next.day_number}, o debe desplazar los días posteriores.`,
+        }
+      }
+
+      const difference = differenceInDays(itinerary.travel_date, travelDate)
+
+      if (difference !== 0) {
+        this.markCalculationDirty('ITINERARY_DATE_CHANGED', uuid)
+
+        if (shiftFollowing) {
+          this.quotation.itineraries.slice(index + 1).forEach((followingItinerary) => {
+            this.markCalculationDirty('ITINERARY_DATE_CHANGED', followingItinerary.uuid)
+          })
+        }
+      }
+
+      itinerary.travel_date = travelDate
+
+      if (shiftFollowing && difference !== 0) {
+        this.quotation.itineraries.slice(index + 1).forEach((followingItinerary) => {
+          if (followingItinerary.travel_date) {
+            followingItinerary.travel_date = addDays(followingItinerary.travel_date, difference)
+          }
+        })
+      }
+
+      this.syncValidUntilWithLastItinerary()
+
+      this.refreshCalculations()
+
+      return { success: true }
     },
 
     removeItinerary(uuid) {
@@ -555,6 +909,8 @@ export const useQuotationStore = defineStore('quotation', {
         return
       }
 
+      const removed = this.quotation.itineraries[index]
+      ;(removed.items ?? []).forEach((item) => this.forgetPendingCalculation(item))
       this.quotation.itineraries.splice(index, 1)
 
       this.renumberItineraries()
@@ -564,6 +920,8 @@ export const useQuotationStore = defineStore('quotation', {
       } else {
         this.selectedItineraryUuid = null
       }
+
+      this.syncValidUntilWithLastItinerary()
 
       this.refreshCalculations()
     },
@@ -586,6 +944,8 @@ export const useQuotationStore = defineStore('quotation', {
       copy.id = null
 
       copy.uuid = crypto.randomUUID()
+
+      copy.travel_date = itinerary.travel_date ? addDays(itinerary.travel_date, 1) : null
 
       /*
       |--------------------------------------------------------------------------
@@ -621,11 +981,19 @@ export const useQuotationStore = defineStore('quotation', {
 
       const index = this.quotation.itineraries.findIndex((itinerary) => itinerary.uuid === uuid)
 
+      this.quotation.itineraries.slice(index + 1).forEach((followingItinerary) => {
+        if (followingItinerary.travel_date) {
+          followingItinerary.travel_date = addDays(followingItinerary.travel_date, 1)
+        }
+      })
+
       this.quotation.itineraries.splice(index + 1, 0, copy)
 
       this.renumberItineraries()
 
       this.selectedItineraryUuid = copy.uuid
+
+      this.syncValidUntilWithLastItinerary()
 
       this.refreshCalculations()
 
@@ -643,13 +1011,23 @@ export const useQuotationStore = defineStore('quotation', {
         return
       }
 
+      const dateSlots = [
+        this.quotation.itineraries[index - 1].travel_date,
+        this.quotation.itineraries[index].travel_date,
+      ]
+
       ;[this.quotation.itineraries[index - 1], this.quotation.itineraries[index]] = [
         this.quotation.itineraries[index],
 
         this.quotation.itineraries[index - 1],
       ]
 
+      this.quotation.itineraries[index - 1].travel_date = dateSlots[0]
+      this.quotation.itineraries[index].travel_date = dateSlots[1]
+
       this.renumberItineraries()
+
+      this.syncValidUntilWithLastItinerary()
 
       this.refreshCalculations()
     },
@@ -661,13 +1039,23 @@ export const useQuotationStore = defineStore('quotation', {
         return
       }
 
+      const dateSlots = [
+        this.quotation.itineraries[index].travel_date,
+        this.quotation.itineraries[index + 1].travel_date,
+      ]
+
       ;[this.quotation.itineraries[index], this.quotation.itineraries[index + 1]] = [
         this.quotation.itineraries[index + 1],
 
         this.quotation.itineraries[index],
       ]
 
+      this.quotation.itineraries[index].travel_date = dateSlots[0]
+      this.quotation.itineraries[index + 1].travel_date = dateSlots[1]
+
       this.renumberItineraries()
+
+      this.syncValidUntilWithLastItinerary()
 
       this.refreshCalculations()
     },
@@ -678,6 +1066,14 @@ export const useQuotationStore = defineStore('quotation', {
 
         itinerary.sort_order = index + 1
       })
+    },
+
+    syncValidUntilWithLastItinerary() {
+      const lastItinerary = [...this.quotation.itineraries]
+        .reverse()
+        .find((itinerary) => itinerary.travel_date)
+
+      this.quotation.valid_until = lastItinerary?.travel_date ?? this.quotation.travel_date ?? null
     },
 
     /*
@@ -840,21 +1236,44 @@ export const useQuotationStore = defineStore('quotation', {
     },
 
     updateCurrency(currencyId) {
+      if (Number(this.quotation.currency_id) !== Number(currencyId)) {
+        this.markCalculationDirty('CURRENCY_CHANGED')
+      }
+
       this.quotation.currency_id = currencyId
     },
 
     updateTravelDate(date) {
+      if (!parseDate(date)) return false
+
+      const previousDate = this.quotation.travel_date
+      const difference = differenceInDays(previousDate, date)
+
+      if (difference !== 0) {
+        this.markCalculationDirty('TRAVEL_DATE_CHANGED')
+      }
+
       this.quotation.travel_date = date
 
-      this.updateTravelDates()
+      if (difference !== 0) {
+        this.quotation.itineraries.forEach((itinerary, index) => {
+          itinerary.travel_date = itinerary.travel_date
+            ? addDays(itinerary.travel_date, difference)
+            : addDays(date, index)
+        })
+      } else {
+        this.updateTravelDates()
+      }
+
+      this.syncValidUntilWithLastItinerary()
+
+      this.refreshCalculations()
+
+      return true
     },
 
     updateCustomer(customerId) {
       this.quotation.customer_id = customerId
-    },
-
-    updatePriceList(priceListId) {
-      this.quotation.price_list_id = priceListId
     },
 
     updateStatus(statusId) {

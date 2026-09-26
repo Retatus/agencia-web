@@ -8,6 +8,7 @@ import {
   BaseModal,
   BasePagination,
   BaseTable,
+  BaseTabs,
 } from '@/components/ui'
 
 const showModal = ref(false)
@@ -71,12 +72,12 @@ function submitForm() {
     <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
       <div>
         <p class="text-sm font-semibold text-teal-600 dark:text-teal-400">Guía visual</p>
-        <h2 class="mt-1 text-2xl font-bold tracking-tight text-slate-900 dark:text-white"
-          >Componentes UI</h2
-        >
-        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400"
-          >Plantillas reutilizables para mantener una apariencia consistente en todo el ERP.</p
-        >
+        <h2 class="mt-1 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+          Componentes UI
+        </h2>
+        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          Plantillas reutilizables para mantener una apariencia consistente en todo el ERP.
+        </p>
       </div>
       <button
         type="button"
@@ -101,19 +102,13 @@ function submitForm() {
           @close="showSuccess = false"
           >Los cambios se guardaron correctamente.</BaseAlert
         >
-        <BaseAlert
-          type="info"
-          title="Información"
+        <BaseAlert type="info" title="Información"
           >La cotización será válida durante 15 días.</BaseAlert
         >
-        <BaseAlert
-          type="warning"
-          title="Revisión pendiente"
+        <BaseAlert type="warning" title="Revisión pendiente"
           >Faltan precios en dos servicios del itinerario.</BaseAlert
         >
-        <BaseAlert
-          type="danger"
-          title="No se pudo guardar"
+        <BaseAlert type="danger" title="No se pudo guardar"
           >Revisa los campos obligatorios e inténtalo otra vez.</BaseAlert
         >
       </div>
@@ -128,21 +123,25 @@ function submitForm() {
         <div class="flex flex-wrap gap-3">
           <button
             class="rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-700"
-            >Guardar</button
           >
+            Guardar
+          </button>
           <button
             class="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
-            >Cancelar</button
           >
+            Cancelar
+          </button>
           <button
             class="rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700"
-            >Eliminar</button
           >
+            Eliminar
+          </button>
           <button
             disabled
             class="cursor-not-allowed rounded-lg bg-slate-200 px-4 py-2.5 text-sm font-medium text-slate-400 dark:bg-slate-800 dark:text-slate-600"
-            >Deshabilitado</button
           >
+            Deshabilitado
+          </button>
         </div>
         <div class="flex flex-wrap gap-2">
           <BaseBadge> Borrador </BaseBadge><BaseBadge variant="info"> Enviada </BaseBadge
@@ -158,15 +157,12 @@ function submitForm() {
       title="Formulario completo"
       description="Campos habituales para formularios de mantenimiento, cotizaciones y operaciones."
     >
-      <form
-        class="space-y-7"
-        @submit.prevent="submitForm"
-      >
+      <form class="space-y-7" @submit.prevent="submitForm">
         <!-- Textos y contacto -->
         <fieldset class="space-y-5">
-          <legend class="text-sm font-semibold text-slate-900 dark:text-white"
-            >Información básica</legend
-          >
+          <legend class="text-sm font-semibold text-slate-900 dark:text-white">
+            Información básica
+          </legend>
 
           <div class="grid gap-5 md:grid-cols-12">
             <div class="md:col-span-3">
@@ -238,11 +234,11 @@ function submitForm() {
                 v-model="form.category"
                 class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
               >
-                <option value="">Seleccione...</option
-                ><option>Hotel</option
-                ><option>Transporte</option
-                ><option>Tour</option
-                ><option>Alimentación</option>
+                <option value="">Seleccione...</option>
+                <option>Hotel</option>
+                <option>Transporte</option>
+                <option>Tour</option>
+                <option>Alimentación</option>
               </select>
             </div>
           </div>
@@ -250,9 +246,9 @@ function submitForm() {
 
         <!-- Fechas y cantidades -->
         <fieldset class="space-y-5 border-t border-slate-200 pt-6 dark:border-slate-800">
-          <legend class="px-1 text-sm font-semibold text-slate-900 dark:text-white"
-            >Fechas y planificación</legend
-          >
+          <legend class="px-1 text-sm font-semibold text-slate-900 dark:text-white">
+            Fechas y planificación
+          </legend>
 
           <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
             <div>
@@ -353,15 +349,15 @@ function submitForm() {
 
         <!-- Radio y checkbox -->
         <fieldset class="space-y-5 border-t border-slate-200 pt-6 dark:border-slate-800">
-          <legend class="px-1 text-sm font-semibold text-slate-900 dark:text-white"
-            >Opciones de contratación</legend
-          >
+          <legend class="px-1 text-sm font-semibold text-slate-900 dark:text-white">
+            Opciones de contratación
+          </legend>
 
           <div class="grid gap-6 lg:grid-cols-2">
             <div>
-              <p class="mb-3 text-sm font-medium text-slate-700 dark:text-slate-300"
-                >Tipo de precio</p
-              >
+              <p class="mb-3 text-sm font-medium text-slate-700 dark:text-slate-300">
+                Tipo de precio
+              </p>
               <div class="grid gap-3 sm:grid-cols-3">
                 <label
                   v-for="option in [
@@ -392,9 +388,9 @@ function submitForm() {
             </div>
 
             <div>
-              <p class="mb-3 text-sm font-medium text-slate-700 dark:text-slate-300"
-                >Servicios adicionales</p
-              >
+              <p class="mb-3 text-sm font-medium text-slate-700 dark:text-slate-300">
+                Servicios adicionales
+              </p>
               <div class="grid gap-3 sm:grid-cols-3">
                 <label
                   v-for="extra in [
@@ -422,9 +418,9 @@ function submitForm() {
 
         <!-- Archivo, descripción y switch -->
         <fieldset class="space-y-5 border-t border-slate-200 pt-6 dark:border-slate-800">
-          <legend class="px-1 text-sm font-semibold text-slate-900 dark:text-white"
-            >Información adicional</legend
-          >
+          <legend class="px-1 text-sm font-semibold text-slate-900 dark:text-white">
+            Información adicional
+          </legend>
 
           <div>
             <label
@@ -439,9 +435,9 @@ function submitForm() {
               class="block w-full rounded-lg border border-slate-300 bg-white text-sm text-slate-500 file:mr-4 file:border-0 file:bg-slate-100 file:px-4 file:py-2.5 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400 dark:file:bg-slate-800 dark:file:text-slate-300"
               @change="form.document = $event.target.files[0]"
             />
-            <p class="mt-1.5 text-xs text-slate-500 dark:text-slate-400"
-              >PDF, JPG o PNG. Tamaño máximo definido por tu backend.</p
-            >
+            <p class="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+              PDF, JPG o PNG. Tamaño máximo definido por tu backend.
+            </p>
           </div>
 
           <div>
@@ -472,10 +468,7 @@ function submitForm() {
             <span
               class="relative inline-flex h-6 w-11 shrink-0 rounded-full transition"
               :class="form.active ? 'bg-teal-600' : 'bg-slate-300 dark:bg-slate-700'"
-              ><input
-                v-model="form.active"
-                type="checkbox"
-                class="peer sr-only" /><span
+              ><input v-model="form.active" type="checkbox" class="peer sr-only" /><span
                 class="absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all"
                 :class="form.active ? 'left-5.5' : 'left-0.5'"
             /></span>
@@ -488,66 +481,62 @@ function submitForm() {
           <button
             type="button"
             class="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-            >Cancelar</button
           >
+            Cancelar
+          </button>
           <button
             type="submit"
             class="rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-teal-700"
-            >Guardar registro</button
           >
+            Guardar registro
+          </button>
         </div>
       </form>
     </BaseCard>
 
     <!-- Tabs -->
-    <BaseCard
-      title="Tabs"
-      description="Navegación entre secciones sin abandonar la página actual."
-    >
-      <BaseTabs
-        v-model="activeTab"
-        :tabs="tabs"
-      >
+    <BaseCard title="Tabs" description="Navegación entre secciones sin abandonar la página actual.">
+      <BaseTabs v-model="activeTab" :tabs="tabs">
         <template #general>
           <div
             class="rounded-lg border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950/50"
           >
             <h4 class="font-semibold text-slate-900 dark:text-white">Información general</h4>
-            <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400"
-              >Contenido principal de la cotización: cliente, moneda, lista de precios y fechas.</p
-            >
+            <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
+              Contenido principal de la cotización: cliente, moneda, lista de precios y fechas.
+            </p>
           </div>
         </template>
         <template #itinerary>
-          <div class="grid gap-3 md:grid-cols-3"
-            ><div
+          <div class="grid gap-3 md:grid-cols-3">
+            <div
               v-for="day in 3"
               :key="day"
               class="rounded-lg border border-slate-200 p-4 dark:border-slate-700"
-              ><p class="text-sm font-semibold text-teal-700 dark:text-teal-300">Día {{ day }}</p
-              ><p class="mt-1 text-sm text-slate-500 dark:text-slate-400"
-                >Servicios del itinerario.</p
-              ></div
-            ></div
-          >
+            >
+              <p class="text-sm font-semibold text-teal-700 dark:text-teal-300">Día {{ day }}</p>
+              <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                Servicios del itinerario.
+              </p>
+            </div>
+          </div>
         </template>
         <template #passengers>
-          <BaseAlert
-            type="info"
-            title="8 pasajeros registrados"
+          <BaseAlert type="info" title="8 pasajeros registrados"
             >Puedes utilizar este tab para listar, agregar o distribuir pasajeros.</BaseAlert
           >
         </template>
         <template #documents>
           <ul
             class="divide-y divide-slate-200 rounded-lg border border-slate-200 dark:divide-slate-700 dark:border-slate-700"
-            ><li class="flex justify-between p-4 text-sm text-slate-700 dark:text-slate-300"
-              ><span>Propuesta comercial.pdf</span
-              ><BaseBadge variant="success">Listo</BaseBadge></li
-            ><li class="flex justify-between p-4 text-sm text-slate-700 dark:text-slate-300"
-              ><span>Itinerario.pdf</span><BaseBadge variant="warning">Pendiente</BaseBadge></li
-            ></ul
           >
+            <li class="flex justify-between p-4 text-sm text-slate-700 dark:text-slate-300">
+              <span>Propuesta comercial.pdf</span><BaseBadge variant="success">Listo</BaseBadge>
+            </li>
+            <li class="flex justify-between p-4 text-sm text-slate-700 dark:text-slate-300">
+              <span>Itinerario.pdf</span><BaseBadge variant="warning">Pendiente</BaseBadge>
+            </li>
+          </ul>
         </template>
       </BaseTabs>
     </BaseCard>
@@ -555,51 +544,52 @@ function submitForm() {
     <!-- Tabla simple -->
     <div>
       <h3 class="mb-3 text-lg font-semibold text-slate-900 dark:text-white">Tabla básica</h3>
-      <BaseTable
-        :items="allServices.slice(0, 4)"
-        :columns="6"
-      >
+      <BaseTable :items="allServices.slice(0, 4)" :columns="6">
         <template #header
-          ><tr
-            ><th>Código</th><th>Servicio</th><th>Categoría</th><th class="text-right!">Precio</th
-            ><th>Estado</th><th class="text-right!">Acciones</th></tr
-          ></template
+          ><tr>
+            <th>Código</th>
+            <th>Servicio</th>
+            <th>Categoría</th>
+            <th class="text-right!">Precio</th>
+            <th>Estado</th>
+            <th class="text-right!">Acciones</th>
+          </tr></template
         >
         <template #body="{ items }">
-          <tr
-            v-for="service in items"
-            :key="service.id"
-          >
-            <td
-              ><span class="font-semibold text-teal-700 dark:text-teal-300">{{
-                service.code
-              }}</span></td
-            ><td
-              ><span class="font-medium text-slate-900 dark:text-white">{{
-                service.name
-              }}</span></td
-            ><td>{{ service.category }}</td
-            ><td class="text-right! font-medium">$ {{ service.price.toFixed(2) }}</td
-            ><td
-              ><BaseBadge :variant="service.active ? 'success' : 'danger'">{{
+          <tr v-for="service in items" :key="service.id">
+            <td>
+              <span class="font-semibold text-teal-700 dark:text-teal-300">{{ service.code }}</span>
+            </td>
+            <td>
+              <span class="font-medium text-slate-900 dark:text-white">{{ service.name }}</span>
+            </td>
+            <td>{{ service.category }}</td>
+            <td class="text-right! font-medium">$ {{ service.price.toFixed(2) }}</td>
+            <td>
+              <BaseBadge :variant="service.active ? 'success' : 'danger'">{{
                 service.active ? 'Activo' : 'Inactivo'
-              }}</BaseBadge></td
-            >
-            <td
-              ><div class="flex justify-end gap-1"
-                ><button
+              }}</BaseBadge>
+            </td>
+            <td>
+              <div class="flex justify-end gap-1">
+                <button
                   title="Ver"
                   class="rounded-lg p-2 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-950"
-                  ><Eye class="h-4 w-4" /></button
+                >
+                  <Eye class="h-4 w-4" /></button
                 ><button
                   title="Editar"
                   class="rounded-lg p-2 hover:bg-teal-50 hover:text-teal-700 dark:hover:bg-teal-950"
-                  ><Pencil class="h-4 w-4" /></button
+                >
+                  <Pencil class="h-4 w-4" /></button
                 ><button
                   title="Eliminar"
                   class="rounded-lg p-2 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950"
-                  ><Trash2 class="h-4 w-4" /></button></div
-            ></td>
+                >
+                  <Trash2 class="h-4 w-4" />
+                </button>
+              </div>
+            </td>
           </tr>
         </template>
       </BaseTable>
@@ -607,33 +597,31 @@ function submitForm() {
 
     <!-- Tabla paginada -->
     <div>
-      <h3 class="mb-3 text-lg font-semibold text-slate-900 dark:text-white"
-        >Tabla con paginación</h3
-      >
-      <BaseTable
-        :items="paginatedServices"
-        :columns="5"
-      >
+      <h3 class="mb-3 text-lg font-semibold text-slate-900 dark:text-white">
+        Tabla con paginación
+      </h3>
+      <BaseTable :items="paginatedServices" :columns="5">
         <template #header
-          ><tr
-            ><th>Código</th><th>Servicio</th><th>Categoría</th><th class="text-right!">Precio</th
-            ><th>Estado</th></tr
-          ></template
+          ><tr>
+            <th>Código</th>
+            <th>Servicio</th>
+            <th>Categoría</th>
+            <th class="text-right!">Precio</th>
+            <th>Estado</th>
+          </tr></template
         >
         <template #body="{ items }"
-          ><tr
-            v-for="service in items"
-            :key="service.id"
-            ><td class="font-semibold text-teal-700 dark:text-teal-300">{{ service.code }}</td
-            ><td class="font-medium text-slate-900! dark:text-white!">{{ service.name }}</td
-            ><td>{{ service.category }}</td
-            ><td class="text-right!">$ {{ service.price.toFixed(2) }}</td
-            ><td
-              ><BaseBadge :variant="service.active ? 'success' : 'danger'">{{
+          ><tr v-for="service in items" :key="service.id">
+            <td class="font-semibold text-teal-700 dark:text-teal-300">{{ service.code }}</td>
+            <td class="font-medium text-slate-900! dark:text-white!">{{ service.name }}</td>
+            <td>{{ service.category }}</td>
+            <td class="text-right!">$ {{ service.price.toFixed(2) }}</td>
+            <td>
+              <BaseBadge :variant="service.active ? 'success' : 'danger'">{{
                 service.active ? 'Activo' : 'Inactivo'
-              }}</BaseBadge></td
-            ></tr
-          ></template
+              }}</BaseBadge>
+            </td>
+          </tr></template
         >
         <template #footer
           ><BasePagination
@@ -652,22 +640,24 @@ function submitForm() {
       title="Confirmar cotización"
       description="Ejemplo de modal reutilizable para el ERP."
     >
-      <p class="text-sm leading-6 text-slate-600 dark:text-slate-300"
-        >¿Deseas confirmar la cotización COT-00241? Después podrás continuar con el proceso de
-        reservas.</p
-      >
+      <p class="text-sm leading-6 text-slate-600 dark:text-slate-300">
+        ¿Deseas confirmar la cotización COT-00241? Después podrás continuar con el proceso de
+        reservas.
+      </p>
       <template #footer="{ close }"
         ><button
           type="button"
           class="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 dark:border-slate-700 dark:text-slate-300"
           @click="close"
-          >Cancelar</button
+        >
+          Cancelar</button
         ><button
           type="button"
           class="rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-700"
           @click="close"
-          >Confirmar</button
-        ></template
+        >
+          Confirmar
+        </button></template
       >
     </BaseModal>
   </div>

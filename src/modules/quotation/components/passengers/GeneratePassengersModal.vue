@@ -71,11 +71,11 @@
                 <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   Nacionalidad común
                 </label>
-                <input
-                  v-model.trim="nationality"
-                  type="text"
-                  class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-600"
-                  placeholder="Opcional"
+                <CountrySelect
+                  v-model="nationality"
+                  class="mt-2"
+                  placeholder="Seleccionar país"
+                  @country-selected="selectedCountry = $event"
                 />
               </div>
 
@@ -133,6 +133,8 @@
 import { computed, reactive, ref } from 'vue'
 
 import QuotationPassengerFormModal from '../PassengerModal.vue'
+import { Users, X } from 'lucide-vue-next'
+import CountrySelect from '@/shared/components/CountrySelect.vue'
 
 const props = defineProps({
   passengerTypes: {
@@ -144,6 +146,8 @@ const props = defineProps({
 const emit = defineEmits(['close', 'save'])
 
 const nationality = ref('')
+
+const selectedCountry = ref(null)
 
 const quantities = reactive({})
 
@@ -200,6 +204,13 @@ function save() {
     groups,
 
     nationality: nationality.value || null,
+
+    country: selectedCountry.value
+      ? {
+          iso: selectedCountry.value.iso,
+          name: selectedCountry.value.name,
+        }
+      : null,
   })
 }
 

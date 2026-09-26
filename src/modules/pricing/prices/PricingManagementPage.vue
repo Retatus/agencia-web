@@ -44,13 +44,11 @@
         <!-- ====================================================== -->
         <!-- NUEVO PRECIO -->
         <!-- ====================================================== -->
-
         <button
-          type="button"
-          class="inline-flex items-center gap-2 rounded-lg border border-teal-600 bg-white px-4 py-2.5 text-sm font-medium text-teal-600 shadow-sm transition hover:bg-teal-50 dark:border-teal-500 dark:text-teal-400 dark:hover:bg-teal-950/30"
+          class="inline-flex items-center justify-center rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
           @click="openCreateModal"
         >
-          <Plus class="h-4 w-4" />
+          <Plus class="mr-1.5 h-4 w-4" />
           Nuevo precio
         </button>
 
@@ -256,10 +254,10 @@
                   {{ price.service_variant?.service.description }}
                 </div>
                 <div
-                  v-if="price.provider?.business_name"
+                  v-if="price.service_variant?.service?.provider?.business_name"
                   class="mt-0.5 text-xs text-slate-500 dark:text-slate-400"
                 >
-                  {{ price.provider.business_name }}
+                  {{ price.service_variant?.service.provider.business_name }}
                 </div>
               </td>
 

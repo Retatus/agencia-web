@@ -10,13 +10,14 @@
           Cotizaciones
         </h2>
 
-        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400"> Gestión de cotizaciones </p>
+        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Gestión de cotizaciones</p>
       </div>
 
       <router-link
         :to="{ name: 'quotations.create' }"
         class="inline-flex items-center justify-center rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-slate-950"
       >
+        <Plus class="mr-1.5 h-4 w-4" />
         Nueva cotización
       </router-link>
     </div>
@@ -33,30 +34,27 @@
     >
       <template #header>
         <tr>
-          <th> Código </th>
+          <th>Código</th>
 
-          <th> Cliente </th>
+          <th>Cliente</th>
 
-          <th> Viaje </th>
+          <th>Viaje</th>
 
-          <th> Válida hasta </th>
+          <th>Vigencia comercial</th>
 
-          <th> Notas </th>
+          <th>Notas</th>
 
-          <th> Moneda </th>
+          <th>Moneda</th>
 
-          <th class="text-right!"> Total </th>
+          <th class="text-right!">Total</th>
 
-          <th> Estado </th>
+          <th>Estado</th>
 
-          <th class="text-right!"> Acciones </th>
+          <th class="text-right!">Acciones</th>
         </tr>
       </template>
       <template #body="{ items }"
-        ><tr
-          v-for="quotation in items"
-          :key="quotation.uuid"
-        >
+        ><tr v-for="quotation in items" :key="quotation.uuid">
           <td class="whitespace-nowrap">
             <span class="font-semibold text-teal-700 dark:text-teal-300">
               {{ quotation.code }}
@@ -73,7 +71,7 @@
             {{ quotation.travel_date || 'Sin fecha' }}
           </td>
           <td class="whitespace-nowrap">
-            {{ quotation.valid_until || 'Sin fecha' }}
+            {{ quotation.commercial_valid_until || 'Sin fecha' }}
           </td>
           <td>
             <p
@@ -109,30 +107,26 @@
           <td class="whitespace-nowrap">
             <div class="flex justify-end gap-1">
               <button
-                type="button"
-                class="rounded-lg px-2.5 py-2 text-sm font-medium text-slate-500 transition hover:bg-teal-50 hover:text-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500/30 dark:text-slate-400 dark:hover:bg-teal-950/60 dark:hover:text-teal-300"
+                class="inline-flex items-center rounded-lg border border-blue-300 px-2.5 py-1 text-xs font-medium text-blue-600 transition hover:bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-950/30"
                 @click="edit(quotation.uuid)"
               >
-                <Pencil class="h-4 w-4" />
-                <span class="hidden xl:inline"> Editar </span>
+                <Pencil class="mr-1 h-3 w-3" />
+                {{ quotation.allowed_actions?.edit ? 'Editar' : 'Ver' }}
               </button>
-
               <button
-                type="button"
-                class="rounded-lg px-2.5 py-2 text-sm font-medium text-slate-500 transition hover:bg-blue-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:text-slate-400 dark:hover:bg-blue-950/60 dark:hover:text-blue-300"
+                class="inline-flex items-center rounded-lg border border-blue-300 px-2.5 py-1 text-xs font-medium text-blue-600 transition hover:bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-950/30"
                 @click="viewHistory(quotation)"
               >
-                <Eye class="h-4 w-4" />
-                <span class="hidden xl:inline"> Historial </span>
+                <Eye class="mr-1 h-3 w-3" />
+                Historial
               </button>
-
               <button
-                type="button"
-                class="rounded-lg px-2.5 py-2 text-sm font-medium text-slate-500 transition hover:bg-red-50 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/30 dark:text-slate-400 dark:hover:bg-red-950/60 dark:hover:text-red-300"
+                v-if="quotation.allowed_actions?.edit"
+                class="inline-flex items-center rounded-lg border border-red-300 px-2.5 py-1 text-xs font-medium text-red-600 transition hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950/30"
                 @click="remove(quotation.uuid)"
               >
-                <Trash2 class="h-4 w-4" />
-                <span class="hidden xl:inline"> Eliminar </span>
+                <Trash2 class="mr-1 h-3 w-3" />
+                Eliminar
               </button>
             </div>
           </td>
@@ -142,9 +136,9 @@
         <BasePagination
           :current-page="currentPage"
           :last-page="lastPage"
-          :total="store.items.length"
+          :total="total"
           :per-page="perPage"
-          @change="currentPage = $event"
+          @change="changePage"
         />
       </template>
     </BaseTable>
@@ -162,18 +156,22 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 //import BaseTable from '@/shared/components/BaseTable.vue'
 import { useQuotationStore } from '../stores/quotation.store'
 import QuotationHistoryModal from '../components/QuotationHistoryModal.vue'
 import quotationService from '../services/quotation.service.js'
 
-import { BriefcaseBusiness, Pencil, Eye, Trash2 } from 'lucide-vue-next'
+import { Plus, Pencil, Eye, Trash2 } from 'lucide-vue-next'
 import { BaseBadge, BasePagination, BaseTable } from '@/components/ui'
 
 const router = useRouter()
 const store = useQuotationStore()
+const currentPage = computed(() => Number(store.listMeta?.current_page ?? 1))
+const lastPage = computed(() => Number(store.listMeta?.last_page ?? 1))
+const perPage = computed(() => Number(store.listMeta?.per_page ?? 10))
+const total = computed(() => Number(store.listMeta?.total ?? store.items.length))
 
 /*
 |--------------------------------------------------------------------------
@@ -196,8 +194,12 @@ function closeHistory() {
 
 onMounted(load)
 
-async function load() {
-  await store.fetchQuotations()
+async function load(page = currentPage.value) {
+  await store.fetchQuotations({ page, per_page: perPage.value })
+}
+
+async function changePage(page) {
+  await load(page)
 }
 function edit(uuid) {
   router.push({
@@ -229,6 +231,8 @@ function statusClass(statusCode) {
 
     PENDING: 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300',
 
+    READY: 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300',
+
     SENT: 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300',
 
     APPROVED: 'bg-green-100 text-green-700 dark:bg-green-950/60 dark:text-green-300',
@@ -238,6 +242,8 @@ function statusClass(statusCode) {
     REJECTED: 'bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300',
 
     CANCELLED: 'bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300',
+
+    EXPIRED: 'bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300',
   }
 
   return classes[statusCode] || 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'

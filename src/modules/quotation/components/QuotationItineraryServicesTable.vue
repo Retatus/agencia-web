@@ -67,10 +67,7 @@
       <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
         <!-- SIN ITEMS -->
         <tr v-if="!itinerary.items?.length">
-          <td
-            colspan="11"
-            class="px-3 py-8 text-center text-sm text-slate-500 dark:text-slate-400"
-          >
+          <td colspan="11" class="px-3 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
             No existen servicios registrados.
           </td>
         </tr>
@@ -104,10 +101,7 @@
             <div class="font-medium text-slate-900 dark:text-white">
               {{ item.name }}
             </div>
-            <div
-              v-if="item.description"
-              class="mt-0.5 text-xs text-slate-500 dark:text-slate-400"
-            >
+            <div v-if="item.description" class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
               {{ item.description }}
             </div>
 
@@ -138,10 +132,7 @@
             <div class="font-medium text-slate-800 dark:text-slate-200">
               {{ item.variant_name || '-' }}
             </div>
-            <div
-              v-if="item.group_uuid"
-              class="text-xs text-slate-500 dark:text-slate-400"
-            >
+            <div v-if="item.group_uuid" class="text-xs text-slate-500 dark:text-slate-400">
               {{ getVariantPosition(item) }}
             </div>
           </td>
@@ -158,10 +149,7 @@
             >
               {{ item.item_type }}
             </span>
-            <div
-              v-if="item.group_uuid"
-              class="mt-2"
-            >
+            <div v-if="item.group_uuid" class="mt-2">
               <span
                 class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium"
                 :class="calculationBadge(item.calculation_type)"

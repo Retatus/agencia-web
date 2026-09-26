@@ -1,14 +1,11 @@
 <template>
-  <form
-    class="space-y-7"
-    @submit.prevent="submitForm"
-  >
+  <form class="space-y-7" @submit.prevent="submitForm">
     <!-- Datos Generales -->
     <div
       class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
     >
       <div class="border-b border-slate-200 px-5 py-4 dark:border-slate-800 sm:px-6">
-        <h3 class="font-semibold text-slate-900 dark:text-white"> Datos Generales </h3>
+        <h3 class="font-semibold text-slate-900 dark:text-white">Datos Generales</h3>
         <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
           Los campos marcados con <span class="text-red-500">*</span> son obligatorios.
         </p>
@@ -45,52 +42,22 @@
                 class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
               >
                 <option :value="null">Seleccione...</option>
-                <option
-                  v-for="customer in customers"
-                  :key="customer.id"
-                  :value="customer.id"
-                >
+                <option v-for="customer in customers" :key="customer.id" :value="customer.id">
                   {{ customer.first_name }} {{ customer.last_name }}
                 </option>
               </select>
-
               <button
-                type="button"
-                class="inline-flex shrink-0 items-center justify-center gap-1 rounded-lg border border-teal-600 bg-white px-4 py-2.5 text-sm font-medium text-teal-600 shadow-sm transition hover:bg-teal-50 hover:border-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500/30 dark:border-teal-500 dark:text-teal-400 dark:hover:bg-teal-950/30"
+                class="inline-flex items-center justify-center rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 @click="$emit('create-customer')"
               >
-                <Plus class="h-4 w-4" />
+                <Plus class="mr-1.5 h-4 w-4" />
                 Nuevo
               </button>
             </div>
           </div>
         </div>
 
-        <div class="grid gap-5 md:grid-cols-3">
-          <!-- Lista de Precios -->
-          <div>
-            <label
-              for="quotation-price-list"
-              class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-            >
-              Lista de Precios
-            </label>
-            <select
-              id="quotation-price-list"
-              v-model="store.quotation.price_list_id"
-              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-            >
-              <option :value="null">Seleccione...</option>
-              <option
-                v-for="item in priceLists"
-                :key="item.id"
-                :value="item.id"
-              >
-                {{ item.name }}
-              </option>
-            </select>
-          </div>
-
+        <div class="grid gap-5 md:grid-cols-2">
           <!-- Moneda -->
           <div>
             <label
@@ -101,15 +68,12 @@
             </label>
             <select
               id="quotation-currency"
-              v-model="store.quotation.currency_id"
+              :value="store.quotation.currency_id"
               required
               class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+              @change="store.updateCurrency(Number($event.target.value))"
             >
-              <option
-                v-for="currency in currencies"
-                :key="currency.id"
-                :value="currency.id"
-              >
+              <option v-for="currency in currencies" :key="currency.id" :value="currency.id">
                 {{ currency.code }}
               </option>
             </select>
@@ -140,14 +104,14 @@
       class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
     >
       <div class="border-b border-slate-200 px-5 py-4 dark:border-slate-800 sm:px-6">
-        <h3 class="font-semibold text-slate-900 dark:text-white"> Estado y Fechas </h3>
+        <h3 class="font-semibold text-slate-900 dark:text-white">Estado y Fechas</h3>
         <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
           Configure el estado y las fechas de la cotización.
         </p>
       </div>
 
       <div class="space-y-6 p-5 sm:p-6">
-        <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-5">
           <!-- Estado -->
           <div>
             <label
@@ -159,15 +123,11 @@
             <select
               id="quotation-status"
               v-model="store.quotation.quotation_status_id"
-              required
-              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+              disabled
+              class="w-full cursor-not-allowed rounded-lg border border-slate-300 bg-slate-100 px-3 py-2.5 text-sm text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
             >
               <option :value="null">Seleccione...</option>
-              <option
-                v-for="status in statuses"
-                :key="status.id"
-                :value="status.id"
-              >
+              <option v-for="status in statuses" :key="status.id" :value="status.id">
                 {{ status.name }}
               </option>
             </select>
@@ -183,30 +143,49 @@
             </label>
             <input
               id="quotation-travel-date"
-              v-model="store.quotation.travel_date"
+              :value="store.quotation.travel_date"
               type="date"
               class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:scheme-dark"
+              @change="changeTravelDate"
             />
           </div>
 
-          <!-- Válido Hasta -->
+          <!-- Fecha final del viaje -->
           <div>
             <label
               for="quotation-valid-until"
               class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
             >
-              Válido Hasta
+              Fin del viaje
             </label>
             <input
               id="quotation-valid-until"
-              v-model="store.quotation.valid_until"
+              :value="store.quotation.valid_until"
               type="date"
+              readonly
+              class="w-full cursor-not-allowed rounded-lg border border-slate-300 bg-slate-100 px-3 py-2.5 text-sm text-slate-700 shadow-sm outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:scheme-dark"
+            />
+          </div>
+
+          <!-- Vigencia comercial -->
+          <div>
+            <label
+              for="quotation-commercial-valid-until"
+              class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+            >
+              Vigencia comercial
+            </label>
+            <input
+              id="quotation-commercial-valid-until"
+              v-model="store.quotation.commercial_valid_until"
+              type="date"
+              :max="store.quotation.travel_date"
               class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:scheme-dark"
             />
           </div>
 
           <!-- Observaciones (columna extra) -->
-          <div>
+          <!-- <div>
             <label
               for="quotation-notes"
               class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
@@ -220,7 +199,7 @@
               placeholder="Notas rápidas..."
               class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-600"
             />
-          </div>
+          </div> -->
         </div>
 
         <!-- Observaciones (textarea completo) -->
@@ -247,20 +226,36 @@
 <script setup>
 import { watch } from 'vue'
 import { useQuotationStore } from '../stores/quotation.store'
+import { Plus } from 'lucide-vue-next'
 
 defineProps({
   customers: { type: Array, default: () => [] },
-  priceLists: { type: Array, default: () => [] },
   currencies: { type: Array, default: () => [] },
   statuses: { type: Array, default: () => [] },
 })
 
 const store = useQuotationStore()
 
-watch(
-  () => store.quotation.travel_date,
-  () => store.updateTravelDates(),
-)
+function changeTravelDate(event) {
+  const newDate = event.target.value
+  const previousDate = store.quotation.travel_date
+
+  if (!newDate || newDate === previousDate) return
+
+  if (store.quotation.itineraries.length) {
+    const confirmed = window.confirm(
+      'La fecha de viaje cambiará. ¿Desea desplazar todo el itinerario manteniendo los intervalos existentes?',
+    )
+
+    if (!confirmed) {
+      event.target.value = previousDate ?? ''
+
+      return
+    }
+  }
+
+  store.updateTravelDate(newDate)
+}
 
 watch(
   () => [store.quotation.exchange_rate, store.quotation.discount, store.quotation.tax],

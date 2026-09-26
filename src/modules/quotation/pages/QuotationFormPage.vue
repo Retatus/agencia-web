@@ -35,12 +35,142 @@
         </p>
       </div>
 
-      <router-link
-        :to="{ name: 'quotations' }"
-        class="inline-flex shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-teal-500/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+      <div class="flex flex-wrap gap-2">
+        <button
+          v-if="store.canEdit"
+          type="button"
+          class="inline-flex shrink-0 items-center justify-center rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-teal-700"
+          @click="showDestinationModal = true"
+        >
+          <MapPinned class="mr-1.5 h-4 w-4" />
+          Usar destino
+        </button>
+
+        <router-link
+          :to="{ name: 'quotations' }"
+          class="inline-flex shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-teal-500/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+        >
+          Volver al listado
+        </router-link>
+      </div>
+    </div>
+
+    <!-- Resultado del guardado -->
+
+    <BaseAlert
+      v-if="saveFeedback"
+      ref="saveFeedbackElement"
+      class="mb-5"
+      :type="saveFeedback.type"
+      :title="saveFeedback.title"
+      dismissible
+      @close="clearSaveFeedback"
+    >
+      <p>{{ saveFeedback.message }}</p>
+
+      <ul v-if="saveFeedback.details.length" class="mt-2 list-disc space-y-1 pl-5">
+        <li v-for="(detail, index) in saveFeedback.details" :key="`${index}-${detail}`">
+          {{ detail }}
+        </li>
+      </ul>
+    </BaseAlert>
+
+    <BaseAlert
+      v-if="store.calculationDirty"
+      class="mb-5"
+      type="warning"
+      title="La cotización necesita recalcular servicios"
+    >
+      <p>
+        Cambió información que interviene en las recomendaciones o tarifas. Los importes se
+        conservan como referencia, pero no deben enviarse al cliente hasta revisar los
+        {{ store.pendingCalculationCount }} servicios pendientes.
+      </p>
+
+      <button
+        type="button"
+        class="mt-3 rounded-lg bg-amber-600 px-3 py-2 text-sm font-semibold text-white hover:bg-amber-700"
+        @click="reviewNextPendingCalculation"
       >
-        Volver al listado
-      </router-link>
+        Revisar siguiente servicio
+      </button>
+    </BaseAlert>
+
+    <BaseAlert
+      v-if="!store.canEdit && !store.isNew"
+      class="mb-5"
+      type="info"
+      title="Cotización bloqueada para edición"
+    >
+      <p>
+        El estado {{ store.quotation.status?.name ?? store.statusCode }} protege los datos
+        comerciales. Utilice una transición permitida para continuar.
+      </p>
+    </BaseAlert>
+
+    <BaseAlert
+      v-if="store.quotation.tourist_destination_name"
+      class="mb-5"
+      type="info"
+      title="Itinerario iniciado desde una plantilla"
+    >
+      Destino de origen: {{ store.quotation.tourist_destination_name }}. Los textos e importes ya
+      son copias independientes y pueden ajustarse libremente.
+    </BaseAlert>
+
+    <div
+      v-if="store.canEdit"
+      class="mb-5 rounded-xl border border-teal-200 bg-teal-50 p-4 dark:border-teal-900 dark:bg-teal-950/30"
+    >
+      <div class="flex items-start gap-3">
+        <MapPinned class="mt-0.5 h-5 w-5 shrink-0 text-teal-600" />
+        <div class="min-w-0 flex-1">
+          <h3 class="font-semibold text-slate-900 dark:text-white">
+            Crear itinerario desde un destino turístico
+          </h3>
+          <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
+            Copia los títulos, descripciones y servicios aproximados en esta cotización.
+          </p>
+
+          <div class="mt-3 flex flex-col gap-2 sm:flex-row">
+            <select
+              v-model="selectedDestinationUuid"
+              class="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950"
+              :disabled="loadingDestinations"
+            >
+              <option value="">
+                {{
+                  loadingDestinations ? 'Cargando destinos...' : 'Seleccione un destino turístico'
+                }}
+              </option>
+              <option
+                v-for="destination in touristDestinations"
+                :key="destination.uuid"
+                :value="destination.uuid"
+              >
+                {{ destination.code }} · {{ destination.name }} ·
+                {{ destination.duration_days }} días
+              </option>
+            </select>
+
+            <button
+              type="button"
+              class="rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-50"
+              :disabled="!selectedDestinationUuid || applyingDestination"
+              @click="applySelectedDestination"
+            >
+              {{ applyingDestination ? 'Aplicando...' : 'Aplicar plantilla' }}
+            </button>
+          </div>
+
+          <p
+            v-if="!loadingDestinations && !touristDestinations.length"
+            class="mt-2 text-sm text-amber-700"
+          >
+            No existen destinos activos. Créelos desde el módulo Destinos turísticos.
+          </p>
+        </div>
+      </div>
     </div>
 
     <!-- Indicador de guardado -->
@@ -60,24 +190,26 @@
          FORMULARIO
     ============================================================= -->
 
-    <form
-      class="space-y-7"
-      @submit.prevent="save"
-    >
+    <form class="min-w-0 space-y-7" @submit.prevent="save">
       <!-- Datos generales -->
-      <fieldset class="space-y-5 border-t border-slate-200 pt-6 dark:border-slate-800">
+      <fieldset
+        :disabled="!store.canEdit"
+        class="min-w-0 space-y-5 border-t border-slate-200 pt-6 disabled:opacity-75 dark:border-slate-800"
+      >
         <QuotationHeader
           :quotation="store.quotation"
           :customers="customers"
           :currencies="currencies"
           :statuses="statuses"
-          :price-lists="priceLists"
           @create-customer="openCustomerModal"
         />
       </fieldset>
 
       <!-- Pasajeros -->
-      <fieldset class="space-y-5 border-t border-slate-200 pt-6 dark:border-slate-800">
+      <fieldset
+        :disabled="!store.canEdit"
+        class="min-w-0 space-y-5 border-t border-slate-200 pt-6 disabled:opacity-75 dark:border-slate-800"
+      >
         <QuotationPassengerManager
           :passengers="store.quotation.passengers"
           :passenger-types="passengerTypes"
@@ -87,7 +219,10 @@
       </fieldset>
 
       <!-- Itinerario -->
-      <fieldset class="space-y-5 border-t border-slate-200 pt-6 dark:border-slate-800">
+      <fieldset
+        :disabled="!store.canEdit"
+        class="min-w-0 space-y-5 border-t border-slate-200 pt-6 disabled:opacity-75 dark:border-slate-800"
+      >
         <QuotationItineraryManager
           :itineraries="store.quotation.itineraries"
           :selected-itinerary="store.selectedItinerary"
@@ -109,7 +244,7 @@
         class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
       >
         <div class="border-b border-slate-200 px-5 py-4 dark:border-slate-800 sm:px-6">
-          <h3 class="font-semibold text-slate-900 dark:text-white"> Totales y Acciones </h3>
+          <h3 class="font-semibold text-slate-900 dark:text-white">Totales y Acciones</h3>
           <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
             Resumen de la cotización y acciones disponibles.
           </p>
@@ -148,6 +283,7 @@
                       type="button"
                       class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
                       @click="printQuotation"
+                      :disabled="!store.allowedActions.print"
                     >
                       <Printer class="mr-1.5 h-4 w-4" />
                       Imprimir
@@ -157,6 +293,7 @@
                       type="button"
                       class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
                       @click="sendQuotation"
+                      :disabled="!store.allowedActions.send && !store.allowedActions.resend"
                     >
                       <Mail class="mr-1.5 h-4 w-4" />
                       Enviar Email
@@ -166,9 +303,66 @@
                       type="button"
                       class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
                       @click="exportPDF"
+                      :disabled="!store.allowedActions.export_pdf"
                     >
                       <FileText class="mr-1.5 h-4 w-4" />
                       PDF
+                    </button>
+                  </div>
+
+                  <div v-if="!store.isNew" class="grid grid-cols-2 gap-2">
+                    <button
+                      v-if="store.allowedActions.mark_ready"
+                      type="button"
+                      class="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+                      @click="changeWorkflowStatus('READY')"
+                    >
+                      Validar y dejar lista
+                    </button>
+
+                    <button
+                      v-if="store.allowedActions.reopen"
+                      type="button"
+                      class="rounded-lg border border-blue-500 px-3 py-2 text-sm font-semibold text-blue-700 dark:text-blue-300"
+                      @click="changeWorkflowStatus('DRAFT')"
+                    >
+                      Reabrir borrador
+                    </button>
+
+                    <button
+                      v-if="store.allowedActions.send"
+                      type="button"
+                      class="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+                      @click="registerAsSent"
+                    >
+                      Registrar como enviada
+                    </button>
+
+                    <button
+                      v-if="store.allowedActions.confirm"
+                      type="button"
+                      class="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+                      @click="changeWorkflowStatus('CONFIRMED')"
+                    >
+                      Confirmar
+                    </button>
+
+                    <button
+                      v-if="store.allowedActions.reject"
+                      type="button"
+                      class="rounded-lg border border-red-400 px-3 py-2 text-sm font-semibold text-red-700 dark:text-red-300"
+                      @click="changeWorkflowStatusWithReason('REJECTED')"
+                    >
+                      Rechazar
+                    </button>
+
+                    <button
+                      v-if="store.allowedActions.cancel"
+                      type="button"
+                      class="rounded-lg border border-red-400 px-3 py-2 text-sm font-semibold text-red-700 dark:text-red-300"
+                      @click="changeWorkflowStatusWithReason('CANCELLED')"
+                    >
+                      Cancelar cotización
                     </button>
                   </div>
 
@@ -188,7 +382,7 @@
                     <button
                       type="submit"
                       class="inline-flex items-center justify-center rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed"
-                      :disabled="store.saving"
+                      :disabled="store.saving || !store.canEdit"
                     >
                       <Save class="mr-1.5 h-4 w-4" />
                       {{ store.saving ? 'Guardando...' : 'Guardar' }}
@@ -209,7 +403,10 @@
     <ServiceSelectorModal
       v-if="showServiceModal"
       :item="editingItem"
-      :price-list-id="store.quotation.price_list_id"
+      :currency-id="store.quotation.currency_id"
+      :travel-date="store.quotation.travel_date"
+      :itinerary-day-number="store.selectedItinerary?.day_number"
+      :itinerary-travel-date="store.selectedItinerary?.travel_date"
       :passengers="store.quotation.passengers"
       @close="closeServiceModal"
       @save="handleItemSave"
@@ -228,59 +425,40 @@
       @close="closeCustomerModal"
       @save="handleCustomerSave"
     />
+
+    <TouristDestinationSelectorModal
+      v-if="showDestinationModal"
+      @close="showDestinationModal = false"
+      @select="applyDestination"
+    />
   </section>
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
-
+import { computed, nextTick, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { Copy, Printer, Mail, FileText, Save, MapPinned } from 'lucide-vue-next'
 
-import { Copy, Printer, Mail, FileText, Save } from 'lucide-vue-next'
-
-/*
-|--------------------------------------------------------------------------
-| STORES
-|--------------------------------------------------------------------------
-*/
+import BaseAlert from '@/components/ui/BaseAlert.vue'
 
 import { useQuotationStore } from '../stores/quotation.store'
 
-import { useQuotationCalculationStore } from '../stores/quotation-calculation.store'
-
-/*
-|--------------------------------------------------------------------------
-| COMPONENTS
-|--------------------------------------------------------------------------
-*/
-
 import QuotationHeader from '../components/QuotationHeader.vue'
-
 import QuotationItineraryManager from '../components/QuotationItineraryManager.vue'
-
 import QuotationTotals from '../components/QuotationTotals.vue'
-
 import QuotationActions from '../components/QuotationActions.vue'
-
 import QuotationPassengerManager from '../components/QuotationPassengerManager.vue'
-
 import ServiceSelectorModal from '../components/ServiceSelectorModal.vue'
-
 import CustomItemModal from '../components/CustomItemModal.vue'
+import TouristDestinationSelectorModal from '../components/TouristDestinationSelectorModal.vue'
 
 import CustomerQuickCreateModal from '../../crm/components/CustomerQuickCreateModal.vue'
-//import { useCustomerStore } from '@/modules/crm/components/CustomerQuickCreateModal.vue'
 import { useCustomerStore } from '../../crm/stores/customer.store'
 
-import DocumentTypeService from '@/modules/catalog/service/document-type.service'
-
-import PriceListService from '@/modules/pricing/services/price-list.service'
-
 import CurrencyService from '@/modules/catalog/service/currency.service'
-
 import PassengerTypeService from '@/modules/catalog/service/passenger-type.service'
-
 import QuotationStatusService from '@/modules/catalog/service/quotation-status.service'
+import TouristDestinationService from '@/modules/destinations/services/tourist-destination.service'
 
 /*
 |--------------------------------------------------------------------------
@@ -300,22 +478,14 @@ const router = useRouter()
 
 const store = useQuotationStore()
 
-const calculationStore = useQuotationCalculationStore()
+const customerStore = useCustomerStore()
 
 /*
 |--------------------------------------------------------------------------
-| STATE
-|--------------------------------------------------------------------------
-*/
-
-/*
-|--------------------------------------------------------------------------
-| Item o grupo actualmente en edición.
+| ITEM EN EDICIÓN
 |--------------------------------------------------------------------------
 |
-| Puede contener:
-|
-| ITEM NORMAL
+| Puede representar un ítem individual:
 |
 | {
 |   id,
@@ -324,7 +494,7 @@ const calculationStore = useQuotationCalculationStore()
 |   ...
 | }
 |
-| GRUPO
+| O un grupo:
 |
 | {
 |   type: 'group',
@@ -349,6 +519,14 @@ const showServiceModal = ref(false)
 
 const showPassengerModal = ref(false)
 
+const showCustomerModal = ref(false)
+
+const showDestinationModal = ref(false)
+
+const saveFeedback = ref(null)
+
+const saveFeedbackElement = ref(null)
+
 /*
 |--------------------------------------------------------------------------
 | COMPUTED
@@ -356,7 +534,7 @@ const showPassengerModal = ref(false)
 */
 
 const isEdit = computed(() => {
-  return !!route.params.uuid
+  return Boolean(route.params.uuid)
 })
 
 const pageTitle = computed(() => {
@@ -365,13 +543,13 @@ const pageTitle = computed(() => {
 
 /*
 |--------------------------------------------------------------------------
-| AUXILIARY DATA
+| DATOS AUXILIARES
 |--------------------------------------------------------------------------
 */
 
-const customers = computed(() => customerStore.customers)
-
-const priceLists = ref([])
+const customers = computed(() => {
+  return customerStore.customers
+})
 
 const currencies = ref([])
 
@@ -380,6 +558,14 @@ const statuses = ref([])
 const passengerTypes = ref([])
 
 const loadingCatalogs = ref(false)
+
+const touristDestinations = ref([])
+
+const selectedDestinationUuid = ref('')
+
+const loadingDestinations = ref(false)
+
+const applyingDestination = ref(false)
 
 /*
 |--------------------------------------------------------------------------
@@ -396,35 +582,30 @@ async function loadCustomers() {
 
 /*
 |--------------------------------------------------------------------------
-| AUXILIARY DATA
+| DATOS AUXILIARES
 |--------------------------------------------------------------------------
+|
+| PriceList ya no forma parte de la cabecera de Quotation.
+|
 */
 
 async function loadAuxiliaryData() {
   loadingCatalogs.value = true
 
   try {
-    const [priceListsResponse, currenciesResponse, statusesResponse, passengerTypesResponse] =
-      await Promise.all([
-        PriceListService.getAll({
-          active: 1,
-          per_page: 100,
-        }),
+    const [currenciesResponse, statusesResponse, passengerTypesResponse] = await Promise.all([
+      CurrencyService.getAll({
+        active: 1,
+      }),
 
-        CurrencyService.getAll({
-          active: 1,
-        }),
+      QuotationStatusService.getAll({
+        active: 1,
+      }),
 
-        QuotationStatusService.getAll({
-          active: 1,
-        }),
-
-        PassengerTypeService.getAll({
-          active: 1,
-        }),
-      ])
-
-    priceLists.value = priceListsResponse.data.data ?? []
+      PassengerTypeService.getAll({
+        active: 1,
+      }),
+    ])
 
     currencies.value = currenciesResponse.data.data ?? []
 
@@ -436,6 +617,21 @@ async function loadAuxiliaryData() {
   }
 }
 
+async function loadTouristDestinations() {
+  loadingDestinations.value = true
+
+  try {
+    const response = await TouristDestinationService.getAll({
+      active: 1,
+      per_page: 100,
+    })
+
+    touristDestinations.value = response.data.data ?? []
+  } finally {
+    loadingDestinations.value = false
+  }
+}
+
 /*
 |--------------------------------------------------------------------------
 | INIT
@@ -444,7 +640,7 @@ async function loadAuxiliaryData() {
 
 onMounted(async () => {
   try {
-    await Promise.all([loadCustomers(), loadAuxiliaryData()])
+    await Promise.all([loadCustomers(), loadAuxiliaryData(), loadTouristDestinations()])
 
     if (isEdit.value) {
       await store.load(route.params.uuid)
@@ -463,24 +659,75 @@ onMounted(async () => {
 */
 
 async function save() {
+  clearSaveFeedback()
+
+  const wasNew = store.isNew
+
   try {
-    await store.save()
+    const response = await store.save()
+
+    showSaveFeedback({
+      type: 'success',
+      title: wasNew ? 'Cotización creada' : 'Cotización actualizada',
+      message:
+        response?.data?.message ??
+        (wasNew
+          ? 'La cotización fue creada correctamente.'
+          : 'La cotización fue actualizada correctamente.'),
+      details: [],
+    })
 
     /*
     |--------------------------------------------------------------------------
-    | Opcional
+    | La redirección puede habilitarse cuando se defina
+    | el nombre definitivo de la ruta de listado.
     |--------------------------------------------------------------------------
-    |
-    | Puedes redirigir después de guardar.
-    |
     */
 
     // router.push({
-    //   name: 'quotations',
+    //   name: 'quotations.index',
     // })
   } catch (error) {
     console.error('Error guardando cotización:', error)
+
+    const responseData = error?.response?.data
+
+    showSaveFeedback({
+      type: 'danger',
+      title: 'No fue posible guardar la cotización',
+      message:
+        responseData?.message ??
+        error?.message ??
+        'Ocurrió un error inesperado al comunicarse con el servidor.',
+      details: validationMessages(responseData?.errors),
+    })
   }
+}
+
+function validationMessages(errors) {
+  if (!errors || typeof errors !== 'object') {
+    return []
+  }
+
+  return Object.values(errors)
+    .flatMap((messages) => (Array.isArray(messages) ? messages : [messages]))
+    .filter(Boolean)
+    .map(String)
+}
+
+function clearSaveFeedback() {
+  saveFeedback.value = null
+}
+
+async function showSaveFeedback(feedback) {
+  saveFeedback.value = feedback
+
+  await nextTick()
+
+  saveFeedbackElement.value?.$el?.scrollIntoView({
+    behavior: 'smooth',
+    block: 'center',
+  })
 }
 
 /*
@@ -497,16 +744,12 @@ function cancel() {
 
 /*
 |--------------------------------------------------------------------------
-| DUPLICATE QUOTATION
+| DUPLICATE
 |--------------------------------------------------------------------------
 */
 
 function duplicateQuotation() {
   store.duplicate()
-
-  router.push({
-    name: 'quotations.create',
-  })
 }
 
 /*
@@ -516,24 +759,62 @@ function duplicateQuotation() {
 */
 
 function printQuotation() {
-  console.log('PDF')
+  window.print()
 }
 
 /*
 |--------------------------------------------------------------------------
-| EMAIL
+| SEND
 |--------------------------------------------------------------------------
 */
 
 function sendQuotation() {
-  console.log('Email')
+  window.alert(
+    'El envío de correo todavía no está conectado. Cuando el correo se envíe correctamente, registre la cotización como enviada.',
+  )
+}
+
+async function changeWorkflowStatus(statusCode, reason = null) {
+  clearSaveFeedback()
+
+  try {
+    const response = await store.changeStatus(statusCode, reason)
+
+    showSaveFeedback({
+      type: 'success',
+      title: 'Estado actualizado',
+      message: response?.data?.message ?? 'El estado fue actualizado correctamente.',
+      details: [],
+    })
+  } catch (error) {
+    showSaveFeedback({
+      type: 'danger',
+      title: 'No fue posible cambiar el estado',
+      message: error?.response?.data?.message ?? error?.message ?? 'Ocurrió un error inesperado.',
+      details: validationMessages(error?.response?.data?.errors),
+    })
+  }
+}
+
+function changeWorkflowStatusWithReason(statusCode) {
+  const reason = window.prompt('Indique el motivo de esta operación:')
+
+  if (!reason?.trim()) return
+
+  changeWorkflowStatus(statusCode, reason.trim())
+}
+
+function registerAsSent() {
+  const confirmed = window.confirm(
+    'Esta acción solo registra que la cotización ya fue enviada por un medio externo. ¿Desea continuar?',
+  )
+
+  if (confirmed) changeWorkflowStatus('SENT')
 }
 
 /*
 |--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
 | CUSTOM ITEM
-|--------------------------------------------------------------------------
 |--------------------------------------------------------------------------
 */
 
@@ -551,9 +832,7 @@ function openCustomModal() {
 
 /*
 |--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
 | CATALOG ITEM
-|--------------------------------------------------------------------------
 |--------------------------------------------------------------------------
 */
 
@@ -571,9 +850,7 @@ function openCatalogModal() {
 
 /*
 |--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
 | EDIT ITEM / GROUP
-|--------------------------------------------------------------------------
 |--------------------------------------------------------------------------
 */
 
@@ -588,7 +865,7 @@ function editItem(item) {
   |--------------------------------------------------------------------------
   |
   | Si la fila pertenece a un group_uuid,
-  | recuperamos TODAS las filas reales.
+  | recuperamos todas las filas reales del grupo.
   |
   */
 
@@ -603,7 +880,7 @@ function editItem(item) {
 
     /*
     |--------------------------------------------------------------------------
-    | El modal recibe el agregado lógico.
+    | El modal recibe el agregado lógico
     |--------------------------------------------------------------------------
     */
 
@@ -617,13 +894,6 @@ function editItem(item) {
       items: JSON.parse(JSON.stringify(groupItems)),
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Los grupos actuales son de catálogo:
-    | accommodation / transport.
-    |--------------------------------------------------------------------------
-    */
-
     showServiceModal.value = true
 
     return
@@ -631,7 +901,7 @@ function editItem(item) {
 
   /*
   |--------------------------------------------------------------------------
-  | ITEM NORMAL
+  | ITEM INDIVIDUAL
   |--------------------------------------------------------------------------
   */
 
@@ -661,33 +931,26 @@ function editItem(item) {
     return
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Tipo desconocido
-  |--------------------------------------------------------------------------
-  */
-
   console.warn('Tipo de item no soportado para edición:', item.item_type)
 }
 
 /*
 |--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
 | HANDLE ITEM SAVE
-|--------------------------------------------------------------------------
 |--------------------------------------------------------------------------
 |
 | El modal puede devolver:
 |
-| 1. QuotationItem normal
+| 1. QuotationItem individual.
 |
 | {
 |   uuid,
 |   service_variant_id,
+|   price_id,
 |   ...
 | }
 |
-| 2. Grupo
+| 2. Grupo de alojamiento o transporte.
 |
 | {
 |   type: 'group',
@@ -699,31 +962,34 @@ function editItem(item) {
 */
 
 function handleItemSave(payload) {
-  console.log('handleItemSave:', payload)
-
   if (!payload) {
     return
   }
 
   /*
   |--------------------------------------------------------------------------
-  | GROUP
+  | GRUPO
   |--------------------------------------------------------------------------
   */
 
   if (payload.type === 'group') {
+    payload.items = (payload.items ?? []).map((item) => ({
+      ...item,
+      calculated_at: new Date().toISOString(),
+    }))
     /*
     |--------------------------------------------------------------------------
-    | EDITAR GRUPO
+    | Editar grupo
     |--------------------------------------------------------------------------
     */
 
     if (editingItem.value?.group_uuid) {
       store.updateItemGroup(payload)
+      store.markItemRecalculated(editingItem.value.group_uuid)
     } else {
       /*
       |--------------------------------------------------------------------------
-      | CREAR GRUPO
+      | Crear grupo
       |--------------------------------------------------------------------------
       */
 
@@ -737,22 +1003,26 @@ function handleItemSave(payload) {
 
   /*
   |--------------------------------------------------------------------------
-  | ITEM NORMAL
-  |--------------------------------------------------------------------------
-  */
-
-  /*
-  |--------------------------------------------------------------------------
-  | EDITAR
+  | ITEM INDIVIDUAL
   |--------------------------------------------------------------------------
   */
 
   if (editingItem.value?.uuid) {
-    store.updateItem(editingItem.value.uuid, payload)
+    /*
+    |--------------------------------------------------------------------------
+    | Actualizar
+    |--------------------------------------------------------------------------
+    */
+
+    store.updateItem(editingItem.value.uuid, {
+      ...payload,
+      calculated_at: new Date().toISOString(),
+    })
+    store.markItemRecalculated(editingItem.value.uuid)
   } else {
     /*
     |--------------------------------------------------------------------------
-    | CREAR
+    | Crear
     |--------------------------------------------------------------------------
     */
 
@@ -762,11 +1032,18 @@ function handleItemSave(payload) {
   closeItemModal()
 }
 
+function reviewNextPendingCalculation() {
+  const pending = store.firstPendingCalculationItem()
+
+  if (!pending) return
+
+  store.selectItinerary(pending.itinerary.uuid)
+  editItem(pending.item)
+}
+
 /*
 |--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
 | REMOVE ITEM / GROUP
-|--------------------------------------------------------------------------
 |--------------------------------------------------------------------------
 */
 
@@ -775,32 +1052,18 @@ function removeItem(item) {
     return
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | GROUP
-  |--------------------------------------------------------------------------
-  */
-
   if (item.group_uuid) {
     store.removeItemGroup(item.group_uuid)
 
     return
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | NORMAL
-  |--------------------------------------------------------------------------
-  */
-
   store.removeItem(item.uuid)
 }
 
 /*
 |--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
 | DUPLICATE ITEM / GROUP
-|--------------------------------------------------------------------------
 |--------------------------------------------------------------------------
 */
 
@@ -809,32 +1072,18 @@ function duplicateItem(item) {
     return
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | GROUP
-  |--------------------------------------------------------------------------
-  */
-
   if (item.group_uuid) {
     store.duplicateItemGroup(item.group_uuid)
 
     return
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | NORMAL
-  |--------------------------------------------------------------------------
-  */
-
   store.duplicateItem(item.uuid)
 }
 
 /*
 |--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
-| CLOSE ITEM MODAL
-|--------------------------------------------------------------------------
+| CLOSE ITEM MODALS
 |--------------------------------------------------------------------------
 */
 
@@ -846,21 +1095,9 @@ function closeItemModal() {
   showServiceModal.value = false
 }
 
-/*
-|--------------------------------------------------------------------------
-| CLOSE CUSTOM MODAL
-|--------------------------------------------------------------------------
-*/
-
 function closeCustomModal() {
   closeItemModal()
 }
-
-/*
-|--------------------------------------------------------------------------
-| CLOSE SERVICE MODAL
-|--------------------------------------------------------------------------
-*/
 
 function closeServiceModal() {
   closeItemModal()
@@ -868,9 +1105,7 @@ function closeServiceModal() {
 
 /*
 |--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
 | PASSENGER MODAL
-|--------------------------------------------------------------------------
 |--------------------------------------------------------------------------
 */
 
@@ -884,15 +1119,9 @@ function closePassengerModal() {
 
 /*
 |--------------------------------------------------------------------------
-|--------------------------------------------------------------------------
-| CLIENT MODAL
-|--------------------------------------------------------------------------
+| CUSTOMER MODAL
 |--------------------------------------------------------------------------
 */
-
-const customerStore = useCustomerStore()
-
-const showCustomerModal = ref(false)
 
 function openCustomerModal() {
   showCustomerModal.value = true
@@ -902,17 +1131,65 @@ function closeCustomerModal() {
   showCustomerModal.value = false
 }
 
+function applyDestination(destination) {
+  const hasContent = store.quotation.itineraries.some(
+    (itinerary) => itinerary.title || itinerary.description || (itinerary.items?.length ?? 0) > 0,
+  )
+
+  if (
+    hasContent &&
+    !window.confirm(
+      'La plantilla reemplazará el itinerario actual. Los pasajeros y datos de cabecera se conservarán. ¿Desea continuar?',
+    )
+  ) {
+    return
+  }
+
+  store.applyTouristDestination(destination)
+  showDestinationModal.value = false
+  selectedDestinationUuid.value = destination.uuid
+
+  showSaveFeedback({
+    type: 'success',
+    title: 'Destino aplicado',
+    message:
+      'Se copiaron los días y servicios aproximados. Revise los importes antes de enviar la cotización.',
+    details: [],
+  })
+}
+
+async function applySelectedDestination() {
+  if (!selectedDestinationUuid.value) return
+
+  applyingDestination.value = true
+
+  try {
+    const response = await TouristDestinationService.show(selectedDestinationUuid.value)
+    applyDestination(response.data.data)
+  } catch (error) {
+    showSaveFeedback({
+      type: 'danger',
+      title: 'No fue posible aplicar el destino',
+      message:
+        error?.response?.data?.message ??
+        error?.message ??
+        'No se pudo recuperar la plantilla seleccionada.',
+      details: [],
+    })
+  } finally {
+    applyingDestination.value = false
+  }
+}
+
 async function handleCustomerSave(payload) {
   try {
     const customer = await customerStore.createCustomer(payload)
 
     /*
     |--------------------------------------------------------------------------
-    | El store ya agregó customer a customerStore.customers
+    | customerStore ya incorpora el cliente creado
+    | a su colección reactiva.
     |--------------------------------------------------------------------------
-    |
-    | Por tanto `customers` se actualiza automáticamente.
-    |
     */
 
     store.quotation.customer_id = customer.id

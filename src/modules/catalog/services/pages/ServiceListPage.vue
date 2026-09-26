@@ -4,11 +4,9 @@
 
     <div class="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
       <div>
-        <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-          Servicios
-        </h2>
+        <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Servicios</h2>
 
-        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400"> Catálogo de servicios </p>
+        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Catálogo de servicios</p>
       </div>
 
       <button
@@ -33,18 +31,14 @@
 
     <!-- Tabla -->
 
-    <ServiceTable
-      :items="store.services"
-      :loading="store.loading"
-      @edit="edit"
-      @delete="remove"
-    />
+    <ServiceTable :items="store.services" :loading="store.loading" @edit="edit" @delete="remove" />
   </section>
 </template>
 
 <script setup>
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { Plus } from 'lucide-vue-next'
 
 import ServiceTable from '../components/ServiceTable.vue'
 import { useServiceStore } from '../stores/service.store'

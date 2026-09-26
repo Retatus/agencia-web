@@ -268,7 +268,7 @@ export const usePriceStore = defineStore('pricing-prices', {
       this.error = null
 
       try {
-        const response = await PriceService.store(data)
+        const response = await PriceService.create(data)
 
         const created = response.data.data
 

@@ -6,7 +6,9 @@ import customerRoutes from '@/modules/crm/customer.routes.js'
 import providerRoutes from '@/modules/catalog/providers/router/provider.routes.js'
 import serviceRoutes from '@/modules/catalog/services/router/service.routes.js'
 import quotationRoutes from '@/modules/quotation/router/quotation.routes.js'
-import PriceManagementPage from '@/modules/pricing/prices/PriceManagementPage.vue'
+import PricingCorePage from '@/modules/pricing/prices/PricingCorePage.vue'
+import pricingManagementRoutes from '@/modules/pricing/router/pricing-management.routes'
+import touristDestinationRoutes from '@/modules/destinations/router/tourist-destination.routes'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -25,6 +27,7 @@ const router = createRouter({
         ...providerRoutes,
         ...serviceRoutes,
         ...quotationRoutes,
+        ...touristDestinationRoutes,
         {
           path: 'ui-components',
           name: 'ui.components',
@@ -39,10 +42,11 @@ const router = createRouter({
             {
               path: 'prices',
               name: 'pricing.prices',
-              component: PriceManagementPage,
+              component: PricingCorePage,
             },
           ],
         },
+        ...pricingManagementRoutes,
       ],
     },
     // Las rutas públicas, como login, van fuera de AppLayout.

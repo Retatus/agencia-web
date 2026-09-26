@@ -2,8 +2,8 @@
 import api from '@/services/api'
 
 export default {
-  getAll() {
-    return api.get('/crm/customers')
+  getAll(params = {}) {
+    return api.get('/crm/customers', { params })
   },
 
   get(uuid) {

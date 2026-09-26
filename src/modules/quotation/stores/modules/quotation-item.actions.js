@@ -1,5 +1,7 @@
 // quotation-item.actions.js
 
+import { toRaw } from 'vue'
+
 /*
 |--------------------------------------------------------------------------
 | HELPERS LOCALES
@@ -76,6 +78,8 @@ export const itemActions = {
       notes: '',
 
       active: true,
+
+      calculated_at: item.calculated_at ?? new Date().toISOString(),
 
       ...clonePlain(item),
     }
@@ -189,6 +193,8 @@ export const itemActions = {
         notes: item.notes ?? '',
 
         active: item.active ?? true,
+
+        calculated_at: item.calculated_at ?? new Date().toISOString(),
       }
 
       this.calculateItem(newItem)
@@ -361,6 +367,8 @@ export const itemActions = {
       return
     }
 
+    const removed = this.selectedItinerary.items[index]
+    this.forgetPendingCalculation(removed)
     this.selectedItinerary.items.splice(index, 1)
 
     this.renumberItems()
@@ -379,6 +387,7 @@ export const itemActions = {
       return
     }
 
+    this.forgetPendingCalculation(groupUuid)
     this.selectedItinerary.items = this.selectedItems.filter(
       (item) => item.group_uuid !== groupUuid,
     )
@@ -895,15 +904,27 @@ export const itemActions = {
       return
     }
 
-    const start = new Date(this.quotation.travel_date)
-
     this.quotation.itineraries.forEach((itinerary, index) => {
-      const date = new Date(start)
+      if (itinerary.travel_date) {
+        return
+      }
 
-      date.setDate(start.getDate() + index)
+      if (index === 0) {
+        itinerary.travel_date = this.quotation.travel_date
 
-      itinerary.travel_date = date.toISOString().substring(0, 10)
+        return
+      }
+
+      const previousDate = this.quotation.itineraries[index - 1].travel_date
+      const [year, month, day] = previousDate.split('-').map(Number)
+      const date = new Date(Date.UTC(year, month - 1, day))
+
+      date.setUTCDate(date.getUTCDate() + 1)
+
+      itinerary.travel_date = date.toISOString().slice(0, 10)
     })
+
+    this.syncValidUntilWithLastItinerary()
   },
 
   /*

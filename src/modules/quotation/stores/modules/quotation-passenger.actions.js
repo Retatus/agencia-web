@@ -1,4 +1,5 @@
 import QuotationPassengerService from '../../services/quotation-passenger.service'
+import { toRaw } from 'vue'
 
 // quotation-passenger.actions.js
 
@@ -50,6 +51,8 @@ export const passengerActions = {
 
     this.renumberPassengers()
 
+    this.markCalculationDirty('PASSENGER_COUNT_CHANGED')
+
     return passenger
   },
 
@@ -60,7 +63,17 @@ export const passengerActions = {
       return
     }
 
+    const passengerTypeChanged =
+      Number(passenger.passenger_type_id) !== Number(values.passenger_type_id)
+    const activeChanged = Boolean(passenger.active) !== Boolean(values.active ?? passenger.active)
+
     Object.assign(passenger, clonePlain(values))
+
+    if (passengerTypeChanged || activeChanged) {
+      this.markCalculationDirty(
+        passengerTypeChanged ? 'PASSENGER_TYPE_CHANGED' : 'PASSENGER_ACTIVE_CHANGED',
+      )
+    }
   },
 
   removePassenger(uuid) {
@@ -73,6 +86,8 @@ export const passengerActions = {
     this.quotation.passengers.splice(index, 1)
 
     this.renumberPassengers()
+
+    this.markCalculationDirty('PASSENGER_COUNT_CHANGED')
   },
 
   duplicatePassenger(uuid) {
@@ -94,6 +109,8 @@ export const passengerActions = {
 
     this.renumberPassengers()
 
+    this.markCalculationDirty('PASSENGER_COUNT_CHANGED')
+
     return copy
   },
 
@@ -105,6 +122,8 @@ export const passengerActions = {
     }
 
     passenger.active = !passenger.active
+
+    this.markCalculationDirty('PASSENGER_ACTIVE_CHANGED')
   },
 
   movePassengerUp(uuid) {
@@ -175,7 +194,7 @@ export const passengerActions = {
   |--------------------------------------------------------------------------
   */
 
-  async generatePassengers(groups, nationality = null) {
+  async generatePassengers(groups, nationality = null, country = null) {
     /*
   |--------------------------------------------------------------------------
   | COTIZACIÓN NUEVA
@@ -202,6 +221,13 @@ export const passengerActions = {
 
             nationality: nationality ?? '',
 
+            country: country
+              ? {
+                  iso: country.iso,
+                  name: country.name,
+                }
+              : null,
+
             active: true,
           })
 
@@ -227,9 +253,21 @@ export const passengerActions = {
       nationality,
     })
 
-    const passengers = response.data.data ?? []
+    const passengers = (response.data.data ?? []).map((passenger) => ({
+      ...passenger,
+      country:
+        passenger.country ??
+        (country
+          ? {
+              iso: country.iso,
+              name: country.name,
+            }
+          : null),
+    }))
 
     this.quotation.passengers.push(...passengers)
+
+    this.markCalculationDirty('PASSENGER_COUNT_CHANGED')
 
     return passengers
   },

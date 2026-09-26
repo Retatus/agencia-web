@@ -59,9 +59,7 @@
               >
                 <div class="mb-4 flex items-center justify-between">
                   <div>
-                    <h3 class="font-semibold text-slate-900 dark:text-white">
-                      Contexto de tarifa
-                    </h3>
+                    <h3 class="font-semibold text-slate-900 dark:text-white">Contexto de tarifa</h3>
                     <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
                       Seleccione lista, variante y tipo de precio.
                     </p>
@@ -86,11 +84,7 @@
                       class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
                     >
                       <option :value="null">Seleccione...</option>
-                      <option
-                        v-for="item in priceLists"
-                        :key="item.id"
-                        :value="item.id"
-                      >
+                      <option v-for="item in priceLists" :key="item.id" :value="item.id">
                         {{ item.name }}
                       </option>
                     </select>
@@ -108,11 +102,7 @@
                       class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
                     >
                       <option :value="null">Seleccione...</option>
-                      <option
-                        v-for="item in priceTypes"
-                        :key="item.id"
-                        :value="item.id"
-                      >
+                      <option v-for="item in priceTypes" :key="item.id" :value="item.id">
                         {{ item.name }}
                       </option>
                     </select>
@@ -131,11 +121,7 @@
                       @change="onServiceChange"
                     >
                       <option :value="null">Seleccione...</option>
-                      <option
-                        v-for="service in services"
-                        :key="service.uuid"
-                        :value="service.uuid"
-                      >
+                      <option v-for="service in services" :key="service.uuid" :value="service.uuid">
                         {{ service.name }}
                       </option>
                     </select>
@@ -179,11 +165,7 @@
                       class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
                     >
                       <option :value="null">General / No aplica</option>
-                      <option
-                        v-for="type in passengerTypes"
-                        :key="type.id"
-                        :value="type.id"
-                      >
+                      <option v-for="type in passengerTypes" :key="type.id" :value="type.id">
                         {{ type.name }}
                       </option>
                     </select>
@@ -200,11 +182,7 @@
                       class="flex h-[42px] items-center rounded-lg border border-slate-300 bg-white px-3 dark:border-slate-700 dark:bg-slate-950"
                     >
                       <label class="relative inline-flex cursor-pointer items-center">
-                        <input
-                          v-model="form.active"
-                          type="checkbox"
-                          class="peer sr-only"
-                        />
+                        <input v-model="form.active" type="checkbox" class="peer sr-only" />
                         <div
                           class="h-6 w-11 rounded-full bg-slate-300 transition peer-checked:bg-teal-600 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full dark:bg-slate-600"
                         ></div>
@@ -222,7 +200,7 @@
                 class="mb-6 rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900"
               >
                 <div class="mb-4">
-                  <h3 class="font-semibold text-slate-900 dark:text-white"> Rango de cantidad </h3>
+                  <h3 class="font-semibold text-slate-900 dark:text-white">Rango de cantidad</h3>
                   <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
                     Define el rango sobre el que aplica esta tarifa.
                   </p>
@@ -264,7 +242,7 @@
                 class="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900"
               >
                 <div class="mb-4">
-                  <h3 class="font-semibold text-slate-900 dark:text-white"> Valores económicos </h3>
+                  <h3 class="font-semibold text-slate-900 dark:text-white">Valores económicos</h3>
                   <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
                     Configure costo y precio de venta.
                   </p>
@@ -374,14 +352,8 @@
                 :disabled="!canSave"
                 @click="save"
               >
-                <Plus
-                  v-if="!isEdit"
-                  class="mr-1.5 h-4 w-4"
-                />
-                <Pencil
-                  v-else
-                  class="mr-1.5 h-4 w-4"
-                />
+                <Plus v-if="!isEdit" class="mr-1.5 h-4 w-4" />
+                <Pencil v-else class="mr-1.5 h-4 w-4" />
                 {{ isEdit ? 'Actualizar precio' : 'Crear precio' }}
               </button>
             </footer>
@@ -394,6 +366,7 @@
 
 <script setup>
 import { computed, reactive, ref, watch } from 'vue'
+import { Plus, Pencil, X } from 'lucide-vue-next'
 
 /*
 |--------------------------------------------------------------------------

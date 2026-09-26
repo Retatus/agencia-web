@@ -60,11 +60,7 @@
                     class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
                   >
                     <option :value="null">Seleccione...</option>
-                    <option
-                      v-for="type in passengerTypes"
-                      :key="type.id"
-                      :value="type.id"
-                    >
+                    <option v-for="type in passengerTypes" :key="type.id" :value="type.id">
                       {{ type.name }}
                     </option>
                   </select>
@@ -147,13 +143,7 @@
                   >
                     Nacionalidad
                   </label>
-                  <input
-                    id="passenger-nationality"
-                    v-model="form.nationality"
-                    type="text"
-                    placeholder="Nacionalidad"
-                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-                  />
+                  <CountrySelect v-model="form.nationality" @country-selected="onCountrySelected" />
                 </div>
 
                 <!-- Email -->
@@ -181,13 +171,7 @@
                   >
                     Teléfono
                   </label>
-                  <input
-                    id="passenger-phone"
-                    v-model="form.phone"
-                    type="tel"
-                    placeholder="+34 600 000 000"
-                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-                  />
+                  <PhoneInput v-model="form.phone" :country-iso="form.nationality" />
                 </div>
 
                 <!-- Activo -->
@@ -232,6 +216,7 @@
                 :disabled="!canSave"
                 @click="save"
               >
+                <Save class="mr-1.5 h-4 w-4" />
                 {{ isEdit ? 'Actualizar' : 'Agregar' }}
               </button>
             </footer>
@@ -246,9 +231,13 @@
 import { computed, reactive } from 'vue'
 
 import { useQuotationStore } from '../stores/quotation.store'
-import { X } from 'lucide-vue-next'
+import { X, Save } from 'lucide-vue-next'
+import CountrySelect from '@/shared/components/CountrySelect.vue'
+import PhoneInput from '@/shared/components/PhoneInput.vue'
+import { useCountryStore } from '@/modules/catalog/stores/country.store'
 
 const store = useQuotationStore()
+const countryStore = useCountryStore()
 
 const props = defineProps({
   passenger: {
@@ -262,7 +251,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'save'])
 
 const isEdit = computed(() => !!props.passenger)
 
@@ -299,13 +288,21 @@ const canSave = computed(() => {
 })
 
 function save() {
-  const data = { ...form }
-
-  if (isEdit.value) {
-    store.updatePassenger(props.passenger.uuid, data)
-  } else {
-    store.addPassenger(data)
+  const values = {
+    ...form,
   }
+
+  const country = countryStore.getCountryByIso(form.nationality)
+
+  emit('save', {
+    values,
+    country: country
+      ? {
+          iso: country.iso,
+          name: country.name,
+        }
+      : null,
+  })
 
   emit('close')
 }

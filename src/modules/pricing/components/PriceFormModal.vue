@@ -61,7 +61,7 @@
                   <div>
                     <h3 class="font-semibold text-slate-900 dark:text-white">Contexto de tarifa</h3>
                     <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                      Seleccione lista, variante y tipo de precio.
+                      Seleccione moneda, variante y tipo de precio.
                     </p>
                   </div>
                   <span
@@ -72,20 +72,20 @@
                 </div>
 
                 <div class="grid gap-4 md:grid-cols-2">
-                  <!-- PRICE LIST -->
+                  <!-- CURRENCY -->
                   <div>
                     <label
                       class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
                     >
-                      Lista de precios <span class="text-red-500">*</span>
+                      Moneda <span class="text-red-500">*</span>
                     </label>
                     <select
-                      v-model="form.price_list_id"
+                      v-model="form.currency_id"
                       class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
                     >
                       <option :value="null">Seleccione...</option>
-                      <option v-for="item in priceLists" :key="item.id" :value="item.id">
-                        {{ item.name }}
+                      <option v-for="item in currencies" :key="item.id" :value="item.id">
+                        {{ item.code }} · {{ item.name }}
                       </option>
                     </select>
                   </div>
@@ -129,12 +129,29 @@
 
                   <!-- VARIANT -->
                   <div>
-                    <label
-                      class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                    >
-                      Variante <span class="text-red-500">*</span>
-                      {{ availableVariants.length }}
-                    </label>
+                    <div class="mb-2 flex items-center justify-between gap-2">
+                      <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                        Variante <span class="text-red-500">*</span>
+                      </label>
+                      <div class="flex gap-2 text-xs">
+                        <button
+                          type="button"
+                          class="font-medium text-teal-700 hover:underline dark:text-teal-400"
+                          :disabled="!selectedServiceId"
+                          @click="requestCreateVariant"
+                        >
+                          Nueva
+                        </button>
+                        <button
+                          type="button"
+                          class="font-medium text-blue-700 hover:underline disabled:opacity-40 dark:text-blue-400"
+                          :disabled="!selectedVariant"
+                          @click="emit('edit-variant', selectedVariant)"
+                        >
+                          Editar
+                        </button>
+                      </div>
+                    </div>
                     <select
                       v-model="form.service_variant_id"
                       class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
@@ -385,6 +402,11 @@ const props = defineProps({
     default: () => [],
   },
 
+  currencies: {
+    type: Array,
+    default: () => [],
+  },
+
   priceTypes: {
     type: Array,
     default: () => [],
@@ -399,6 +421,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  variantToSelect: {
+    type: Object,
+    default: null,
+  },
 })
 
 /*
@@ -406,7 +432,7 @@ const props = defineProps({
 | EMITS
 |--------------------------------------------------------------------------
 */
-const emit = defineEmits(['close', 'save'])
+const emit = defineEmits(['close', 'save', 'create-variant', 'edit-variant'])
 
 /*
 |--------------------------------------------------------------------------
@@ -440,7 +466,7 @@ const isEdit = computed(() => {
 */
 
 const form = reactive({
-  price_list_id: null,
+  currency_id: null,
 
   service_variant_id: null,
 
@@ -475,7 +501,7 @@ function loadForm(item = null) {
   */
 
   if (!item) {
-    form.price_list_id = null
+    form.currency_id = null
 
     form.service_variant_id = null
 
@@ -505,7 +531,7 @@ function loadForm(item = null) {
   |
   | Soportamos tanto IDs planos:
   |
-  | price_list_id
+  | currency_id
   |
   | como relaciones devueltas por Resource:
   |
@@ -513,7 +539,7 @@ function loadForm(item = null) {
   |
   */
 
-  form.price_list_id = item.price_list_id ?? item.price_list?.id ?? null
+  form.currency_id = item.currency_id ?? item.currency?.id ?? null
 
   form.service_variant_id =
     item.service_variant_id ?? item.variant?.id ?? item.service_variant?.id ?? null
@@ -562,6 +588,18 @@ const availableVariants = computed(() => {
   return service?.variants ?? []
 })
 
+const selectedVariant = computed(
+  () =>
+    availableVariants.value.find(
+      (variant) => Number(variant.id) === Number(form.service_variant_id),
+    ) ?? null,
+)
+
+function requestCreateVariant() {
+  const service = props.services.find((item) => item.uuid === selectedServiceId.value)
+  emit('create-variant', service ?? null)
+}
+
 /*
 |--------------------------------------------------------------------------
 | SELECTED SERVICE
@@ -582,7 +620,6 @@ const availableVariants = computed(() => {
 */
 
 function resolveSelectedService() {
-  debugger
   if (!form.service_variant_id) {
     selectedServiceId.value = null
 
@@ -650,11 +687,11 @@ const marginPercentage = computed(() => {
 const canSave = computed(() => {
   /*
     |--------------------------------------------------------------------------
-    | PriceList
+    | Currency
     |--------------------------------------------------------------------------
     */
 
-  if (!form.price_list_id) {
+  if (!form.currency_id) {
     return false
   }
 
@@ -787,7 +824,7 @@ function save() {
   |
   | Exactamente las propiedades fillable de Price:
   |
-  | price_list_id
+  | currency_id
   | service_variant_id
   | price_type_id
   | passenger_type_id
@@ -800,7 +837,7 @@ function save() {
   */
 
   const payload = {
-    price_list_id: Number(form.price_list_id),
+    currency_id: Number(form.currency_id),
 
     service_variant_id: Number(form.service_variant_id),
 
@@ -873,6 +910,16 @@ watch(
     immediate: true,
     deep: true,
   },
+)
+
+watch(
+  () => props.variantToSelect,
+  (variant) => {
+    if (!variant?.id) return
+    form.service_variant_id = Number(variant.id)
+    resolveSelectedService()
+  },
+  { deep: true },
 )
 
 /*

@@ -1007,6 +1007,23 @@ function handleItemSave(payload) {
   |--------------------------------------------------------------------------
   */
 
+  if (payload.item_type === 'CUSTOM') {
+    payload = {
+      ...payload,
+      source_currency_id:
+        payload.source_currency_id ??
+        editingItem.value?.source_currency_id ??
+        Number(store.quotation.currency_id),
+      source_unit_cost:
+        payload.source_unit_cost ?? editingItem.value?.source_unit_cost ?? payload.unit_cost,
+      source_unit_price:
+        payload.source_unit_price ?? editingItem.value?.source_unit_price ?? payload.unit_price,
+      exchange_rate: payload.exchange_rate ?? editingItem.value?.exchange_rate ?? 1,
+      exchange_rate_date:
+        payload.exchange_rate_date ?? editingItem.value?.exchange_rate_date ?? null,
+    }
+  }
+
   if (editingItem.value?.uuid) {
     /*
     |--------------------------------------------------------------------------
@@ -1164,7 +1181,13 @@ async function applySelectedDestination() {
   applyingDestination.value = true
 
   try {
-    const response = await TouristDestinationService.show(selectedDestinationUuid.value)
+    if (!store.quotation.currency_id) {
+      throw new Error('Seleccione la moneda de la cotización antes de aplicar el destino.')
+    }
+
+    const response = await TouristDestinationService.convert(selectedDestinationUuid.value, {
+      target_currency_id: Number(store.quotation.currency_id),
+    })
     applyDestination(response.data.data)
   } catch (error) {
     showSaveFeedback({

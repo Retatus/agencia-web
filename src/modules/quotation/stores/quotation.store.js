@@ -766,11 +766,6 @@ export const useQuotationStore = defineStore('quotation', {
       this.quotation.tourist_destination_id = destination.id
       this.quotation.tourist_destination_name = destination.name
 
-      if (destination.currency_id) {
-        this.quotation.currency_id = destination.currency_id
-        this.quotation.exchange_rate = 1
-      }
-
       this.quotation.itineraries = (destination.days ?? []).map((day, dayIndex) => {
         const items = (day.items ?? [])
           .filter((item) => item.active !== false)
@@ -797,6 +792,11 @@ export const useQuotationStore = defineStore('quotation', {
               price_id: null,
               price_list_id: null,
               price_list_item_id: null,
+              source_currency_id: item.source_currency_id ?? destination.currency_id ?? null,
+              source_unit_cost: Number(item.source_unit_cost ?? unitCost),
+              source_unit_price: Number(item.source_unit_price ?? unitPrice),
+              exchange_rate: Number(item.exchange_rate ?? 1),
+              exchange_rate_date: item.exchange_rate_date ?? null,
               base_cost: unitCost,
               base_price: unitPrice,
               unit_cost: unitCost,

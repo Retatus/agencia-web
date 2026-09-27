@@ -1983,6 +1983,16 @@ function saveGenericItem() {
 
     base_price: Number(automaticItem?.base_price ?? unitPrice),
 
+    source_currency_id: automaticItem?.source_currency_id ?? Number(props.currencyId),
+
+    source_unit_cost: Number(automaticItem?.source_unit_cost ?? unitCost),
+
+    source_unit_price: Number(automaticItem?.source_unit_price ?? unitPrice),
+
+    exchange_rate: Number(automaticItem?.exchange_rate ?? 1),
+
+    exchange_rate_date: automaticItem?.exchange_rate_date ?? null,
+
     unit_cost: unitCost,
 
     unit_price: unitPrice,
@@ -2210,6 +2220,16 @@ function saveRecommendedGroup() {
       base_cost: Number(part.base_cost ?? unitCost),
 
       base_price: Number(part.base_price ?? unitPrice),
+
+      source_currency_id: part.source_currency_id ?? Number(props.currencyId),
+
+      source_unit_cost: Number(part.source_unit_cost ?? unitCost),
+
+      source_unit_price: Number(part.source_unit_price ?? unitPrice),
+
+      exchange_rate: Number(part.exchange_rate ?? 1),
+
+      exchange_rate_date: part.exchange_rate_date ?? null,
 
       unit_cost: unitCost,
 

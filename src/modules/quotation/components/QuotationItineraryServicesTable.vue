@@ -179,11 +179,23 @@
           <!-- COSTO -->
           <td class="px-3 py-2.5 text-right text-sm text-slate-700 dark:text-slate-300">
             {{ money(item.unit_cost) }}
+            <small
+              v-if="Number(item.exchange_rate ?? 1) !== 1"
+              class="block whitespace-nowrap text-[10px] text-slate-600 dark:text-pink-700"
+            >
+              Origen {{ money(item.source_unit_cost) }} · TC {{ item.exchange_rate }}
+            </small>
           </td>
 
           <!-- VENTA -->
           <td class="px-3 py-2.5 text-right text-sm text-slate-700 dark:text-slate-300">
             {{ money(item.unit_price) }}
+            <small
+              v-if="Number(item.exchange_rate ?? 1) !== 1"
+              class="block whitespace-nowrap text-[10px] text-slate-600 dark:text-pink-700"
+            >
+              Origen {{ money(item.source_unit_price) }} · {{ shortDate(item.exchange_rate_date) }}
+            </small>
           </td>
 
           <!-- SUBTOTAL -->
@@ -604,6 +616,12 @@ function moveDown(item) {
 
 function money(value) {
   return Number(value ?? 0).toFixed(2)
+}
+
+function shortDate(value) {
+  if (!value) return '-'
+  const [year, month, day] = String(value).slice(0, 10).split('-')
+  return `${day}/${month}/${year}`
 }
 
 /*

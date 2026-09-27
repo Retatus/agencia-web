@@ -8,6 +8,7 @@ import {
   ListChecks,
   MapPinned,
   Tags,
+  ArrowRightLeft,
   Users,
 } from 'lucide-vue-next'
 
@@ -48,14 +49,19 @@ export const navigationItems = [
     icon: ListChecks,
   },
   {
+    label: 'Temporadas y promociones',
+    route: 'pricing.commercial',
+    icon: Tags,
+  },
+  {
     label: 'Destinos turísticos',
     route: 'tourist-destinations',
     icon: MapPinned,
   },
   {
-    label: 'Temporadas y promociones',
-    route: 'pricing.commercial',
-    icon: Tags,
+    label: 'Tipos de cambio',
+    route: 'pricing.exchange-rates',
+    icon: ArrowRightLeft,
   },
   {
     label: 'Componentes UI',

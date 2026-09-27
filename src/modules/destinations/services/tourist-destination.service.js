@@ -11,6 +11,10 @@ export default {
     return api.get(`${RESOURCE}/${uuid}`)
   },
 
+  convert(uuid, payload) {
+    return api.post(`${RESOURCE}/${uuid}/convert`, payload)
+  },
+
   create(payload) {
     return api.post(RESOURCE, payload)
   },

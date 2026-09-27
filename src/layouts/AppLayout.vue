@@ -6,17 +6,25 @@ import AppSidebar from '@/components/layout/AppSidebar.vue'
 import { useTheme } from '@/composables/useTheme'
 
 const sidebarOpen = ref(false)
+const desktopSidebarOpen = ref(true)
 const { initializeTheme } = useTheme()
 
 function closeSidebar() {
   sidebarOpen.value = false
 }
 
+function toggleDesktopSidebar() {
+  desktopSidebarOpen.value = !desktopSidebarOpen.value
+}
+
 onMounted(initializeTheme)
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-50 text-slate-800 transition-colors dark:bg-slate-950 dark:text-slate-100">
+  <div
+    class="min-h-screen bg-slate-50 text-slate-800 transition-colors dark:bg-slate-950 dark:text-slate-100"
+  >
+    <!-- Overlay exclusivo para móvil/tablet -->
     <button
       v-if="sidebarOpen"
       type="button"
@@ -25,17 +33,25 @@ onMounted(initializeTheme)
       @click="closeSidebar"
     />
 
-    <AppSidebar :open="sidebarOpen" @close="closeSidebar" />
+    <AppSidebar :open="sidebarOpen" :desktop-open="desktopSidebarOpen" @close="closeSidebar" />
 
-    <div class="lg:pl-64">
-      <AppNavbar @open-sidebar="sidebarOpen = true" />
+    <!-- En desktop el contenido recupera todo el ancho al ocultar el sidebar -->
+    <div
+      class="min-w-0 transition-[padding] duration-200 ease-in-out"
+      :class="desktopSidebarOpen ? 'lg:pl-64' : 'lg:pl-0'"
+    >
+      <AppNavbar
+        :desktop-sidebar-open="desktopSidebarOpen"
+        @open-sidebar="sidebarOpen = true"
+        @toggle-desktop-sidebar="toggleDesktopSidebar"
+      />
 
-      <main class="p-4 sm:p-6 lg:p-8">
-        <div class="mx-auto max-w-7xl">
+      <main class="min-w-0 p-4 sm:p-6 lg:p-8">
+        <!-- El layout ya no limita globalmente el ancho de las páginas. -->
+        <div class="w-full min-w-0">
           <RouterView />
         </div>
       </main>
     </div>
   </div>
 </template>
-

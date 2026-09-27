@@ -41,6 +41,16 @@
           Recargar
         </button>
 
+        <button
+          type="button"
+          class="inline-flex items-center justify-center rounded-lg border border-teal-600 bg-white px-5 py-2.5 text-sm font-semibold text-teal-700 shadow-sm transition hover:bg-teal-50 dark:bg-slate-900 dark:text-teal-300"
+          :disabled="loadingCatalogs"
+          @click="openCreateVariant()"
+        >
+          <Plus class="mr-1.5 h-4 w-4" />
+          Nueva variante
+        </button>
+
         <!-- ====================================================== -->
         <!-- NUEVO PRECIO -->
         <!-- ====================================================== -->
@@ -196,7 +206,7 @@
               <th
                 class="px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
               >
-                Lista
+                Moneda
               </th>
               <th
                 class="px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
@@ -278,11 +288,11 @@
               </td>
 
               <!-- ================================================= -->
-              <!-- PRICE LIST -->
+              <!-- CURRENCY -->
               <!-- ================================================= -->
 
               <td class="px-3 py-2.5 text-slate-700 dark:text-slate-300">
-                {{ price.price_list?.name ?? '-' }}
+                {{ price.currency?.code ?? '-' }}
               </td>
 
               <!-- ================================================= -->
@@ -369,6 +379,14 @@
                 <div class="inline-flex items-center gap-1">
                   <button
                     type="button"
+                    class="rounded-lg border border-violet-300 px-2 py-1 text-xs font-medium text-violet-600 transition hover:bg-violet-50 dark:border-violet-700 dark:text-violet-400"
+                    title="Editar variante"
+                    @click="openEditVariant(price.service_variant)"
+                  >
+                    Variante
+                  </button>
+                  <button
+                    type="button"
                     class="rounded-lg border border-blue-300 px-2 py-1 text-xs font-medium text-blue-600 transition hover:bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-950/30"
                     title="Editar"
                     @click="editPrice(price)"
@@ -448,16 +466,29 @@
     <!-- TEMPORAL MODAL PLACEHOLDER -->
     <!-- ============================================================ -->
 
+    <ServiceVariantFormModal
+      v-if="showVariantModal"
+      :services="services"
+      :item="editingVariant"
+      :initial-service-id="initialVariantServiceId"
+      @close="showVariantModal = false"
+      @saved="handleVariantSaved"
+    />
+
     <PriceFormModal
       v-if="showPriceModal"
       :key="editingPrice?.id ?? 'new'"
       :item="editingPrice"
       :price-lists="priceLists"
+      :currencies="currencies"
       :price-types="priceTypes"
       :passenger-types="passengerTypes"
       :services="services"
+      :variant-to-select="variantToSelect"
       @close="closePriceModal"
       @save="handlePriceSave"
+      @create-variant="openCreateVariant($event, true)"
+      @edit-variant="openEditVariant($event, true)"
     />
   </div>
 </template>
@@ -467,10 +498,12 @@ import { usePriceStore } from '../stores/price.store'
 import { DollarSign, Pencil, Trash2, RefreshCw, Plus, Save, X } from 'lucide-vue-next'
 
 import PriceFormModal from '../components/PriceFormModal.vue'
+import ServiceVariantFormModal from '../components/ServiceVariantFormModal.vue'
 
 import PriceListService from '../services/price-list.service'
 
 import PriceTypeService from '../services/price-type.service'
+import CurrencyService from '../../catalog/service/currency.service'
 
 import PassengerTypeService from '../../passenger/services/passenger-type.service'
 
@@ -495,6 +528,11 @@ const store = usePriceStore()
 const showPriceModal = ref(false)
 
 const editingPrice = ref(null)
+const showVariantModal = ref(false)
+const editingVariant = ref(null)
+const initialVariantServiceId = ref(null)
+const variantRequestFromPriceModal = ref(false)
+const variantToSelect = ref(null)
 
 /*
 |--------------------------------------------------------------------------
@@ -805,6 +843,71 @@ function openCreateModal() {
   showPriceModal.value = true
 }
 
+function openCreateVariant(service = null, fromPriceModal = false) {
+  editingVariant.value = null
+  initialVariantServiceId.value = service?.id ? Number(service.id) : null
+  variantRequestFromPriceModal.value = fromPriceModal
+  showVariantModal.value = true
+}
+
+function openEditVariant(variant, fromPriceModal = false) {
+  if (!variant?.id) return
+  editingVariant.value = JSON.parse(JSON.stringify(variant))
+  initialVariantServiceId.value = Number(variant.service_id ?? 0) || null
+  variantRequestFromPriceModal.value = fromPriceModal
+  showVariantModal.value = true
+}
+
+async function handleVariantSaved({ variant, createPrice }) {
+  showVariantModal.value = false
+
+  await loadCatalogs()
+
+  store.items.forEach((price) => {
+    if (Number(price.service_variant_id) === Number(variant.id)) {
+      price.service_variant = {
+        ...(price.service_variant ?? {}),
+        ...variant,
+      }
+    }
+  })
+
+  if (variantRequestFromPriceModal.value) {
+    variantToSelect.value = {
+      ...variant,
+      selection_stamp: Date.now(),
+    }
+    editingVariant.value = null
+    initialVariantServiceId.value = null
+    variantRequestFromPriceModal.value = false
+    return
+  }
+
+  if (!createPrice) {
+    editingVariant.value = null
+    initialVariantServiceId.value = null
+    return
+  }
+
+  editingPrice.value = {
+    service_variant_id: variant.id,
+    min_quantity: 1,
+    max_quantity: 1,
+    cost: 0,
+    sale_price: 0,
+    active: true,
+  }
+
+  variantToSelect.value = {
+    ...variant,
+    selection_stamp: Date.now(),
+  }
+
+  showPriceModal.value = true
+  editingVariant.value = null
+  initialVariantServiceId.value = null
+}
+
 /*
 |--------------------------------------------------------------------------
 | EDIT
@@ -812,7 +915,6 @@ function openCreateModal() {
 */
 
 function editPrice(price) {
-  debugger
   editingPrice.value = JSON.parse(JSON.stringify(price))
 
   showPriceModal.value = true
@@ -985,6 +1087,7 @@ function normalizeNumericFilter(value) {
 const priceLists = ref([])
 const priceTypes = ref([])
 const passengerTypes = ref([])
+const currencies = ref([])
 const services = ref([])
 
 const loadingCatalogs = ref(false)
@@ -992,7 +1095,13 @@ async function loadCatalogs() {
   loadingCatalogs.value = true
 
   try {
-    const [priceListsResponse, priceTypesResponse, passengerTypesResponse, servicesResponse] =
+    const [
+      priceListsResponse,
+      priceTypesResponse,
+      passengerTypesResponse,
+      currenciesResponse,
+      servicesResponse,
+    ] =
       await Promise.all([
         PriceListService.getAll({
           active: 1,
@@ -1007,6 +1116,11 @@ async function loadCatalogs() {
           active: 1,
         }),
 
+        CurrencyService.getAll({
+          active: 1,
+          per_page: 100,
+        }),
+
         ServiceService.getAll({
           active: 1,
           per_page: 100,
@@ -1018,6 +1132,8 @@ async function loadCatalogs() {
     priceTypes.value = priceTypesResponse.data.data ?? []
 
     passengerTypes.value = passengerTypesResponse.data.data ?? []
+
+    currencies.value = currenciesResponse.data.data ?? []
 
     services.value = servicesResponse.data.data ?? []
   } finally {

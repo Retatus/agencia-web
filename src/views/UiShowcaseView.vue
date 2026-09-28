@@ -1,14 +1,21 @@
 <script setup>
 import { computed, reactive, ref } from 'vue'
-import { Eye, Pencil, Plus, Trash2 } from 'lucide-vue-next'
+import { Eye, Pencil, Plus, Save, Trash2 } from 'lucide-vue-next'
 import {
   BaseAlert,
   BaseBadge,
+  BaseButton,
   BaseCard,
+  BaseCheckbox,
+  BaseFormField,
+  BaseInput,
   BaseModal,
+  BasePageHeader,
   BasePagination,
+  BaseSelect,
   BaseTable,
   BaseTabs,
+  BaseTextarea,
 } from '@/components/ui'
 
 const showModal = ref(false)
@@ -36,6 +43,17 @@ const form = reactive({
   active: true,
 })
 
+const categories = ['Hotel', 'Transporte', 'Tour', 'Alimentación']
+const priceTypes = [
+  { value: 'unit', label: 'Unitario' },
+  { value: 'group', label: 'Grupal' },
+  { value: 'room', label: 'Habitación' },
+]
+const extras = [
+  { value: 'guide', label: 'Guía' },
+  { value: 'insurance', label: 'Seguro' },
+  { value: 'transfer', label: 'Traslado' },
+]
 const tabs = [
   { value: 'general', label: 'Información general' },
   { value: 'itinerary', label: 'Itinerario', count: 3 },
@@ -54,14 +72,11 @@ const allServices = Array.from({ length: 17 }, (_, index) => ({
   price: 45 + index * 8,
   active: index % 5 !== 0,
 }))
-
 const paginatedServices = computed(() => {
   const start = (currentPage.value - 1) * perPage
   return allServices.slice(start, start + perPage)
 })
-
 const lastPage = Math.ceil(allServices.length / perPage)
-
 function submitForm() {
   showSuccess.value = true
 }
@@ -69,24 +84,15 @@ function submitForm() {
 
 <template>
   <div class="space-y-8">
-    <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-      <div>
-        <p class="text-sm font-semibold text-teal-600 dark:text-teal-400">Guía visual</p>
-        <h2 class="mt-1 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-          Componentes UI
-        </h2>
-        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Plantillas reutilizables para mantener una apariencia consistente en todo el ERP.
-        </p>
-      </div>
-      <button
-        type="button"
-        class="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-700"
-        @click="showModal = true"
-      >
-        <Plus class="h-4 w-4" /> Abrir modal
-      </button>
-    </header>
+    <BasePageHeader
+      eyebrow="Guía visual"
+      title="Componentes UI"
+      description="Plantillas reutilizables para mantener una apariencia consistente en todo el ERP sin repetir clases Tailwind en cada módulo."
+    >
+      <template #actions>
+        <BaseButton @click="showModal = true"><Plus class="h-4 w-4" /> Abrir modal</BaseButton>
+      </template>
+    </BasePageHeader>
 
     <!-- Alertas -->
     <BaseCard
@@ -121,33 +127,18 @@ function submitForm() {
     >
       <div class="space-y-5">
         <div class="flex flex-wrap gap-3">
-          <button
-            class="rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-700"
-          >
-            Guardar
-          </button>
-          <button
-            class="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
-          >
-            Cancelar
-          </button>
-          <button
-            class="rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700"
-          >
-            Eliminar
-          </button>
-          <button
-            disabled
-            class="cursor-not-allowed rounded-lg bg-slate-200 px-4 py-2.5 text-sm font-medium text-slate-400 dark:bg-slate-800 dark:text-slate-600"
-          >
-            Deshabilitado
-          </button>
+          <BaseButton><Save class="h-4 w-4" /> Guardar</BaseButton>
+          <BaseButton variant="secondary">Cancelar</BaseButton>
+          <BaseButton variant="danger"><Trash2 class="h-4 w-4" /> Eliminar</BaseButton>
+          <BaseButton variant="ghost">Acción discreta</BaseButton>
+          <BaseButton size="sm">Pequeño</BaseButton>
+          <BaseButton disabled>Deshabilitado</BaseButton>
         </div>
         <div class="flex flex-wrap gap-2">
-          <BaseBadge> Borrador </BaseBadge><BaseBadge variant="info"> Enviada </BaseBadge
-          ><BaseBadge variant="warning"> Pendiente </BaseBadge
-          ><BaseBadge variant="success"> Confirmada </BaseBadge
-          ><BaseBadge variant="danger"> Cancelada </BaseBadge>
+          <BaseBadge>Borrador</BaseBadge><BaseBadge variant="info">Enviada</BaseBadge
+          ><BaseBadge variant="warning">Pendiente</BaseBadge
+          ><BaseBadge variant="success">Confirmada</BaseBadge
+          ><BaseBadge variant="danger">Cancelada</BaseBadge>
         </div>
       </div>
     </BaseCard>
@@ -158,192 +149,111 @@ function submitForm() {
       description="Campos habituales para formularios de mantenimiento, cotizaciones y operaciones."
     >
       <form class="space-y-7" @submit.prevent="submitForm">
-        <!-- Textos y contacto -->
         <fieldset class="space-y-5">
           <legend class="text-sm font-semibold text-slate-900 dark:text-white">
             Información básica
           </legend>
-
           <div class="grid gap-5 md:grid-cols-12">
-            <div class="md:col-span-3">
-              <label
-                for="demo-code"
-                class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                >Código</label
-              >
-              <input
-                id="demo-code"
-                v-model="form.code"
-                placeholder="SER0001"
-                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-              />
-            </div>
-            <div class="md:col-span-9">
-              <label
-                for="demo-name"
-                class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                >Nombre <span class="text-red-500">*</span></label
-              >
-              <input
+            <BaseFormField
+              class="md:col-span-3"
+              label="Código"
+              for-id="demo-code"
+              hint="Identificador interno."
+            >
+              <BaseInput id="demo-code" v-model="form.code" placeholder="SER0001" />
+            </BaseFormField>
+            <BaseFormField class="md:col-span-9" label="Nombre" for-id="demo-name" required>
+              <BaseInput
                 id="demo-name"
                 v-model="form.name"
                 required
                 placeholder="Nombre del servicio"
-                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
               />
-            </div>
+            </BaseFormField>
           </div>
-
           <div class="grid gap-5 md:grid-cols-3">
-            <div>
-              <label
-                for="demo-email"
-                class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                >Correo electrónico</label
-              >
-              <input
+            <BaseFormField label="Correo electrónico" for-id="demo-email"
+              ><BaseInput
                 id="demo-email"
                 v-model="form.email"
                 type="email"
                 placeholder="cliente@ejemplo.com"
-                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-              />
-            </div>
-            <div>
-              <label
-                for="demo-phone"
-                class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                >Teléfono</label
-              >
-              <input
+            /></BaseFormField>
+            <BaseFormField label="Teléfono" for-id="demo-phone"
+              ><BaseInput
                 id="demo-phone"
                 v-model="form.phone"
                 type="tel"
                 placeholder="+34 600 000 000"
-                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-              />
-            </div>
-            <div>
-              <label
-                for="demo-category"
-                class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                >Categoría</label
-              >
-              <select
-                id="demo-category"
-                v-model="form.category"
-                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-              >
-                <option value="">Seleccione...</option>
-                <option>Hotel</option>
-                <option>Transporte</option>
-                <option>Tour</option>
-                <option>Alimentación</option>
-              </select>
-            </div>
+            /></BaseFormField>
+            <BaseFormField label="Categoría" for-id="demo-category"
+              ><BaseSelect id="demo-category" v-model="form.category" :options="categories"
+            /></BaseFormField>
           </div>
         </fieldset>
 
-        <!-- Fechas y cantidades -->
+        <!-- Fechas y cantidades: BaseInput también sirve para date/time/number -->
         <fieldset class="space-y-5 border-t border-slate-200 pt-6 dark:border-slate-800">
           <legend class="px-1 text-sm font-semibold text-slate-900 dark:text-white">
             Fechas y planificación
           </legend>
-
           <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-            <div>
-              <label
-                for="demo-travel-date"
-                class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                >Fecha de viaje</label
-              >
-              <input
+            <BaseFormField label="Fecha de viaje" for-id="demo-travel-date"
+              ><BaseInput
                 id="demo-travel-date"
                 v-model="form.travelDate"
                 type="date"
-                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:scheme-dark"
-              />
-            </div>
-            <div>
-              <label
-                for="demo-valid-until"
-                class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                >Válida hasta</label
-              >
-              <input
+                class="dark:scheme-dark"
+            /></BaseFormField>
+            <BaseFormField label="Válida hasta" for-id="demo-valid-until"
+              ><BaseInput
                 id="demo-valid-until"
                 v-model="form.validUntil"
                 type="date"
                 :min="form.travelDate"
-                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:scheme-dark"
-              />
-            </div>
-            <div>
-              <label
-                for="demo-departure"
-                class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                >Fecha y hora de salida</label
-              >
-              <input
+                class="dark:scheme-dark"
+            /></BaseFormField>
+            <BaseFormField label="Fecha y hora de salida" for-id="demo-departure"
+              ><BaseInput
                 id="demo-departure"
                 v-model="form.departureAt"
                 type="datetime-local"
-                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:scheme-dark"
-              />
-            </div>
-            <div>
-              <label
-                for="demo-time"
-                class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                >Hora de encuentro</label
-              >
-              <input
+                class="dark:scheme-dark"
+            /></BaseFormField>
+            <BaseFormField label="Hora de encuentro" for-id="demo-time"
+              ><BaseInput
                 id="demo-time"
                 v-model="form.meetingTime"
                 type="time"
-                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:scheme-dark"
-              />
-            </div>
+                class="dark:scheme-dark"
+            /></BaseFormField>
           </div>
-
           <div class="grid gap-5 md:grid-cols-2">
-            <div>
-              <label
-                for="demo-passengers"
-                class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                >Número de pasajeros</label
-              >
-              <input
+            <BaseFormField label="Número de pasajeros" for-id="demo-passengers"
+              ><BaseInput
                 id="demo-passengers"
-                v-model.number="form.passengers"
+                v-model="form.passengers"
                 type="number"
                 min="1"
                 max="200"
-                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-              />
-            </div>
-            <div>
-              <label
-                for="demo-budget"
-                class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                >Presupuesto estimado</label
-              >
+            /></BaseFormField>
+            <BaseFormField label="Presupuesto estimado" for-id="demo-budget">
               <div class="flex rounded-lg shadow-sm">
                 <span
                   class="inline-flex items-center rounded-l-lg border border-r-0 border-slate-300 bg-slate-50 px-3 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400"
                   >USD</span
                 >
-                <input
+                <BaseInput
                   id="demo-budget"
                   v-model="form.budget"
                   type="number"
                   min="0"
                   step="0.01"
                   placeholder="0.00"
-                  class="min-w-0 flex-1 rounded-r-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                  class="rounded-l-none"
                 />
               </div>
-            </div>
+            </BaseFormField>
           </div>
         </fieldset>
 
@@ -352,7 +262,6 @@ function submitForm() {
           <legend class="px-1 text-sm font-semibold text-slate-900 dark:text-white">
             Opciones de contratación
           </legend>
-
           <div class="grid gap-6 lg:grid-cols-2">
             <div>
               <p class="mb-3 text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -360,11 +269,7 @@ function submitForm() {
               </p>
               <div class="grid gap-3 sm:grid-cols-3">
                 <label
-                  v-for="option in [
-                    { value: 'unit', label: 'Unitario' },
-                    { value: 'group', label: 'Grupal' },
-                    { value: 'room', label: 'Habitación' },
-                  ]"
+                  v-for="option in priceTypes"
                   :key="option.value"
                   class="flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition"
                   :class="
@@ -386,48 +291,33 @@ function submitForm() {
                 </label>
               </div>
             </div>
-
             <div>
               <p class="mb-3 text-sm font-medium text-slate-700 dark:text-slate-300">
                 Servicios adicionales
               </p>
               <div class="grid gap-3 sm:grid-cols-3">
-                <label
-                  v-for="extra in [
-                    { value: 'guide', label: 'Guía' },
-                    { value: 'insurance', label: 'Seguro' },
-                    { value: 'transfer', label: 'Traslado' },
-                  ]"
+                <div
+                  v-for="extra in extras"
                   :key="extra.value"
-                  class="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 p-3 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+                  class="rounded-lg border border-slate-200 p-3 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
                 >
-                  <input
-                    v-model="form.extras"
-                    type="checkbox"
-                    :value="extra.value"
-                    class="h-4 w-4 rounded accent-teal-600"
-                  />
-                  <span class="text-sm font-medium text-slate-700 dark:text-slate-300">{{
-                    extra.label
-                  }}</span>
-                </label>
+                  <BaseCheckbox v-model="form.extras" :value="extra.value" :label="extra.label" />
+                </div>
               </div>
             </div>
           </div>
         </fieldset>
 
-        <!-- Archivo, descripción y switch -->
+        <!-- Archivo, descripción y estado -->
         <fieldset class="space-y-5 border-t border-slate-200 pt-6 dark:border-slate-800">
           <legend class="px-1 text-sm font-semibold text-slate-900 dark:text-white">
             Información adicional
           </legend>
-
-          <div>
-            <label
-              for="demo-file"
-              class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-              >Documento adjunto</label
-            >
+          <BaseFormField
+            label="Documento adjunto"
+            for-id="demo-file"
+            hint="PDF, JPG o PNG. Tamaño máximo definido por tu backend."
+          >
             <input
               id="demo-file"
               type="file"
@@ -435,80 +325,49 @@ function submitForm() {
               class="block w-full rounded-lg border border-slate-300 bg-white text-sm text-slate-500 file:mr-4 file:border-0 file:bg-slate-100 file:px-4 file:py-2.5 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400 dark:file:bg-slate-800 dark:file:text-slate-300"
               @change="form.document = $event.target.files[0]"
             />
-            <p class="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
-              PDF, JPG o PNG. Tamaño máximo definido por tu backend.
-            </p>
-          </div>
-
-          <div>
-            <label
-              for="demo-description"
-              class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-              >Descripción</label
-            >
-            <textarea
+          </BaseFormField>
+          <BaseFormField label="Descripción" for-id="demo-description"
+            ><BaseTextarea
               id="demo-description"
               v-model="form.description"
               rows="4"
               placeholder="Observaciones adicionales..."
-              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+          /></BaseFormField>
+          <div
+            class="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950/50"
+          >
+            <BaseCheckbox
+              v-model="form.active"
+              label="Registro activo"
+              description="Disponible para utilizarse en nuevas cotizaciones."
             />
           </div>
-
-          <label
-            class="flex cursor-pointer items-center justify-between gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950/50"
-          >
-            <span
-              ><span class="block text-sm font-medium text-slate-800 dark:text-slate-200"
-                >Registro activo</span
-              ><span class="mt-0.5 block text-xs text-slate-500 dark:text-slate-400"
-                >Disponible para utilizarse en nuevas cotizaciones.</span
-              ></span
-            >
-            <span
-              class="relative inline-flex h-6 w-11 shrink-0 rounded-full transition"
-              :class="form.active ? 'bg-teal-600' : 'bg-slate-300 dark:bg-slate-700'"
-              ><input v-model="form.active" type="checkbox" class="peer sr-only" /><span
-                class="absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all"
-                :class="form.active ? 'left-5.5' : 'left-0.5'"
-            /></span>
-          </label>
         </fieldset>
 
         <div
           class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 dark:border-slate-800 sm:flex-row sm:justify-end"
         >
-          <button
-            type="button"
-            class="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-          >
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            class="rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-teal-700"
-          >
-            Guardar registro
-          </button>
+          <BaseButton variant="secondary">Cancelar</BaseButton>
+          <BaseButton type="submit"><Save class="h-4 w-4" /> Guardar registro</BaseButton>
         </div>
       </form>
     </BaseCard>
 
-    <!-- Tabs -->
+    <!-- Tabs: se mantienen como guía real -->
     <BaseCard title="Tabs" description="Navegación entre secciones sin abandonar la página actual.">
       <BaseTabs v-model="activeTab" :tabs="tabs">
-        <template #general>
-          <div
+        <template #general
+          ><div
             class="rounded-lg border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-950/50"
           >
             <h4 class="font-semibold text-slate-900 dark:text-white">Información general</h4>
             <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
               Contenido principal de la cotización: cliente, moneda, lista de precios y fechas.
             </p>
-          </div>
-        </template>
-        <template #itinerary>
-          <div class="grid gap-3 md:grid-cols-3">
+          </div></template
+        >
+        <template #itinerary
+          ><div class="grid gap-3 md:grid-cols-3">
             <div
               v-for="day in 3"
               :key="day"
@@ -519,15 +378,15 @@ function submitForm() {
                 Servicios del itinerario.
               </p>
             </div>
-          </div>
-        </template>
-        <template #passengers>
-          <BaseAlert type="info" title="8 pasajeros registrados"
+          </div></template
+        >
+        <template #passengers
+          ><BaseAlert type="info" title="8 pasajeros registrados"
             >Puedes utilizar este tab para listar, agregar o distribuir pasajeros.</BaseAlert
-          >
-        </template>
-        <template #documents>
-          <ul
+          ></template
+        >
+        <template #documents
+          ><ul
             class="divide-y divide-slate-200 rounded-lg border border-slate-200 dark:divide-slate-700 dark:border-slate-700"
           >
             <li class="flex justify-between p-4 text-sm text-slate-700 dark:text-slate-300">
@@ -536,12 +395,12 @@ function submitForm() {
             <li class="flex justify-between p-4 text-sm text-slate-700 dark:text-slate-300">
               <span>Itinerario.pdf</span><BaseBadge variant="warning">Pendiente</BaseBadge>
             </li>
-          </ul>
-        </template>
+          </ul></template
+        >
       </BaseTabs>
     </BaseCard>
 
-    <!-- Tabla simple -->
+    <!-- Tabla simple: se mantiene -->
     <div>
       <h3 class="mb-3 text-lg font-semibold text-slate-900 dark:text-white">Tabla básica</h3>
       <BaseTable :items="allServices.slice(0, 4)" :columns="6">
@@ -572,22 +431,17 @@ function submitForm() {
             </td>
             <td>
               <div class="flex justify-end gap-1">
-                <button
-                  title="Ver"
-                  class="rounded-lg p-2 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-950"
-                >
-                  <Eye class="h-4 w-4" /></button
-                ><button
-                  title="Editar"
-                  class="rounded-lg p-2 hover:bg-teal-50 hover:text-teal-700 dark:hover:bg-teal-950"
-                >
-                  <Pencil class="h-4 w-4" /></button
-                ><button
+                <BaseButton variant="ghost" size="sm" title="Ver" class="px-2"
+                  ><Eye class="h-4 w-4" /></BaseButton
+                ><BaseButton variant="ghost" size="sm" title="Editar" class="px-2"
+                  ><Pencil class="h-4 w-4" /></BaseButton
+                ><BaseButton
+                  variant="ghost"
+                  size="sm"
                   title="Eliminar"
-                  class="rounded-lg p-2 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950"
-                >
-                  <Trash2 class="h-4 w-4" />
-                </button>
+                  class="px-2 text-red-600 dark:text-red-400"
+                  ><Trash2 class="h-4 w-4"
+                /></BaseButton>
               </div>
             </td>
           </tr>
@@ -595,7 +449,7 @@ function submitForm() {
       </BaseTable>
     </div>
 
-    <!-- Tabla paginada -->
+    <!-- Tabla paginada: se mantiene -->
     <div>
       <h3 class="mb-3 text-lg font-semibold text-slate-900 dark:text-white">
         Tabla con paginación
@@ -645,19 +499,8 @@ function submitForm() {
         reservas.
       </p>
       <template #footer="{ close }"
-        ><button
-          type="button"
-          class="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 dark:border-slate-700 dark:text-slate-300"
-          @click="close"
-        >
-          Cancelar</button
-        ><button
-          type="button"
-          class="rounded-lg bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-700"
-          @click="close"
-        >
-          Confirmar
-        </button></template
+        ><BaseButton variant="secondary" @click="close">Cancelar</BaseButton
+        ><BaseButton @click="close">Confirmar</BaseButton></template
       >
     </BaseModal>
   </div>

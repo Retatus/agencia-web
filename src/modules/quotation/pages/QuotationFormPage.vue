@@ -213,6 +213,7 @@
         <QuotationPassengerManager
           :passengers="store.quotation.passengers"
           :passenger-types="passengerTypes"
+          :document-types="documentTypes"
           @add-passenger="openPassengerModal"
           @edit-passenger="openPassengerModal"
         />
@@ -457,6 +458,7 @@ import { useCustomerStore } from '../../crm/stores/customer.store'
 
 import CurrencyService from '@/modules/catalog/service/currency.service'
 import PassengerTypeService from '@/modules/catalog/service/passenger-type.service'
+import DocumentTypeService from '@/modules/catalog/service/document-type.service'
 import QuotationStatusService from '@/modules/catalog/service/quotation-status.service'
 import TouristDestinationService from '@/modules/destinations/services/tourist-destination.service'
 
@@ -557,6 +559,8 @@ const statuses = ref([])
 
 const passengerTypes = ref([])
 
+const documentTypes = ref([])
+
 const loadingCatalogs = ref(false)
 
 const touristDestinations = ref([])
@@ -593,7 +597,12 @@ async function loadAuxiliaryData() {
   loadingCatalogs.value = true
 
   try {
-    const [currenciesResponse, statusesResponse, passengerTypesResponse] = await Promise.all([
+    const [
+      currenciesResponse,
+      statusesResponse,
+      passengerTypesResponse,
+      documentTypesResponse,
+    ] = await Promise.all([
       CurrencyService.getAll({
         active: 1,
       }),
@@ -605,6 +614,11 @@ async function loadAuxiliaryData() {
       PassengerTypeService.getAll({
         active: 1,
       }),
+
+      DocumentTypeService.getAll({
+        active: 1,
+        per_page: 100,
+      }),
     ])
 
     currencies.value = currenciesResponse.data.data ?? []
@@ -612,6 +626,8 @@ async function loadAuxiliaryData() {
     statuses.value = statusesResponse.data.data ?? []
 
     passengerTypes.value = passengerTypesResponse.data.data ?? []
+
+    documentTypes.value = documentTypesResponse.data.data ?? []
   } finally {
     loadingCatalogs.value = false
   }

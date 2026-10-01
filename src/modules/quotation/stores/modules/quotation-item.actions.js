@@ -77,6 +77,10 @@ export const itemActions = {
 
       notes: '',
 
+      payment_due_date: null,
+
+      payment_status: 'NOT_REQUIRED',
+
       active: true,
 
       calculated_at: item.calculated_at ?? new Date().toISOString(),
@@ -191,6 +195,10 @@ export const itemActions = {
         sort_order: sortOrder,
 
         notes: item.notes ?? '',
+
+        payment_due_date: item.payment_due_date ?? null,
+
+        payment_status: item.payment_status ?? 'NOT_REQUIRED',
 
         active: item.active ?? true,
 

@@ -105,6 +105,26 @@
                 <!-- Documento -->
                 <div class="md:col-span-4">
                   <label
+                    for="passenger-document-type"
+                    class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+                  >
+                    Tipo de documento
+                  </label>
+                  <select
+                    id="passenger-document-type"
+                    v-model="form.document_type_id"
+                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                  >
+                    <option :value="null">Seleccione...</option>
+                    <option v-for="type in documentTypes" :key="type.id" :value="type.id">
+                      {{ type.name }}
+                    </option>
+                  </select>
+                </div>
+
+                <!-- Número de documento -->
+                <div class="md:col-span-4">
+                  <label
                     for="passenger-document"
                     class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
                   >
@@ -249,6 +269,11 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+
+  documentTypes: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 const emit = defineEmits(['close', 'save'])
@@ -261,6 +286,8 @@ const form = reactive({
   uuid: props.passenger?.uuid ?? crypto.randomUUID(),
 
   passenger_type_id: props.passenger?.passenger_type_id ?? null,
+
+  document_type_id: props.passenger?.document_type_id ?? null,
 
   first_name: props.passenger?.first_name ?? '',
 

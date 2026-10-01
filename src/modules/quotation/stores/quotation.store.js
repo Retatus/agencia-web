@@ -806,6 +806,8 @@ export const useQuotationStore = defineStore('quotation', {
               subtotal_sale: quantity * unitPrice,
               sort_order: itemIndex + 1,
               notes: 'Importe aproximado importado desde una plantilla de destino.',
+              payment_due_date: null,
+              payment_status: 'NOT_REQUIRED',
               active: true,
               calculated_at: now,
             }

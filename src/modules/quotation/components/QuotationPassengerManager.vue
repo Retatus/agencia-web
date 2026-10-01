@@ -273,7 +273,13 @@
                 <!-- ================================================= -->
 
                 <td class="px-3 py-2.5 text-sm text-slate-700 dark:text-slate-300">
-                  {{ passenger.document_number || '-' }}
+                  <div>{{ passenger.document_number || '-' }}</div>
+                  <div
+                    v-if="documentTypeLabel(passenger)"
+                    class="mt-0.5 text-xs text-slate-500 dark:text-slate-400"
+                  >
+                    {{ documentTypeLabel(passenger) }}
+                  </div>
                 </td>
 
                 <!-- ================================================= -->
@@ -351,6 +357,7 @@
       v-if="showModal"
       :passenger="editingPassenger"
       :passenger-types="passengerTypes"
+      :document-types="documentTypes"
       @close="closeModal"
       @save="handlePassengerSave"
     />
@@ -362,6 +369,7 @@
     <GeneratePassengersModal
       v-if="showGenerateModal"
       :passenger-types="passengerTypes"
+      :document-types="documentTypes"
       @close="closeGenerateModal"
       @save="handleGenerate"
     />
@@ -410,6 +418,11 @@ const props = defineProps({
   },
 
   passengerTypes: {
+    type: Array,
+    default: () => [],
+  },
+
+  documentTypes: {
     type: Array,
     default: () => [],
   },
@@ -489,6 +502,16 @@ function passengerName(passenger) {
   const name = `${firstName} ${lastName}`.trim()
 
   return name || 'Pendiente'
+}
+
+function documentTypeLabel(passenger) {
+  if (passenger.document_type?.name) {
+    return passenger.document_type.name
+  }
+
+  return props.documentTypes.find(
+    (type) => Number(type.id) === Number(passenger.document_type_id),
+  )?.name ?? ''
 }
 
 /*

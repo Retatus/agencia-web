@@ -746,6 +746,35 @@
                         </template>
 
                         <!-- NOTAS -->
+                        <div class="grid gap-4 sm:grid-cols-2">
+                          <div>
+                            <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                              Estado de pago al proveedor
+                            </label>
+                            <select
+                              v-model="form.payment_status"
+                              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                            >
+                              <option value="NOT_REQUIRED">No requerido</option>
+                              <option value="PENDING">Pendiente</option>
+                              <option value="PARTIAL">Pago parcial</option>
+                              <option value="PAID">Pagado</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                              Fecha límite de pago
+                            </label>
+                            <input
+                              v-model="form.payment_due_date"
+                              type="date"
+                              :disabled="form.payment_status === 'NOT_REQUIRED'"
+                              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none disabled:cursor-not-allowed disabled:opacity-50 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                            />
+                          </div>
+                        </div>
+
+                        <!-- NOTAS -->
                         <div>
                           <label
                             class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
@@ -1032,6 +1061,10 @@ const form = reactive({
   sort_order: editBaseItem.value?.sort_order ?? 1,
 
   notes: editBaseItem.value?.notes ?? '',
+
+  payment_due_date: editBaseItem.value?.payment_due_date ?? null,
+
+  payment_status: editBaseItem.value?.payment_status ?? 'NOT_REQUIRED',
 
   active: editBaseItem.value?.active ?? true,
 })
@@ -2009,6 +2042,10 @@ function saveGenericItem() {
 
     notes: form.notes,
 
+    payment_due_date: form.payment_status === 'NOT_REQUIRED' ? null : form.payment_due_date,
+
+    payment_status: form.payment_status,
+
     active: editBaseItem.value?.active ?? true,
   }
 
@@ -2042,6 +2079,10 @@ function saveExistingGroup() {
     duration: calculationType.value === 'accommodation' ? Number(form.duration ?? 1) : 1,
 
     notes: form.notes,
+
+    payment_due_date: form.payment_status === 'NOT_REQUIRED' ? null : form.payment_due_date,
+
+    payment_status: form.payment_status,
   }))
 
   emit('save', {
@@ -2246,6 +2287,10 @@ function saveRecommendedGroup() {
       sort_order: editBaseItem.value?.sort_order ?? 1,
 
       notes: form.notes,
+
+      payment_due_date: form.payment_status === 'NOT_REQUIRED' ? null : form.payment_due_date,
+
+      payment_status: form.payment_status,
 
       active: existing?.active ?? true,
     }

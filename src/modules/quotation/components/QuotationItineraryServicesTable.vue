@@ -54,6 +54,11 @@
           <th
             class="px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
           >
+            Pago proveedor
+          </th>
+          <th
+            class="px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+          >
             Estado
           </th>
           <th
@@ -67,7 +72,7 @@
       <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
         <!-- SIN ITEMS -->
         <tr v-if="!itinerary.items?.length">
-          <td colspan="11" class="px-3 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+          <td colspan="12" class="px-3 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
             No existen servicios registrados.
           </td>
         </tr>
@@ -203,6 +208,18 @@
             {{ money(item.subtotal) }}
           </td>
 
+          <!-- VENCIMIENTO DE PAGO AL PROVEEDOR -->
+          <td
+            v-if="shouldRenderGroupCell(item)"
+            :rowspan="getRowspan(item)"
+            class="px-3 py-2.5 align-middle"
+          >
+            <PaymentDueBadge
+              :status="item.payment_status"
+              :due-date="item.payment_due_date"
+            />
+          </td>
+
           <!-- ESTADO -->
           <td
             v-if="shouldRenderGroupCell(item)"
@@ -317,7 +334,7 @@
           <td class="px-3 py-3 text-right text-sm font-bold text-slate-900 dark:text-white">
             {{ money(itinerary.subtotal) }}
           </td>
-          <td colspan="2"></td>
+          <td colspan="3"></td>
         </tr>
       </tfoot>
     </table>
@@ -326,6 +343,7 @@
 
 <script setup>
 import { useQuotationStore } from '../stores/quotation.store'
+import PaymentDueBadge from './PaymentDueBadge.vue'
 
 /*
 |--------------------------------------------------------------------------

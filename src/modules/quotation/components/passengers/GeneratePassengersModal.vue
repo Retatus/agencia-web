@@ -122,8 +122,9 @@
 
   <QuotationPassengerFormModal
     v-if="showPassengerModal"
-    :item="editingPassenger"
+    :passenger="editingPassenger"
     :passenger-types="passengerTypes"
+    :document-types="documentTypes"
     @close="closePassengerModal"
     @save="handlePassengerSave"
   />
@@ -138,6 +139,11 @@ import CountrySelect from '@/shared/components/CountrySelect.vue'
 
 const props = defineProps({
   passengerTypes: {
+    type: Array,
+    default: () => [],
+  },
+
+  documentTypes: {
     type: Array,
     default: () => [],
   },

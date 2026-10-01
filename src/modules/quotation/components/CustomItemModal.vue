@@ -213,6 +213,40 @@
               </div>
 
               <!-- RESUMEN Y OBSERVACIONES -->
+              <div class="mb-6 rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+                <h4 class="mb-4 text-sm font-semibold text-slate-900 dark:text-white">
+                  Control de pago al proveedor
+                </h4>
+                <div class="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Estado de pago
+                    </label>
+                    <select
+                      v-model="form.payment_status"
+                      class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                    >
+                      <option value="NOT_REQUIRED">No requerido</option>
+                      <option value="PENDING">Pendiente</option>
+                      <option value="PARTIAL">Pago parcial</option>
+                      <option value="PAID">Pagado</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Fecha límite de pago
+                    </label>
+                    <input
+                      v-model="form.payment_due_date"
+                      type="date"
+                      :disabled="form.payment_status === 'NOT_REQUIRED'"
+                      class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none disabled:cursor-not-allowed disabled:opacity-50 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- RESUMEN Y OBSERVACIONES -->
               <div class="mb-6 grid gap-6 lg:grid-cols-2">
                 <!-- Resumen -->
                 <div
@@ -435,6 +469,10 @@ const form = reactive({
 
   notes: props.item?.notes ?? '',
 
+  payment_due_date: props.item?.payment_due_date ?? null,
+
+  payment_status: props.item?.payment_status ?? 'NOT_REQUIRED',
+
   active: props.item?.active ?? true,
 })
 
@@ -588,6 +626,10 @@ function save() {
     */
 
     notes: form.notes?.trim() ?? '',
+
+    payment_due_date: form.payment_status === 'NOT_REQUIRED' ? null : form.payment_due_date,
+
+    payment_status: form.payment_status,
 
     active: Boolean(form.active),
   }

@@ -24,6 +24,8 @@ export const passengerActions = {
 
       passenger_type_id: null,
 
+      document_type_id: null,
+
       first_name: '',
 
       last_name: '',
